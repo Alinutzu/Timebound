@@ -3,6 +3,9 @@
  * Progressive goals that reward players
  */
 
+import StateManager from '../core/StateManager.js';
+import StructureSystem from '../systems/StructureSystem.js';
+
 const ACHIEVEMENTS = {
   // ===== TUTORIAL & FIRST STEPS =====
   firstClick: {
@@ -14,16 +17,13 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.totalClicks >= 1;
     },
-    
-    reward: {
-      gems: 10
-    },
-    
+    reward: { gems: 10 },
     hidden: false
   },
+};
   
   firstStructure: {
     id: 'firstStructure',
@@ -850,5 +850,6 @@ const ACHIEVEMENTS = {
     hidden: true
   }
 };
+
 
 export default ACHIEVEMENTS;

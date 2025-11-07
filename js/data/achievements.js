@@ -23,7 +23,6 @@ const ACHIEVEMENTS = {
     reward: { gems: 10 },
     hidden: false
   },
-};
   
   firstStructure: {
     id: 'firstStructure',

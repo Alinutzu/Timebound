@@ -6,6 +6,7 @@ import structureSystem from '../systems/StructureSystem.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import StructureCard from './components/StructureCard.js';
+import Formatters from '../utils/Formatters.js';
 
 class StructuresUI {
   constructor(containerId) {
@@ -165,5 +166,6 @@ class StructuresUI {
     this.cards.clear();
   }
 }
+
 
 export default StructuresUI;

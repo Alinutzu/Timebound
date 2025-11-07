@@ -3,7 +3,7 @@
  * Initializes the game and binds UI
  */
 
-import CONFIG from './js/config.js';
+import CONFIG from './config.js';
 import game from './core/Game.js';
 import eventBus from './utils/EventBus.js';
 import logger from './utils/Logger.js';
@@ -449,5 +449,6 @@ if (CONFIG.DEBUG_MODE) {
     console.log('    cheat.ascend()');
 
 }
+
 
 

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idle Energy Empire</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components/buttons.css">
+    <link rel="stylesheet" href="css/components/cards.css">
+    <link rel="stylesheet" href="css/components/tabs.css">
+    <link rel="stylesheet" href="css/components/modals.css">
+    <link rel="stylesheet" href="css/components/notifications.css">
+    <link rel="stylesheet" href="css/components/tooltips.css">
+    <link rel="stylesheet" href="css/components/tutorial.css">
+    <link rel="stylesheet" href="css/components/upgrade-queue.css">
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+</head>
+<body class="dark-theme">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>⚡ Idle Energy Empire</h2>
+            <p>Loading your empire...</p>
+            <div class="loading-bar">
+                <div class="loading-bar-fill" id="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="game-container" class="game-container" style="display: none;">
+        
+        <!-- Header -->
+        <header class="game-header">
+            <div class="header-left">
+                <h1 class="game-title">⚡ Idle Energy Empire</h1>
+                <div class="version-badge">v2.0.0</div>
+            </div>
+            
+            <!-- Resource Display -->
+            <div class="header-resources" id="resource-display">
+                <!-- Resources will be rendered here by ResourceDisplay.js -->
+            </div>
+            
+            <div class="header-right">
+                <button class="btn-icon" id="settings-btn" title="Settings">
+                    ⚙️
+                </button>
+                <button class="btn-icon" id="save-btn" title="Save Game">
+                    💾
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="game-main">
+            
+            <!-- Navigation Tabs -->
+            <nav class="game-tabs">
+                <button class="tab-btn active" data-tab="structures">
+                    🏗️ Structures
+                </button>
+                <button class="tab-btn" data-tab="upgrades">
+                    ⬆️ Upgrades
+                </button>
+                <button class="tab-btn" data-tab="guardians">
+                    🐉 Guardians
+                    <span class="tab-badge" id="guardians-badge" style="display: none;">!</span>
+                </button>
+                <button class="tab-btn" data-tab="quests">
+                    📜 Quests
+                    <span class="tab-badge" id="quests-badge" style="display: none;">0</span>
+                </button>
+                <button class="tab-btn" data-tab="achievements">
+                    🏆 Achievements
+                    <span class="tab-badge" id="achievements-badge" style="display: none;">0</span>
+                </button>
+                <button class="tab-btn" data-tab="bosses">
+                    ⚔️ Bosses
+                </button>
+                <button class="tab-btn" data-tab="puzzle">
+                    🧩 Puzzle
+                </button>
+                <button class="tab-btn" data-tab="shop">
+                    💎 Shop
+                </button>
+                <button class="tab-btn" data-tab="statistics">
+                    📊 Stats
+                </button>
+            </nav>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                
+                <!-- Structures Tab -->
+                <div class="tab-panel active" id="tab-structures">
+                    <!-- Realm Selector -->
+                    <div class="realm-selector" id="realm-selector">
+                        <button class="realm-btn active" data-realm="forest">
+                            🌲 Forest
+                        </button>
+                        <button class="realm-btn locked" data-realm="volcano">
+                            🌋 Volcano
+                            <span class="unlock-cost">100 💠</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Structures Container -->
+                    <div id="structures-container">
+                        <!-- Rendered by StructuresUI.js -->
+                    </div>
+                </div>
+
+                <!-- Upgrades Tab -->
+                <div class="tab-panel" id="tab-upgrades">
+                    <!-- Upgrade Queue Display -->
+                    <div id="upgrade-queue-display">
+                        <!-- Rendered by UpgradeQueueDisplay.js -->
+                    </div>
+                    
+                    <!-- Upgrades Container -->
+                    <div id="upgrades-container">
+                        <!-- Rendered by UpgradesUI.js -->
+                    </div>
+                </div>
+
+                <!-- Guardians Tab -->
+                <div class="tab-panel" id="tab-guardians">
+                    <div class="guardians-header">
+                        <div class="guardians-info">
+                            <h2>🐉 Guardian Collection</h2>
+                            <p>Summon powerful guardians to boost your production</p>
+                        </div>
+                        <button class="btn btn-primary btn-large" id="summon-guardian-btn">
+                            ✨ Summon Guardian (100 💎)
+                        </button>
+                    </div>
+                    
+                    <!-- Guardian Stats -->
+                    <div class="guardian-stats" id="guardian-stats">
+                        <!-- Rendered by GuardiansUI.js -->
+                    </div>
+                    
+                    <!-- Guardians Grid -->
+                    <div id="guardians-container" class="guardians-grid">
+                        <!-- Rendered by GuardiansUI.js -->
+                    </div>
+                </div>
+
+                <!-- Quests Tab -->
+                <div class="tab-panel" id="tab-quests">
+                    <div class="quests-header">
+                        <h2>📜 Daily Quests</h2>
+                        <div class="quest-limit">
+                            <span id="quests-completed-today">0</span> / 
+                            <span id="quests-daily-limit">10</span> completed today
+                        </div>
+                    </div>
+                    
+                    <div id="quests-container">
+                        <!-- Rendered by QuestsUI.js -->
+                    </div>
+                </div>
+
+                <!-- Achievements Tab -->
+                <div class="tab-panel" id="tab-achievements">
+                    <div class="achievements-header">
+                        <h2>🏆 Achievements</h2>
+                        <div class="achievement-progress" id="achievement-progress">
+                            <span id="achievements-unlocked">0</span> / 
+                            <span id="achievements-total">0</span> unlocked
+                        </div>
+                    </div>
+                    
+                    <!-- Achievement Categories -->
+                    <div class="achievement-categories">
+                        <button class="category-btn active" data-category="all">All</button>
+                        <button class="category-btn" data-category="tutorial">Tutorial</button>
+                        <button class="category-btn" data-category="production">Production</button>
+                        <button class="category-btn" data-category="structures">Structures</button>
+                        <button class="category-btn" data-category="guardians">Guardians</button>
+                        <button class="category-btn" data-category="special">Special</button>
+                    </div>
+                    
+                    <div id="achievements-container">
+                        <!-- Rendered by AchievementsUI.js -->
+                    </div>
+                </div>
+
+                <!-- Bosses Tab -->
+                <div class="tab-panel" id="tab-bosses">
+                    <div class="bosses-header">
+                        <h2>⚔️ Boss Battles</h2>
+                        <p>Defeat powerful bosses using the puzzle mini-game!</p>
+                    </div>
+                    
+                    <div id="bosses-container">
+                        <!-- Rendered by BossesUI.js -->
+                    </div>
+                </div>
+
+                <!-- Puzzle Tab -->
+                <div class="tab-panel" id="tab-puzzle">
+                    <div class="puzzle-header">
+                        <h2>🧩 Match-3 Puzzle</h2>
+                        <div class="puzzle-stats">
+                            <div class="stat">
+                                <span class="label">High Score:</span>
+                                <span class="value" id="puzzle-high-score">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="label">Win Rate:</span>
+                                <span class="value" id="puzzle-win-rate">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="puzzle-game-container">
+                        <!-- Puzzle game will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Shop Tab -->
+                <div class="tab-panel" id="tab-shop">
+                    <div class="shop-header">
+                        <h2>💎 Shop</h2>
+                    </div>
+                    
+                    <div id="shop-container">
+                        <!-- Rendered by ShopUI.js -->
+                    </div>
+                </div>
+
+                <!-- Statistics Tab -->
+                <div class="tab-panel" id="tab-statistics">
+                    <div class="statistics-header">
+                        <h2>📊 Statistics</h2>
+                        <button class="btn btn-secondary" id="export-stats-btn">
+                            📥 Export Stats
+                        </button>
+                    </div>
+                    
+                    <div id="statistics-container">
+                        <!-- Rendered by StatisticsUI.js -->
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="game-footer">
+            <div class="footer-left">
+                <button class="btn btn-secondary" id="ascension-btn">
+                    ✨ Ascension
+                </button>
+                <button class="btn btn-secondary" id="automation-btn">
+                    🤖 Automation
+                </button>
+            </div>
+            
+            <div class="footer-center">
+                <span id="last-save-time">Last saved: Never</span>
+            </div>
+            
+            <div class="footer-right">
+                <button class="btn btn-secondary" id="daily-reward-btn">
+                    🎁 Daily Reward
+                </button>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- ===== MODALS ===== -->
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Settings</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>Display</h3>
+                    <div class="setting-item">
+                        <label for="theme-select">Theme:</label>
+                        <select id="theme-select">
+                            <option value="dark">Dark</option>
+                            <option value="light">Light</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="particle-quality">Particle Quality:</label>
+                        <select id="particle-quality">
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                            <option value="off">Off</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="show-fps"> Show FPS
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Audio</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="sound-enabled" checked> Sound Effects
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="music-enabled"> Music
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Gameplay</h3>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="notifications-enabled" checked> Notifications
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="auto-save-enabled" checked> Auto-Save
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Data</h3>
+                    <div class="setting-actions">
+                        <button class="btn btn-secondary" id="export-save-btn">
+                            📤 Export Save
+                        </button>
+                        <button class="btn btn-secondary" id="import-save-btn">
+                            📥 Import Save
+                        </button>
+                        <input type="file" id="import-save-input" accept=".json" style="display: none;">
+                        <button class="btn btn-danger" id="reset-game-btn">
+                            🗑️ Reset Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Reward Modal -->
+    <div class="modal" id="daily-reward-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🎁 Daily Rewards</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="daily-rewards-grid" id="daily-rewards-grid">
+                    <!-- Rendered by DailyRewardUI.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ascension Modal -->
+    <div class="modal" id="ascension-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>✨ Ascension</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="ascension-preview">
+                    <!-- Rendered by AscensionUI.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Automation Modal -->
+    <div class="modal" id="automation-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🤖 Automation</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="automation-features">
+                    <!-- Rendered by AutomationUI.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Boss Battle Modal -->
+    <div class="modal" id="boss-battle-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="boss-battle-title">⚔️ Boss Battle</h2>
+                <button class="modal-close" id="boss-battle-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="boss-battle-content">
+                    <!-- Rendered by BossUI.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container">
+        <!-- Notifications will appear here -->
+    </div>
+
+    <!-- Tutorial Tooltip -->
+    <div id="tutorial-tooltip" class="tutorial-tooltip" style="display: none;">
+        <div class="tutorial-content">
+            <h3 id="tutorial-title"></h3>
+            <p id="tutorial-message"></p>
+            <div class="tutorial-actions">
+                <button class="btn btn-primary" id="tutorial-next">Next</button>
+                <button class="btn btn-secondary" id="tutorial-skip">Skip Tutorial</button>
+            </div>
+        </div>
+        <div class="tutorial-arrow"></div>
+    </div>
+
+    <!-- FPS Counter -->
+    <div id="fps-counter" class="fps-counter" style="display: none;">
+        FPS: <span id="fps-value">60</span>
+    </div>
+
+    <!-- Offline Progress Modal -->
+    <div class="modal" id="offline-modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⏰ Welcome Back!</h2>
+            </div>
+            <div class="modal-body">
+                <div class="offline-content">
+                    <p>You were offline for:</p>
+                    <h3 id="offline-time">0</h3>
+                    <p>Resources earned:</p>
+                    <div class="offline-rewards" id="offline-rewards">
+                        <!-- Rewards will be shown here -->
+                    </div>
+                    <button class="btn btn-primary" id="offline-collect-btn">
+                        Collect Rewards
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts (type="module" for ES6 imports) -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

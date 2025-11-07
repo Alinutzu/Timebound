@@ -1,0 +1,205 @@
+/**
+ * Notification System
+ */
+
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: var(--z-notification);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.notification {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-xl);
+    border-left: 4px solid var(--accent);
+    animation: slideInRight 0.3s ease;
+    pointer-events: all;
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.notification.closing {
+    animation: slideOutRight 0.3s ease forwards;
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+.notification::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+    animation: shrink linear;
+    animation-duration: inherit;
+}
+
+@keyframes shrink {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* Notification Types */
+.notification.success {
+    border-left-color: var(--success);
+}
+
+.notification.success::before {
+    background: var(--success);
+}
+
+.notification.error,
+.notification.danger {
+    border-left-color: var(--danger);
+}
+
+.notification.error::before,
+.notification.danger::before {
+    background: var(--danger);
+}
+
+.notification.warning {
+    border-left-color: var(--warning);
+}
+
+.notification.warning::before {
+    background: var(--warning);
+}
+
+.notification.info {
+    border-left-color: var(--info);
+}
+
+.notification.info::before {
+    background: var(--info);
+}
+
+.notification.achievement {
+    border-left-color: var(--rarity-legendary);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(245, 158, 11, 0.1) 100%);
+}
+
+.notification.achievement::before {
+    background: linear-gradient(90deg, var(--rarity-legendary), #fbbf24);
+}
+
+.notification.vip {
+    border-left-color: var(--rarity-legendary);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(245, 158, 11, 0.15) 100%);
+}
+
+.notification.vip::before {
+    background: linear-gradient(90deg, var(--rarity-legendary), #fbbf24);
+}
+
+.notification.ascension {
+    border-left-color: var(--accent);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(59, 130, 246, 0.15) 100%);
+}
+
+.notification.ascension::before {
+    background: linear-gradient(90deg, var(--accent), var(--info));
+}
+
+/* Notification Content */
+.notification-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-xs);
+}
+
+.notification-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.notification-close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.25rem;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.notification-close:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.notification-message {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.notification-description {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin: var(--spacing-xs) 0 0;
+}
+
+/* Special Notification: Achievement Unlock */
+.notification.achievement .notification-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.achievement-unlock-icon {
+    font-size: 2rem;
+    animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .notification-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+}

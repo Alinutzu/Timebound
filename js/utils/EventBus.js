@@ -7,6 +7,8 @@
  *   eventBus.emit('structure:purchased', { key: 'solarPanel', level: 5 });
  */
 
+import CONFIG from '../config.js';
+
 class EventBus {
   constructor() {
     this.events = new Map();
@@ -130,5 +132,6 @@ class EventBus {
 
 // Singleton instance
 const eventBus = new EventBus();
+
 
 export default eventBus;

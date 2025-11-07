@@ -1,0 +1,112 @@
+/**
+ * Tooltips
+ */
+
+.tooltip {
+    position: fixed;
+    background: var(--bg-primary);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-xl);
+    z-index: var(--z-tooltip);
+    max-width: 300px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.tooltip.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.tooltip-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 0 var(--spacing-xs);
+    color: var(--text-primary);
+}
+
+.tooltip-content {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+/* Tooltip Positions */
+.tooltip.top .tooltip-arrow {
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 10px 10px 0 10px;
+    border-color: var(--accent) transparent transparent transparent;
+}
+
+.tooltip.bottom .tooltip-arrow {
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent var(--accent) transparent;
+}
+
+.tooltip.left .tooltip-arrow {
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 10px 0 10px 10px;
+    border-color: transparent transparent transparent var(--accent);
+}
+
+.tooltip.right .tooltip-arrow {
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 10px 10px 10px 0;
+    border-color: transparent var(--accent) transparent transparent;
+}
+
+/* Inline Tooltips (for buttons, etc.) */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]:hover::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--bg-tertiary);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: var(--z-tooltip);
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeIn 0.2s ease forwards;
+}
+
+[data-tooltip]:hover::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: var(--bg-tertiary);
+    margin-bottom: 4px;
+    opacity: 0;
+    animation: fadeIn 0.2s ease forwards;
+}

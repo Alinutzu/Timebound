@@ -1,0 +1,192 @@
+/**
+ * Tutorial System
+ */
+
+.tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 9998;
+    pointer-events: none;
+}
+
+.tutorial-spotlight {
+    position: fixed;
+    border: 3px solid var(--warning);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+    z-index: 9998;
+    animation: tutorialPulse 2s ease-in-out infinite;
+}
+
+@keyframes tutorialPulse {
+    0%, 100% {
+        border-color: var(--warning);
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7),
+                    0 0 20px var(--warning);
+    }
+    50% {
+        border-color: #fbbf24;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.7),
+                    0 0 40px var(--warning);
+    }
+}
+
+.tutorial-tooltip {
+    position: fixed;
+    background: var(--bg-primary);
+    border: 3px solid var(--warning);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-xl);
+    z-index: 9999;
+    max-width: 400px;
+    animation: tutorialBounce 0.5s ease;
+}
+
+@keyframes tutorialBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+    50% {
+        transform: scale(1.05) translateY(-5px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.tutorial-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+#tutorial-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--warning);
+}
+
+#tutorial-message {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.6;
+}
+
+.tutorial-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.tutorial-actions .btn {
+    flex: 1;
+}
+
+.tutorial-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+/* Tutorial Arrow Positions */
+.tutorial-tooltip.position-top .tutorial-arrow {
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 15px 15px 0 15px;
+    border-color: var(--warning) transparent transparent transparent;
+}
+
+.tutorial-tooltip.position-bottom .tutorial-arrow {
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 15px 15px 15px;
+    border-color: transparent transparent var(--warning) transparent;
+}
+
+.tutorial-tooltip.position-left .tutorial-arrow {
+    right: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 15px 0 15px 15px;
+    border-color: transparent transparent transparent var(--warning);
+}
+
+.tutorial-tooltip.position-right .tutorial-arrow {
+    left: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 15px 15px 15px 0;
+    border-color: transparent var(--warning) transparent transparent;
+}
+
+.tutorial-tooltip.position-center {
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%);
+}
+
+.tutorial-tooltip.position-center .tutorial-arrow {
+    display: none;
+}
+
+/* Tutorial Progress */
+.tutorial-progress {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-md);
+}
+
+.tutorial-progress-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    transition: all var(--transition-fast);
+}
+
+.tutorial-progress-dot.active {
+    background: var(--warning);
+    transform: scale(1.5);
+}
+
+.tutorial-progress-dot.completed {
+    background: var(--success);
+}
+
+/* Tutorial Offer Modal */
+.tutorial-offer {
+    text-align: center;
+    padding: var(--spacing-xl);
+}
+
+.tutorial-offer h3 {
+    font-size: 1.5rem;
+    margin: 0 0 var(--spacing-md);
+}
+
+.tutorial-offer p {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xl);
+}
+
+.tutorial-offer-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.tutorial-offer-actions .btn {
+    flex: 1;
+}

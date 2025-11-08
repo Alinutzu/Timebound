@@ -110,6 +110,8 @@ const STRUCTURES = {
       'Heat from the depths'
     ]
   },
+
+  
   
   // ===== TIER 3: LATE GAME =====
   fusionReactor: {
@@ -283,7 +285,125 @@ const STRUCTURES = {
     emoji: '⚒️',
     tier: 3,
     realm: 'volcano',
-    
+
+     // ===== OCEAN REALM =====
+  tidalGenerator: {
+    id: 'tidalGenerator',
+    name: 'Tidal Generator',
+    description: 'Harnesses tidal forces for energy',
+    emoji: '🌊',
+    tier: 1,
+    realm: 'ocean',
+    baseCost: 150,
+    costMultiplier: 1.18,
+    costResource: 'tidalEnergy',
+    baseProduction: 8,
+    productionExponent: 1.12,
+    resource: 'tidalEnergy',
+    unlockCondition: {
+      realms: { ocean: true }
+    },
+    flavorTexts: [
+      'Power from the rhythm of the deep',
+      'Tides never sleep',
+      'Harnessing oceanic force'
+    ]
+  },
+  kelpFarm: {
+    id: 'kelpFarm',
+    name: 'Kelp Farm',
+    description: 'Cultivates kelp for tidal resources',
+    emoji: '🪸',
+    tier: 2,
+    realm: 'ocean',
+    baseCost: 1800,
+    costMultiplier: 1.22,
+    costResource: 'tidalEnergy',
+    baseProduction: 50,
+    productionExponent: 1.13,
+    resource: 'tidalEnergy',
+    unlockCondition: {
+      realms: { ocean: true },
+      structures: { tidalGenerator: 5 }
+    },
+    flavorTexts: [
+      'Kelp waves with watery promise',
+      'Aquatic farming fuels progress',
+      'Oceanic abundance'
+    ]
+  },
+  coralBattery: {
+    id: 'coralBattery',
+    name: 'Coral Battery',
+    description: 'Stores energy, sometimes yields pearls',
+    emoji: '🏝️',
+    tier: 3,
+    realm: 'ocean',
+    baseCost: 20000,
+    costMultiplier: 1.26,
+    costResource: 'tidalEnergy',
+    baseProduction: 300,
+    productionExponent: 1.15,
+    resource: 'tidalEnergy',
+    unlockCondition: {
+      realms: { ocean: true },
+      structures: { kelpFarm: 8 }
+    },
+    flavorTexts: [
+      'Corals accumulate deep power',
+      'Pearls of production',
+      'Battery from the reef'
+    ]
+  },
+  deepSeaPump: {
+    id: 'deepSeaPump',
+    name: 'Deep Sea Pump',
+    description: 'Draws energy from ocean depths',
+    emoji: '🦑',
+    tier: 3,
+    realm: 'ocean',
+    baseCost: 60000,
+    costMultiplier: 1.3,
+    costResource: 'tidalEnergy',
+    baseProduction: 1200,
+    productionExponent: 1.18,
+    resource: 'tidalEnergy',
+    unlockCondition: {
+      realms: { ocean: true },
+      structures: { coralBattery: 5 },
+      upgrades: { pressureTech: 1 }
+    },
+    flavorTexts: [
+      'Energy from the abyss',
+      'Pressure fuels innovation',
+      'Unleashing deep force'
+    ]
+  },
+  pressureReactor: {
+    id: 'pressureReactor',
+    name: 'Pressure Reactor',
+    description: 'Reacts oceanic pressure to create mana',
+    emoji: '⚓',
+    tier: 3,
+    realm: 'ocean',
+    baseCost: 150000,
+    costMultiplier: 1.32,
+    costResource: 'tidalEnergy',
+    baseProduction: 3,
+    productionExponent: 1.2,
+    resource: 'mana',
+    unlockCondition: {
+      realms: { ocean: true },
+      structures: { deepSeaPump: 5 }
+    },
+    flavorTexts: [
+      'Mana condensed from oceanic pressure',
+      'Depth and force combine',
+      'Mystic equilibrium'
+    ]
+  },
+
+  
     baseCost: 10000,
     costMultiplier: 1.30,
     costResource: 'volcanicEnergy',

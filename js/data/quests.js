@@ -352,7 +352,93 @@ const QUEST_TEMPLATES = {
     unlockCondition: {
       ascension: { canAscend: true }
     }
+  },
+
+    // ===== OCEAN REALM QUESTS =====
+  ocean_intro: {
+    id: 'ocean_intro',
+    name: 'Discover the Ocean',
+    description: 'Unlock and enter the Ocean Realm.',
+    emoji: '🌊',
+    realm: 'ocean',
+    requirements: {
+      realms: { ocean: true }
+    },
+    rewards: {
+      tidalEnergy: 5000,
+      crystals: 5
+    },
+    lore: 'You found your way to the mysterious underwater world. The tides welcome you.'
+  },
+
+  tide_master: {
+    id: 'tide_master',
+    name: 'Tide Master',
+    description: 'Reach 500 tidal energy/sec production in the Ocean Realm.',
+    emoji: '🌊',
+    realm: 'ocean',
+    requirements: {
+      production: { tidalEnergy: 500 }
+    },
+    rewards: {
+      pearls: 25,
+      gems: 50,
+      crystals: 10
+    },
+    lore: 'You tamed the tides and mastered the ocean\'s energy.'
+  },
+
+  kelp_tycoon: {
+    id: 'kelp_tycoon',
+    name: 'Kelp Tycoon',
+    description: 'Own at least 20 Kelp Farms in Ocean Realm.',
+    emoji: '🪸',
+    realm: 'ocean',
+    requirements: {
+      structures: { kelpFarm: 20 }
+    },
+    rewards: {
+      tidalEnergy: 15000,
+      gems: 20
+    },
+    lore: 'You\'ve built the largest kelp farm in the deep.'
+  },
+
+  pearl_diver: {
+    id: 'pearl_diver',
+    name: 'Pearl Diver',
+    description: 'Collect 50 pearls using Coral Battery.',
+    emoji: '🏝️',
+    realm: 'ocean',
+    requirements: {
+      resources: { pearls: 50 }
+    },
+    rewards: {
+      gems: 25,
+      crystals: 10
+    },
+    lore: 'Your diving skills have brought back the ocean\'s treasures.'
+  },
+
+  abyss_conqueror: {
+    id: 'abyss_conqueror',
+    name: 'Abyss Conqueror',
+    description: 'Defeat the Ocean Leviathan boss.',
+    emoji: '🦈',
+    realm: 'ocean',
+    requirements: {
+      bosses: { oceanLeviathan: 'defeated' }
+    },
+    rewards: {
+      legendaryGuardian: {
+        type: 'water',
+        rarity: 'legendary'
+      },
+      title: 'Abyss Conqueror'
+    },
+    lore: 'You conquered the deepest horror the ocean could offer.'
   }
+
 };
 
 export default QUEST_TEMPLATES;

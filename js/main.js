@@ -20,6 +20,10 @@ import AchievementsUI from './ui/AchievementsUI.js';
 import BossesUI from './ui/BossesUI.js';
 import ShopUI from './ui/ShopUI.js';
 import StatisticsUI from './ui/StatisticsUI.js';
+import DailyRewardUI from './ui/DailyRewardUI.js';
+import AutomationUI from './ui/AutomationUI.js';
+import PuzzleUI from './ui/PuzzleUI.js';
+
 
 // Component Managers
 import NotificationManager from './ui/NotificationManager.js';
@@ -129,6 +133,7 @@ function initUI() {
     new QuestsUI('quests-container');
     new AchievementsUI('achievements-container');
     new BossesUI('bosses-container');
+    new PuzzleUI('puzzle-game-container');
     new ShopUI('shop-container');
     new StatisticsUI('statistics-container');
     

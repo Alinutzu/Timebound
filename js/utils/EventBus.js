@@ -24,28 +24,28 @@ class EventBus {
    * @returns {function} Unsubscribe function
    */
   on(event, callback, context = null) {
-    if (!this.events.has(event)) {
-      this.events.set(event, []);
-    }
-    
-    const handler = { callback, context };
-    this.events.get(event).push(handler);
-    
-    // Return unsubscribe function
-    return () => this.off(event, callback);
+  // --- START FIX PERMANENT ---
+  // BLOCĂM ORICE ALT LISTENER PENTRU 'notification:show' DUPĂ CE PRIMUL S-A ÎNREGISTRAT
+  if (event === 'notification:show' && this.events.has('notification:show')) {
+    console.warn("🛡️ BLOCAT! Am prevenit înregistrarea listener-ului duplicat/problematic pentru 'notification:show'.");
+    // Pur și simplu nu înregistrăm acest al doilea listener și returnăm o funcție goală.
+    return () => {};
   }
-  
-  /**
-   * Subscribe to event (fires only once)
-   */
-  once(event, callback, context = null) {
-    const unsubscribe = this.on(event, (...args) => {
-      unsubscribe();
-      callback.apply(context, args);
-    }, context);
-    
-    return unsubscribe;
+  // --- SFÂRȘIT FIX PERMANENT ---
+
+  if (!this.events.has(event)) {
+    this.events.set(event, []);
   }
+
+  const handler = { callback, context };
+  this.events.get(event).push(handler);
+
+  // Returnează o funcție de dezabonare
+  return () => {
+    this.off(event, callback);
+  };
+}
+
   
   /**
    * Unsubscribe from event

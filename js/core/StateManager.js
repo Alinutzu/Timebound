@@ -680,6 +680,12 @@ case 'UNLOCK_BOSS':
     }
   };
 
+  case 'INIT_BOSSES':
+  return {
+    ...state,
+    bosses: action.payload.bosses
+  };
+
 case 'START_BOSS_BATTLE':
   return {
     ...state,
@@ -918,6 +924,13 @@ case 'RESET_TUTORIAL':
       skipped: false,
       currentStep: 0
     }
+  };
+
+      // ===== SAVE GAME =====
+case 'SAVE_GAME':
+  return {
+    ...state,
+    lastSaved: Date.now()
   };
 
       

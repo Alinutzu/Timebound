@@ -5,25 +5,33 @@
 
 const BOSSES = {
   corruptedTreeant: {
-    id: 'corruptedTreeant',
-    name: 'Corrupted Treant',
-    description: 'An ancient tree guardian twisted by dark energy',
-    emoji: '🌳',
-    realm: 'forest',
-    tier: 1,
-    
-    hp: 1000,
-    
-    unlockCondition: {
-      production: { energy: 100 }, // 100 energy/s
-      structures: { total: 15 }
-    },
-    
-    puzzleRequirement: {
-      targetScore: 500,
-      maxMoves: 20,
-      difficulty: 'normal'
-    },
+  id: 'corruptedTreeant',
+  name: 'Corrupted Treant',
+  description: 'An ancient tree guardian twisted by dark energy',
+  emoji: '🌳',
+  realm: 'forest',
+  tier: 1,
+  
+  hp: 1000,
+  
+  // ❌ ȘTERGE COMPLET unlockCondition pentru primul boss
+  // unlockCondition: {
+  //   production: { energy: 100 },
+  //   structures: { total: 15 }
+  // },
+  
+  puzzleRequirement: {
+    targetScore: 500,
+    maxMoves: 20,
+    difficulty: 'normal'
+  },
+  
+  damageFormula: (score, combo) => {
+    let damage = Math.floor(score / 10);
+    if (combo >= 5) damage *= 1.5;
+    if (combo >= 10) damage *= 2;
+    return Math.floor(damage);
+  },
     
     damageFormula: (score, combo) => {
       // Base damage from score
@@ -191,6 +199,61 @@ const BOSSES = {
       'HP persists between attempts',
       'Perfect combo chains are essential',
       'Consider using gems to boost puzzle rewards'
+    ]
+  },
+
+    oceanLeviathan: {
+    id: 'oceanLeviathan',
+    name: 'Ocean Leviathan',
+    description: 'Ancient beast lurking in the abyss, harnesses the hidden currents.',
+    emoji: '🦈',
+    realm: 'ocean',
+    tier: 2,
+
+    hp: 12000,
+
+    unlockCondition: {
+      realms: { ocean: 'unlocked' },
+      ascension: { level: 3 },
+      structures: { deepSeaPump: 3 }
+    },
+
+    puzzleRequirement: {
+      targetScore: 1400,
+      maxMoves: 24,
+      difficulty: 'hard'
+    },
+
+    damageFormula: (score, combo) => {
+      let damage = Math.floor(score / 6);
+      if (combo >= 8) damage *= 1.5;
+      if (combo >= 12) damage *= 2;
+      return Math.floor(damage);
+    },
+
+    rewards: {
+      firstTime: {
+        gems: 800,
+        crystals: 50,
+        tidalEnergy: 180000,
+        guaranteedGuardian: {
+          rarity: 'legendary',
+          type: 'water'
+        }
+      },
+      repeat: {
+        gems: 160,
+        crystals: 12,
+        tidalEnergy: 35000
+      }
+    },
+
+    lore: 'Deepest terror and guardian of the abyss. Only with mastery of Ocean structures and guardians can one hope to prevail.',
+
+    strategies: [
+      'Try for combos >12 for maximum damage',
+      'Balance puzzle moves vs direct scores',
+      'Focus on kelp synergy and pearl bonuses'
     ]
   },
   

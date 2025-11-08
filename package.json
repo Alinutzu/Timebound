@@ -1,0 +1,17 @@
+{
+  "name": "timebound",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "browserify -t [ babelify --presets [ @babel/preset-env ] ] js/main.js -o dist/bundle.js",
+    "watch": "watchify -t [ babelify --presets [ @babel/preset-env ] ] js/main.js -o dist/bundle.js -v",
+    "serve": "serve ."
+  },
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "watchify": "^4.0.0",
+    "babelify": "^10.0.0",
+    "@babel/core": "^7.22.0",
+    "@babel/preset-env": "^7.22.4",
+    "serve": "^14.2.0"
+  }
+}

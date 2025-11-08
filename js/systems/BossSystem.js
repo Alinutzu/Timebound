@@ -22,32 +22,55 @@ class BossSystem {
    * Initialize boss state
    */
   initializeState() {
-    const state = stateManager.getState();
+  const state = stateManager.getState();
+  
+  // Check if bosses are already initialized
+  if (!state.bosses || Object.keys(state.bosses).length === 0) {
+    logger.info('BossSystem', 'Initializing boss states...');
     
-    if (!state.bosses || Object.keys(state.bosses).length === 0) {
-      const initialBosses = {};
-      
-      for (let key of Object.keys(this.bosses)) {
-        if (this.bosses[key].locked) continue;
-        
-        initialBosses[key] = {
-          unlocked: false,
-          defeated: false,
-          currentHP: this.bosses[key].hp,
-          maxHP: this.bosses[key].hp,
-          attempts: 0,
-          bestScore: 0,
-          defeatedCount: 0,
-          firstDefeatAt: null
-        };
+    const initialBosses = {};
+    
+    for (let [key, boss] of Object.entries(this.bosses)) {
+      // Skip locked bosses
+      if (boss.locked) {
+        logger.info('BossSystem', `Skipping locked boss: ${key}`);
+        continue;
       }
       
-      // Initialize in state (would need StateManager action)
-      // For now assume it's in getInitialState
+      // First boss (corruptedTreeant) should be unlocked by default
+      const isFirstBoss = key === 'corruptedTreeant';
+      
+      initialBosses[key] = {
+        unlocked: isFirstBoss,
+        defeated: false,
+        currentHP: boss.hp,
+        maxHP: boss.hp,
+        attempts: 0,
+        bestScore: 0,
+        defeatedCount: 0,
+        firstDefeatAt: null
+      };
+      
+      logger.info('BossSystem', `Initialized boss ${key}:`, {
+        unlocked: isFirstBoss,
+        hp: boss.hp
+      });
     }
     
-    this.checkUnlocks();
+    // Dispatch to state
+    stateManager.dispatch({
+      type: 'INIT_BOSSES',
+      payload: { bosses: initialBosses }
+    });
+    
+    logger.info('BossSystem', 'Boss states initialized:', initialBosses);
+  } else {
+    logger.info('BossSystem', 'Bosses already initialized');
   }
+  
+  // Check for unlocks
+  this.checkUnlocks();
+}
   
   /**
    * Subscribe to events
@@ -91,12 +114,16 @@ class BossSystem {
    * Check if boss unlock condition is met
    */
   meetsUnlockCondition(bossKey) {
-    const boss = this.bosses[bossKey];
-    const condition = boss.unlockCondition;
-    
-    if (!condition) return true;
-    
-    const state = stateManager.getState();
+  const boss = this.bosses[bossKey];
+  const condition = boss.unlockCondition;
+  
+  // If no condition, always unlocked (for first boss)
+  if (!condition) {
+    logger.info('BossSystem', `Boss ${bossKey} has no unlock conditions - auto unlocked`);
+    return true;
+  }
+  
+  const state = stateManager.getState();
     
     // Check production requirement
     if (condition.production) {

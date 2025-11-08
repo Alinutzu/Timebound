@@ -457,6 +457,138 @@ const UPGRADES = {
     unlockCondition: {
       guardians: { count: 5 }
     }
+  },
+
+    // ===== OCEAN REALM UPGRADES =====
+  tidalSynergy: {
+    id: 'tidalSynergy',
+    name: 'Tidal Synergy',
+    description: 'Boosts Tidal Generator efficiency.',
+    emoji: '🌊',
+    category: 'synergy',
+
+    maxLevel: 5,
+    baseCost: 1500,
+    costMultiplier: 3.0,
+    costResource: 'tidalEnergy',
+    targetStructure: 'tidalGenerator',
+
+    effect: (level) => {
+      return 1 + (level * 0.5); // +50% per level
+    },
+
+    getDescription: (level) => {
+      const bonus = (level * 50);
+      return `+${bonus}% Tidal Generator production`;
+    },
+
+    unlockCondition: {
+      structures: { tidalGenerator: 10 }
+    }
+  },
+
+  kelpSynergy: {
+    id: 'kelpSynergy',
+    name: 'Kelp Optimization',
+    description: 'Boosts Kelp Farm efficiency.',
+    emoji: '🪸',
+    category: 'synergy',
+
+    maxLevel: 5,
+    baseCost: 3000,
+    costMultiplier: 3.0,
+    costResource: 'tidalEnergy',
+    targetStructure: 'kelpFarm',
+
+    effect: (level) => {
+      return 1 + (level * 0.5); // +50% per level
+    },
+
+    getDescription: (level) => {
+      const bonus = (level * 50);
+      return `+${bonus}% Kelp Farm production`;
+    },
+
+    unlockCondition: {
+      structures: { kelpFarm: 10 }
+    }
+  },
+
+  coralSynergy: {
+    id: 'coralSynergy',
+    name: 'Coral Battery Optimization',
+    description: 'Boosts Coral Battery efficiency.',
+    emoji: '🏝️',
+    category: 'synergy',
+
+    maxLevel: 5,
+    baseCost: 7000,
+    costMultiplier: 3.2,
+    costResource: 'tidalEnergy',
+    targetStructure: 'coralBattery',
+
+    effect: (level) => {
+      return 1 + (level * 0.5); // +50% per level
+    },
+
+    getDescription: (level) => {
+      const bonus = (level * 50);
+      return `+${bonus}% Coral Battery production`;
+    },
+
+    unlockCondition: {
+      structures: { coralBattery: 10 }
+    }
+  },
+
+  abyssalTech: {
+    id: 'abyssalTech',
+    name: 'Abyssal Pressure Tech',
+    description: 'Unlocks Deep Sea Pump, boosts tidal energy by +20%.',
+    emoji: '⚓',
+    category: 'unlock',
+
+    maxLevel: 1,
+    baseCost: 30000,
+    costMultiplier: 1.0,
+    costResource: 'tidalEnergy',
+
+    effect: () => {
+      return { unlock: 'deepSeaPump', bonus: 1.2 };
+    },
+
+    getDescription: () => {
+      return 'Unlocks: Deep Sea Pump (+20% tidal energy)';
+    },
+
+    unlockCondition: {
+      structures: { coralBattery: 5 }
+    }
+  },
+
+  pearlHarvest: {
+    id: 'pearlHarvest',
+    name: 'Pearl Harvesting Tech',
+    description: 'Increase chance to find pearls from Coral Battery by +10%.',
+    emoji: '🏝️',
+    category: 'special',
+
+    maxLevel: 1,
+    baseCost: 8000,
+    costMultiplier: 1.0,
+    costResource: 'pearls',
+
+    effect: () => {
+      return { pearlDropBonus: 0.1 };
+    },
+
+    getDescription: () => {
+      return '+10% Pearl drop chance from Coral Battery';
+    },
+
+    unlockCondition: {
+      structures: { coralBattery: 10 }
+    }
   }
 };
 

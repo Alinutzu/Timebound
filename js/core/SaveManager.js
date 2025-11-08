@@ -44,10 +44,10 @@ class SaveManager {
       localStorage.setItem(this.saveKey, jsonString);
       
       // Update last saved time
-      stateManager.dispatch({
-        type: 'UPDATE_SETTING',
-        payload: { key: 'lastSaved', value: Date.now() }
-      });
+stateManager.dispatch({
+  type: 'SAVE_GAME',
+  payload: {}
+});
       
       logger.info('SaveManager', 'Game saved successfully');
       eventBus.emit('game:saved', { timestamp: Date.now() });

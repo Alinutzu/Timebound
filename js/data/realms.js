@@ -59,35 +59,41 @@ const REALMS = {
     }
   },
   
-  // FUTURE REALMS (locked for now)
-  
+  // === OCEAN REALM ===
   ocean: {
     id: 'ocean',
     name: 'Ocean Depths',
-    description: 'Mysterious underwater realm',
+    description: 'Mysteries and power beneath the waves',
     emoji: '🌊',
     theme: 'blue',
-    
     unlockCondition: {
       ascension: { level: 3 },
       realms: { volcano: 'unlocked' }
     },
-    
     unlockCost: {
       crystals: 500
     },
-    
     features: {
-      structures: [], // To be defined
+      structures: [
+        'tidalGenerator',
+        'kelpFarm',
+        'coralBattery',
+        'deepSeaPump',
+        'pressureReactor'
+      ],
       guardianTypes: ['water', 'all'],
-      specialResources: ['tidalEnergy']
+      specialResources: ['tidalEnergy', 'pearls']
     },
-    
     background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-    
-    lore: 'The ocean depths hold secrets older than time itself.',
-    
-    locked: true // Not implemented yet
+    lore: 'The ocean depths hold secrets older than time itself. Harness tides and marine life for immense energy.',
+    bonuses: {
+      energyProduction: 1.15, // +15% energy production in ocean
+      pearlDropChance: 0.10, // 10% chance for pearls from kelp/coral
+      guardianAffinity: 1.20 // +20% water guardian bonus here
+    },
+    bossId: 'leviathan', // Reference to Ocean boss, to be defined
+    questIds: ['ocean_intro', 'tide_master'], // Reference to quests for the realm
+    locked: true // Set to false when all module data is ready
   },
   
   cosmos: {

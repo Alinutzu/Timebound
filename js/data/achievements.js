@@ -763,6 +763,90 @@ const ACHIEVEMENTS = {
     
     hidden: false
   },
+
+    // ===== OCEAN REALM ACHIEVEMENTS =====
+  firstDive: {
+    id: 'firstDive',
+    name: 'First Dive',
+    description: 'Unlock the Ocean Realm.',
+    emoji: '🌊',
+    category: 'realms',
+    tier: 'gold',
+    condition: () => {
+      const state = require('../core/StateManager.js').default.getState();
+      return state.realms.unlocked.includes('ocean');
+    },
+    reward: { crystals: 7 },
+    hidden: false,
+    lore: 'You plunged into the deep — this marks a new adventure!'
+  },
+
+  tideTycoon: {
+    id: 'tideTycoon',
+    name: 'Tide Tycoon',
+    description: 'Reach 2,000 tidal energy/sec in Ocean Realm.',
+    emoji: '🌊',
+    category: 'milestone',
+    tier: 'gold',
+    condition: () => {
+      const state = require('../core/StateManager.js').default.getState();
+      return state.production.tidalEnergy >= 2000 && state.realms.current === 'ocean';
+    },
+    reward: { gems: 35, pearls: 10 },
+    hidden: false,
+    lore: 'Industrial mastery under the waves!'
+  },
+
+  kelpOverlord: {
+    id: 'kelpOverlord',
+    name: 'Kelp Overlord',
+    description: 'Own at least 50 Kelp Farms in Ocean Realm.',
+    emoji: '🪸',
+    category: 'structures',
+    tier: 'platinum',
+    condition: () => {
+      const state = require('../core/StateManager.js').default.getState();
+      return state.structures.kelpFarm?.level >= 50;
+    },
+    reward: { tidalEnergy: 35000, pearls: 20 },
+    hidden: false,
+    lore: 'You’re the ruler of aquatic farming!'
+  },
+
+  pearlMagnate: {
+    id: 'pearlMagnate',
+    name: 'Pearl Magnate',
+    description: 'Collect 200 pearls in Ocean Realm.',
+    emoji: '🏝️',
+    category: 'resources',
+    tier: 'platinum',
+    condition: () => {
+      const state = require('../core/StateManager.js').default.getState();
+      return state.resources.pearls >= 200;
+    },
+    reward: { gems: 80, crystals: 15 },
+    hidden: false,
+    lore: 'Every pearl is a testament to your deep-sea skill.'
+  },
+
+  abyssVanquisher: {
+    id: 'abyssVanquisher',
+    name: 'Abyss Vanquisher',
+    description: 'Defeat the Ocean Leviathan.',
+    emoji: '🦈',
+    category: 'bosses',
+    tier: 'diamond',
+    condition: () => {
+      const state = require('../core/StateManager.js').default.getState();
+      return state.statistics.bossesDefeatedIds?.includes('oceanLeviathan');
+    },
+    reward: {
+      legendaryGuardian: { type: 'water', rarity: 'legendary' },
+      title: 'Abyss Vanquisher'
+    },
+    hidden: false,
+    lore: 'Deep abyss now bows to your power.'
+  },
   
   // ===== SPECIAL/HIDDEN =====
   speedrunner: {

@@ -212,6 +212,71 @@ const GUARDIAN_POOL = {
     special: {
       gemBonus: 0.1 // +10% gems from all sources
     }
+  },
+
+    // ===== OCEAN REALM GUARDIANS =====
+  aquaSprite: {
+    id: 'aquaSprite',
+    name: 'Aqua Sprite',
+    description: 'A playful spirit of the waves, boosts tidal energy production.',
+    emoji: '💧',
+    type: 'water',
+    realm: 'ocean',
+    rarities: ['common', 'uncommon'],
+    lore: 'Born in the foam, carries whispers of the deep.',
+    ability: {
+      type: 'boost',
+      target: 'tidalEnergy',
+      multiplier: 1.10 // +10% tidal energy generation
+    }
+  },
+
+  kelpGuardian: {
+    id: 'kelpGuardian',
+    name: 'Kelp Guardian',
+    description: 'Guardian of the underwater kelp forests.',
+    emoji: '🪸',
+    type: 'water',
+    realm: 'ocean',
+    rarities: ['rare'],
+    lore: 'Watches over secret currents and kelp thickets.',
+    ability: {
+      type: 'synergy',
+      target: 'kelpFarm',
+      multiplier: 1.25 // +25% production from kelpFarm
+    }
+  },
+
+  coralWarden: {
+    id: 'coralWarden',
+    name: 'Coral Warden',
+    description: 'Protector of reefs, sometimes finds pearls.',
+    emoji: '🏝️',
+    type: 'water',
+    realm: 'ocean',
+    rarities: ['epic'],
+    lore: 'Defends reefs and cultivates pearl treasures.',
+    ability: {
+      type: 'chanceBonus',
+      target: 'coralBattery',
+      chance: 0.10, // 10% chance for extra pearls
+      resource: 'pearls'
+    }
+  },
+
+  abyssSerpent: {
+    id: 'abyssSerpent',
+    name: 'Abyss Serpent',
+    description: 'Ancient serpent from the deep sea. Increases production and unlocks deep sea upgrades.',
+    emoji: '🐍',
+    type: 'water',
+    realm: 'ocean',
+    rarities: ['legendary'],
+    lore: 'Spins the unseen tides; legends are its children.',
+    ability: {
+      type: 'unlock',
+      target: 'pressureTech'
+    }
   }
 };
 

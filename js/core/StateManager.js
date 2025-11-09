@@ -488,6 +488,33 @@ class StateManager {
             [action.payload.key]: (state.statistics[action.payload.key] || 0) + action.payload.amount
           }
         };
+
+        // Mini-games state handling
+case 'UPDATE_MINI_GAME':
+  return {
+    ...state,
+    miniGames: {
+      ...state.miniGames,
+      [action.payload.game]: {
+        ...(state.miniGames?.[action.payload.game] || {}),
+        ...action.payload.data
+      }
+    }
+  };
+
+case 'INCREMENT_MINI_GAME_STAT':
+  const game = action.payload.game;
+  const stat = action.payload.stat;
+  return {
+    ...state,
+    miniGames: {
+      ...state.miniGames,
+      [game]: {
+        ...(state.miniGames?.[game] || {}),
+        [stat]: ((state.miniGames?.[game]?.[stat] || 0) + 1)
+      }
+    }
+  };
       
       // ===== TUTORIAL =====
       case 'COMPLETE_TUTORIAL':

@@ -324,7 +324,7 @@ if (_config["default"].DEBUG_MODE) {
 }
 var _default = exports["default"] = game;
 
-},{"../config.js":1,"../systems/AchievementSystem.js":16,"../systems/AscensionSystem.js":17,"../systems/AutomationSystem.js":18,"../systems/BossSystem.js":19,"../systems/DailyRewardSystem.js":20,"../systems/GuardianSystem.js":21,"../systems/QuestSystem.js":22,"../systems/RealmSystem.js":23,"../systems/ShopSystem.js":24,"../systems/StatisticsSystem.js":25,"../systems/StructureSystem.js":26,"../systems/TutorialSystem.js":27,"../systems/UpgradeQueueSystem.js":28,"../systems/UpgradeSystem.js":29,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./SaveManager.js":4,"./StateManager.js":5,"./TickManager.js":6}],3:[function(require,module,exports){
+},{"../config.js":1,"../systems/AchievementSystem.js":16,"../systems/AscensionSystem.js":17,"../systems/AutomationSystem.js":18,"../systems/BossSystem.js":19,"../systems/DailyRewardSystem.js":20,"../systems/GuardianSystem.js":21,"../systems/QuestSystem.js":22,"../systems/RealmSystem.js":23,"../systems/ShopSystem.js":24,"../systems/StatisticsSystem.js":25,"../systems/StructureSystem.js":26,"../systems/TutorialSystem.js":27,"../systems/UpgradeQueueSystem.js":28,"../systems/UpgradeSystem.js":29,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./SaveManager.js":4,"./StateManager.js":5,"./TickManager.js":6}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -605,7 +605,7 @@ var ResourceManager = /*#__PURE__*/function () {
 var resourceManager = new ResourceManager();
 var _default = exports["default"] = resourceManager;
 
-},{"../utils/Logger.js":50}],4:[function(require,module,exports){
+},{"../utils/Logger.js":52}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1095,7 +1095,7 @@ var SaveManager = /*#__PURE__*/function () {
 var saveManager = new SaveManager();
 var _default = exports["default"] = saveManager;
 
-},{"../config.js":1,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./StateManager.js":5}],5:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./StateManager.js":5}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1300,7 +1300,7 @@ var StateManager = /*#__PURE__*/function () {
   }, {
     key: "reducer",
     value: function reducer(state, action) {
-      var _state$structures$str, _state$structures$str2, _state$upgrades$upgra, _state$upgradeQueue, _state$shop$adWatchCo;
+      var _state$structures$str, _state$structures$str2, _state$upgrades$upgra, _state$miniGames, _state$miniGames2, _state$miniGames3, _state$upgradeQueue, _state$shop$adWatchCo;
       switch (action.type) {
         // ===== RESOURCES =====
         case 'ADD_RESOURCE':
@@ -1503,6 +1503,18 @@ var StateManager = /*#__PURE__*/function () {
         case 'INCREMENT_STATISTIC':
           return _objectSpread(_objectSpread({}, state), {}, {
             statistics: _objectSpread(_objectSpread({}, state.statistics), {}, _defineProperty({}, action.payload.key, (state.statistics[action.payload.key] || 0) + action.payload.amount))
+          });
+
+        // Mini-games state handling
+        case 'UPDATE_MINI_GAME':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, action.payload.game, _objectSpread(_objectSpread({}, ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames[action.payload.game]) || {}), action.payload.data)))
+          });
+        case 'INCREMENT_MINI_GAME_STAT':
+          var game = action.payload.game;
+          var stat = action.payload.stat;
+          return _objectSpread(_objectSpread({}, state), {}, {
+            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, game, _objectSpread(_objectSpread({}, ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2[game]) || {}), {}, _defineProperty({}, stat, (((_state$miniGames3 = state.miniGames) === null || _state$miniGames3 === void 0 || (_state$miniGames3 = _state$miniGames3[game]) === null || _state$miniGames3 === void 0 ? void 0 : _state$miniGames3[stat]) || 0) + 1))))
           });
 
         // ===== TUTORIAL =====
@@ -1950,7 +1962,7 @@ var StateManager = /*#__PURE__*/function () {
 var stateManager = new StateManager();
 var _default = exports["default"] = stateManager;
 
-},{"../config.js":1,"../utils/EventBus.js":48,"../utils/Logger.js":50}],6:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":50,"../utils/Logger.js":52}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2313,7 +2325,7 @@ var TickManager = /*#__PURE__*/function () {
 var tickManager = new TickManager();
 var _default = exports["default"] = tickManager;
 
-},{"../config.js":1,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./ResourceManager.js":3,"./StateManager.js":5}],7:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./ResourceManager.js":3,"./StateManager.js":5}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5918,7 +5930,7 @@ if (_config["default"].DEBUG_MODE) {
   console.log('    cheat.ascend()');
 }
 
-},{"./config.js":1,"./core/Game.js":2,"./core/StateManager.js":5,"./ui/AchievementsUI.js":30,"./ui/AutomationUI.js":31,"./ui/BossesUI.js":32,"./ui/DailyRewardUI.js":33,"./ui/GuardiansUI.js":34,"./ui/ModalManager.js":35,"./ui/NotificationManager.js":36,"./ui/PuzzleUI.js":37,"./ui/QuestsUI.js":38,"./ui/ShopUI.js":39,"./ui/StatisticsUI.js":40,"./ui/StructuresUI.js":41,"./ui/TabManager.js":42,"./ui/UpgradesUI.js":43,"./ui/components/ResourceDisplay.js":44,"./utils/EventBus.js":48,"./utils/Formatters.js":49,"./utils/Logger.js":50}],16:[function(require,module,exports){
+},{"./config.js":1,"./core/Game.js":2,"./core/StateManager.js":5,"./ui/AchievementsUI.js":30,"./ui/AutomationUI.js":31,"./ui/BossesUI.js":32,"./ui/DailyRewardUI.js":33,"./ui/GuardiansUI.js":34,"./ui/ModalManager.js":35,"./ui/NotificationManager.js":36,"./ui/PuzzleUI.js":37,"./ui/QuestsUI.js":38,"./ui/ShopUI.js":39,"./ui/StatisticsUI.js":40,"./ui/StructuresUI.js":41,"./ui/TabManager.js":42,"./ui/UpgradesUI.js":43,"./ui/components/ResourceDisplay.js":44,"./utils/EventBus.js":50,"./utils/Formatters.js":51,"./utils/Logger.js":52}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6358,7 +6370,7 @@ var AchievementSystem = /*#__PURE__*/function () {
 var achievementSystem = new AchievementSystem();
 var _default = exports["default"] = achievementSystem;
 
-},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../data/achievements.js":7,"../utils/EventBus.js":48,"../utils/Logger.js":50}],17:[function(require,module,exports){
+},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../data/achievements.js":7,"../utils/EventBus.js":50,"../utils/Logger.js":52}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6689,7 +6701,7 @@ var AscensionSystem = /*#__PURE__*/function () {
 var ascensionSystem = new AscensionSystem();
 var _default = exports["default"] = ascensionSystem;
 
-},{"../config.js":1,"../core/StateManager.js":5,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./UpgradeSystem.js":29}],18:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./UpgradeSystem.js":29}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7232,7 +7244,7 @@ var AutomationSystem = /*#__PURE__*/function () {
 var automationSystem = new AutomationSystem();
 var _default = exports["default"] = automationSystem;
 
-},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./GuardianSystem.js":21,"./QuestSystem.js":22,"./StructureSystem.js":26,"./UpgradeQueueSystem.js":28,"./UpgradeSystem.js":29}],19:[function(require,module,exports){
+},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./GuardianSystem.js":21,"./QuestSystem.js":22,"./StructureSystem.js":26,"./UpgradeQueueSystem.js":28,"./UpgradeSystem.js":29}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7850,7 +7862,7 @@ var BossSystem = /*#__PURE__*/function () {
 var bossSystem = new BossSystem();
 var _default = exports["default"] = bossSystem;
 
-},{"../core/StateManager.js":5,"../data/bosses.js":8,"../data/guardians.js":9,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./GuardianSystem.js":21,"./StructureSystem.js":26}],20:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/bosses.js":8,"../data/guardians.js":9,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./GuardianSystem.js":21,"./StructureSystem.js":26}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8203,7 +8215,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
 var dailyRewardSystem = new DailyRewardSystem();
 var _default = exports["default"] = dailyRewardSystem;
 
-},{"../core/StateManager.js":5,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./GuardianSystem.js":21}],21:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./GuardianSystem.js":21}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8693,7 +8705,7 @@ var GuardianSystem = /*#__PURE__*/function () {
 var guardianSystem = new GuardianSystem();
 var _default = exports["default"] = guardianSystem;
 
-},{"../config.js":1,"../core/StateManager.js":5,"../data/guardians.js":9,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./UpgradeSystem.js":29}],22:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":5,"../data/guardians.js":9,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./UpgradeSystem.js":29}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9310,7 +9322,7 @@ var QuestSystem = /*#__PURE__*/function () {
 var questSystem = new QuestSystem();
 var _default = exports["default"] = questSystem;
 
-},{"../config.js":1,"../core/StateManager.js":5,"../data/quests.js":10,"../utils/EventBus.js":48,"../utils/Logger.js":50}],23:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":5,"../data/quests.js":10,"../utils/EventBus.js":50,"../utils/Logger.js":52}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9652,7 +9664,7 @@ var RealmSystem = /*#__PURE__*/function () {
 var realmSystem = new RealmSystem();
 var _default = exports["default"] = realmSystem;
 
-},{"../core/StateManager.js":5,"../data/realms.js":11,"../utils/EventBus.js":48,"../utils/Logger.js":50}],24:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/realms.js":11,"../utils/EventBus.js":50,"../utils/Logger.js":52}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10167,7 +10179,7 @@ var ShopSystem = /*#__PURE__*/function () {
 var shopSystem = new ShopSystem();
 var _default = exports["default"] = shopSystem;
 
-},{"../core/StateManager.js":5,"../data/guardians.js":9,"../data/shop.js":12,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./GuardianSystem.js":21}],25:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/guardians.js":9,"../data/shop.js":12,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./GuardianSystem.js":21}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10682,7 +10694,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
 var statisticsSystem = new StatisticsSystem();
 var _default = exports["default"] = statisticsSystem;
 
-},{"../core/StateManager.js":5,"../utils/EventBus.js":48,"../utils/Formatters.js":49,"../utils/Logger.js":50,"./AchievementSystem.js":16,"./BossSystem.js":19,"./GuardianSystem.js":21,"./StructureSystem.js":26,"./UpgradeSystem.js":29}],26:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Formatters.js":51,"../utils/Logger.js":52,"./AchievementSystem.js":16,"./BossSystem.js":19,"./GuardianSystem.js":21,"./StructureSystem.js":26,"./UpgradeSystem.js":29}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11196,7 +11208,7 @@ var StructureSystem = /*#__PURE__*/function () {
 var structureSystem = new StructureSystem();
 var _default = exports["default"] = structureSystem;
 
-},{"../core/StateManager.js":5,"../data/structures.js":13,"../utils/EventBus.js":48,"../utils/Logger.js":50}],27:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/structures.js":13,"../utils/EventBus.js":50,"../utils/Logger.js":52}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11796,7 +11808,7 @@ var TutorialSystem = /*#__PURE__*/function () {
 var tutorialSystem = new TutorialSystem();
 var _default = exports["default"] = tutorialSystem;
 
-},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./UpgradeSystem.js":29}],28:[function(require,module,exports){
+},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./UpgradeSystem.js":29}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12321,7 +12333,7 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
 var upgradeQueueSystem = new UpgradeQueueSystem();
 var _default = exports["default"] = upgradeQueueSystem;
 
-},{"../config.js":1,"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./UpgradeSystem.js":29}],29:[function(require,module,exports){
+},{"../config.js":1,"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./UpgradeSystem.js":29}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12924,7 +12936,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
 var upgradeSystem = new UpgradeSystem();
 var _default = exports["default"] = upgradeSystem;
 
-},{"../core/StateManager.js":5,"../data/upgrades.js":14,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./UpgradeQueueSystem.js":28}],30:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/upgrades.js":14,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./UpgradeQueueSystem.js":28}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13098,7 +13110,7 @@ window.claimAchievement = function (key) {
 };
 var _default = exports["default"] = AchievementsUI;
 
-},{"../core/StateManager.js":5,"../systems/AchievementSystem.js":16,"../utils/EventBus.js":48}],31:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/AchievementSystem.js":16,"../utils/EventBus.js":50}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13169,7 +13181,7 @@ window.toggleAutomation = function (featureKey) {
 new AutomationUI();
 var _default = exports["default"] = AutomationUI;
 
-},{"../systems/AutomationSystem.js":18,"../utils/EventBus.js":48}],32:[function(require,module,exports){
+},{"../systems/AutomationSystem.js":18,"../utils/EventBus.js":50}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13331,7 +13343,7 @@ window.challengeBoss = function (bossKey) {
 };
 var _default = exports["default"] = BossesUI;
 
-},{"../core/StateManager.js":5,"../systems/BossSystem.js":19,"../utils/EventBus.js":48,"../utils/Formatters.js":49}],33:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/BossSystem.js":19,"../utils/EventBus.js":50,"../utils/Formatters.js":51}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13419,7 +13431,7 @@ var DailyRewardUI = /*#__PURE__*/function () {
 new DailyRewardUI();
 var _default = exports["default"] = DailyRewardUI;
 
-},{"../systems/DailyRewardSystem.js":20,"../utils/EventBus.js":48}],34:[function(require,module,exports){
+},{"../systems/DailyRewardSystem.js":20,"../utils/EventBus.js":50}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13578,7 +13590,7 @@ window.dismissGuardian = function (guardianId) {
 };
 var _default = exports["default"] = GuardiansUI;
 
-},{"../core/StateManager.js":5,"../systems/GuardianSystem.js":21,"../utils/EventBus.js":48,"../utils/Formatters.js":49}],35:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/GuardianSystem.js":21,"../utils/EventBus.js":50,"../utils/Formatters.js":51}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13697,7 +13709,7 @@ var ModalManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ModalManager;
 
-},{"../utils/EventBus.js":48,"../utils/Logger.js":50}],36:[function(require,module,exports){
+},{"../utils/EventBus.js":50,"../utils/Logger.js":52}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13822,7 +13834,7 @@ var NotificationManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = NotificationManager;
 
-},{"../utils/EventBus.js":48,"../utils/Logger.js":50}],37:[function(require,module,exports){
+},{"../utils/EventBus.js":50,"../utils/Logger.js":52}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13832,10 +13844,19 @@ exports["default"] = void 0;
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _Match3Game = _interopRequireDefault(require("./games/Match3Game.js"));
+var _DailySpinGame = _interopRequireDefault(require("./games/DailySpinGame.js"));
+var _Game = _interopRequireDefault(require("./games/Game2048.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
-var _Game = _interopRequireDefault(require("../core/Game.js"));
+var _Game2 = _interopRequireDefault(require("../core/Game.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
@@ -13853,6 +13874,8 @@ var PuzzleUI = /*#__PURE__*/function () {
     }
     this.currentGame = null;
     this.match3Game = null;
+    this.dailySpinGame = _DailySpinGame["default"];
+    this.game2048 = _Game["default"];
     this.render();
     this.subscribe();
     _Logger["default"].info('PuzzleUI', 'Initialized');
@@ -13865,11 +13888,28 @@ var PuzzleUI = /*#__PURE__*/function () {
       _EventBus["default"].on('boss:battle-started', function (data) {
         _this.startBossPuzzle(data);
       });
+
+      // Re-render când se deblochează jocuri
+      _EventBus["default"].on('quest:claimed', function () {
+        return _this.render();
+      });
+      _EventBus["default"].on('structure:purchased', function () {
+        return _this.render();
+      });
+      _EventBus["default"].on('ascension:completed', function () {
+        return _this.render();
+      });
+      _EventBus["default"].on('puzzle:won', function () {
+        return _this.render();
+      });
     }
   }, {
     key: "render",
     value: function render() {
-      this.container.innerHTML = "\n      <div class=\"puzzle-games-grid\">\n        \n        <!-- Match-3 Game Card -->\n        <div class=\"puzzle-game-card\" id=\"match3-card\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83E\uDDE9</div>\n            <h3>Match-3 Puzzle</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Match 3 or more gems to score points</p>\n            <p class=\"puzzle-game-use\">Used for: Boss Battles</p>\n          </div>\n          <div class=\"puzzle-game-stats\">\n            <div class=\"stat\">\n              <span class=\"label\">Best Score:</span>\n              <span class=\"value\" id=\"match3-best-score\">0</span>\n            </div>\n            <div class=\"stat\">\n              <span class=\"label\">Games Played:</span>\n              <span class=\"value\" id=\"match3-games-played\">0</span>\n            </div>\n          </div>\n          <button class=\"btn btn-primary btn-large\" id=\"play-match3-btn\">\n            \uD83C\uDFAE Play Practice Game\n          </button>\n        </div>\n        \n        <!-- More games coming soon -->\n        <div class=\"puzzle-game-card locked\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83C\uDFB2</div>\n            <h3>2048</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Coming Soon!</p>\n            <p class=\"puzzle-game-use\">Rewards: Energy Boost</p>\n          </div>\n          <div class=\"locked-overlay\">\n            <span>\uD83D\uDD12 Coming Soon</span>\n          </div>\n        </div>\n        \n        <div class=\"puzzle-game-card locked\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83C\uDFB0</div>\n            <h3>Daily Spin</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Coming Soon!</p>\n            <p class=\"puzzle-game-use\">Rewards: Gems & Buffs</p>\n          </div>\n          <div class=\"locked-overlay\">\n            <span>\uD83D\uDD12 Coming Soon</span>\n          </div>\n        </div>\n        \n      </div>\n      \n      <!-- Puzzle Game Container (hidden by default) -->\n      <div id=\"puzzle-game-active\" style=\"display: none;\">\n        <!-- Game will render here -->\n      </div>\n    ";
+      // Check unlock conditions
+      var dailySpinUnlocked = this.checkDailySpinUnlock();
+      var game2048Unlocked = this.check2048Unlock();
+      this.container.innerHTML = "\n      <div class=\"puzzle-games-grid\">\n        \n        <!-- Match-3 Game Card -->\n        <div class=\"puzzle-game-card\" id=\"match3-card\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83E\uDDE9</div>\n            <h3>Match-3 Puzzle</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Match 3 or more gems to score points</p>\n            <p class=\"puzzle-game-use\">Used for: Boss Battles</p>\n          </div>\n          <div class=\"puzzle-game-stats\">\n            <div class=\"stat\">\n              <span class=\"label\">Best Score:</span>\n              <span class=\"value\" id=\"match3-best-score\">0</span>\n            </div>\n            <div class=\"stat\">\n              <span class=\"label\">Games Played:</span>\n              <span class=\"value\" id=\"match3-games-played\">0</span>\n            </div>\n          </div>\n          <button class=\"btn btn-primary btn-large\" id=\"play-match3-btn\">\n            \uD83C\uDFAE Play Practice Game\n          </button>\n        </div>\n        \n        <!-- 2048 Game Card -->\n        <div class=\"puzzle-game-card ".concat(!game2048Unlocked ? 'locked' : '', "\" id=\"game2048-card\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83C\uDFB2</div>\n            <h3>2048 Puzzle</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Merge tiles to reach 2048!</p>\n            <p class=\"puzzle-game-use\">Rewards: Gems, Crystals, Energy</p>\n          </div>\n          ").concat(game2048Unlocked ? "\n            <div class=\"puzzle-game-stats\">\n              <div class=\"stat\">\n                <span class=\"label\">High Score:</span>\n                <span class=\"value\" id=\"2048-high-score\">".concat(this.game2048.getStats().highScore, "</span>\n              </div>\n              <div class=\"stat\">\n                <span class=\"label\">Games Played:</span>\n                <span class=\"value\" id=\"2048-games-played\">").concat(this.game2048.getStats().gamesPlayed, "</span>\n              </div>\n            </div>\n            <button class=\"btn btn-primary btn-large\" id=\"play-2048-btn\">\n              \uD83C\uDFAE Play 2048\n            </button>\n          ") : "\n            <div class=\"unlock-requirements\">\n              <h4>\uD83D\uDD12 Unlock Requirements:</h4>\n              <ul>\n                <li class=\"".concat(this.hasAscended() ? 'completed' : '', "\">\n                  Ascend at least once ").concat(this.hasAscended() ? '✓' : '', "\n                </li>\n                <li class=\"").concat(this.hasWonMatch3(3) ? 'completed' : '', "\">\n                  Win 3 Match-3 games ").concat(this.hasWonMatch3(3) ? '✓' : '', "\n                </li>\n              </ul>\n            </div>\n            <div class=\"locked-overlay\">\n              <span>\uD83D\uDD12 Complete requirements to unlock</span>\n            </div>\n          "), "\n        </div>\n        \n        <!-- Daily Spin Card -->\n        <div class=\"puzzle-game-card ").concat(!dailySpinUnlocked ? 'locked' : '', "\" id=\"daily-spin-card\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83C\uDFA1</div>\n            <h3>Daily Spin</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Spin the wheel for rewards!</p>\n            <p class=\"puzzle-game-use\">Rewards: Gems, Energy, Crystals, Guardians</p>\n          </div>\n          ").concat(dailySpinUnlocked ? "\n            <div class=\"puzzle-game-stats\">\n              <div class=\"stat\">\n                <span class=\"label\">Total Spins:</span>\n                <span class=\"value\" id=\"spin-total\">".concat(this.dailySpinGame.getStats().totalSpins || 0, "</span>\n              </div>\n              <div class=\"stat\">\n                <span class=\"label\">Status:</span>\n                <span class=\"value\" id=\"spin-status\">\n                  ").concat(this.dailySpinGame.canSpin().can ? '✅ Ready' : '⏰ Cooldown', "\n                </span>\n              </div>\n            </div>\n            <button class=\"btn btn-primary btn-large\" id=\"play-spin-btn\">\n              \uD83C\uDFA1 Spin the Wheel\n            </button>\n          ") : "\n            <div class=\"unlock-requirements\">\n              <h4>\uD83D\uDD12 Unlock Requirements:</h4>\n              <ul>\n                <li class=\"".concat(this.hasCompletedQuests(5) ? 'completed' : '', "\">\n                  Complete 5 quests ").concat(this.hasCompletedQuests(5) ? '✓' : '', "\n                </li>\n                <li class=\"").concat(this.hasStructureLevel(10) ? 'completed' : '', "\">\n                  Reach level 10 in any structure ").concat(this.hasStructureLevel(10) ? '✓' : '', "\n                </li>\n              </ul>\n            </div>\n            <div class=\"locked-overlay\">\n              <span>\uD83D\uDD12 Complete requirements to unlock</span>\n            </div>\n          "), "\n        </div>\n        \n      </div>\n      \n      <!-- Puzzle Game Container (hidden by default) -->\n      <div id=\"puzzle-game-active\" style=\"display: none;\">\n        <!-- Game will render here -->\n      </div>\n    ");
 
       // Bind events
       this.bindEvents();
@@ -13881,13 +13921,75 @@ var PuzzleUI = /*#__PURE__*/function () {
     key: "bindEvents",
     value: function bindEvents() {
       var _this2 = this;
-      var playBtn = document.getElementById('play-match3-btn');
-      if (playBtn) {
-        playBtn.addEventListener('click', function () {
+      // Match-3 button
+      var playMatch3Btn = document.getElementById('play-match3-btn');
+      if (playMatch3Btn) {
+        playMatch3Btn.addEventListener('click', function () {
           _this2.startPracticeMatch3();
         });
       }
+
+      // 2048 button
+      var play2048Btn = document.getElementById('play-2048-btn');
+      if (play2048Btn) {
+        play2048Btn.addEventListener('click', function () {
+          _this2.start2048Game();
+        });
+      }
+
+      // Daily Spin button
+      var playSpinBtn = document.getElementById('play-spin-btn');
+      if (playSpinBtn) {
+        playSpinBtn.addEventListener('click', function () {
+          _this2.startDailySpin();
+        });
+      }
     }
+
+    // ===== UNLOCK CONDITIONS =====
+  }, {
+    key: "checkDailySpinUnlock",
+    value: function checkDailySpinUnlock() {
+      return this.hasCompletedQuests(5) && this.hasStructureLevel(10);
+    }
+  }, {
+    key: "check2048Unlock",
+    value: function check2048Unlock() {
+      return this.hasAscended() && this.hasWonMatch3(3);
+    }
+  }, {
+    key: "hasCompletedQuests",
+    value: function hasCompletedQuests(count) {
+      var _state$quests;
+      var state = _StateManager["default"].getState();
+      var completedQuests = ((_state$quests = state.quests) === null || _state$quests === void 0 || (_state$quests = _state$quests.completed) === null || _state$quests === void 0 ? void 0 : _state$quests.length) || 0;
+      return completedQuests >= count;
+    }
+  }, {
+    key: "hasStructureLevel",
+    value: function hasStructureLevel(level) {
+      var state = _StateManager["default"].getState();
+      var structures = state.structures || {};
+      return Object.values(structures).some(function (s) {
+        return s.level >= level;
+      });
+    }
+  }, {
+    key: "hasAscended",
+    value: function hasAscended() {
+      var _state$ascension;
+      var state = _StateManager["default"].getState();
+      return (((_state$ascension = state.ascension) === null || _state$ascension === void 0 ? void 0 : _state$ascension.level) || 0) >= 1;
+    }
+  }, {
+    key: "hasWonMatch3",
+    value: function hasWonMatch3(count) {
+      var _state$statistics;
+      var state = _StateManager["default"].getState();
+      return (((_state$statistics = state.statistics) === null || _state$statistics === void 0 ? void 0 : _state$statistics.puzzlesWon) || 0) >= count;
+    }
+
+    // ===== STATS UPDATE =====
   }, {
     key: "updateStats",
     value: function updateStats() {
@@ -13900,22 +14002,18 @@ var PuzzleUI = /*#__PURE__*/function () {
       if (bestScoreEl) bestScoreEl.textContent = bestScore;
       if (gamesPlayedEl) gamesPlayedEl.textContent = gamesPlayed;
     }
+
+    // ===== MATCH-3 GAME (keep existing) =====
   }, {
     key: "startPracticeMatch3",
     value: function startPracticeMatch3() {
       var _this3 = this;
       _Logger["default"].info('PuzzleUI', 'Starting practice Match-3');
-
-      // Hide game cards
       var grid = this.container.querySelector('.puzzle-games-grid');
       if (grid) grid.style.display = 'none';
-
-      // Show game container
       var gameContainer = document.getElementById('puzzle-game-active');
       if (gameContainer) {
         gameContainer.style.display = 'block';
-
-        // Create Match-3 game (practice mode)
         this.match3Game = new _Match3Game["default"](gameContainer, {
           mode: 'practice',
           maxMoves: 20,
@@ -13937,25 +14035,17 @@ var PuzzleUI = /*#__PURE__*/function () {
         bossKey = bossData.bossKey;
       _Logger["default"].info('PuzzleUI', "Starting boss puzzle for ".concat(boss.name));
       var puzzleReq = boss.puzzleRequirement;
-
-      // Get the container INSIDE the modal
       var modalContent = document.getElementById('boss-battle-content');
       if (!modalContent) {
         _Logger["default"].error('PuzzleUI', 'Boss battle content container not found!');
         return;
       }
-
-      // Create a dedicated puzzle container
-      modalContent.innerHTML = "\n    <div class=\"boss-battle-header\">\n      <!-- Boss info -->\n    </div>\n    <div id=\"boss-puzzle-container\"></div>\n  ";
-
-      // Get the puzzle container
+      modalContent.innerHTML = "\n      <div class=\"boss-battle-header\"></div>\n      <div id=\"boss-puzzle-container\"></div>\n    ";
       var puzzleContainer = document.getElementById('boss-puzzle-container');
       if (!puzzleContainer) {
         _Logger["default"].error('PuzzleUI', 'Puzzle container not found!');
         return;
       }
-
-      // Create Match-3 game in the correct container
       this.match3Game = new _Match3Game["default"](puzzleContainer, {
         mode: 'boss',
         bossKey: bossKey,
@@ -13975,57 +14065,50 @@ var PuzzleUI = /*#__PURE__*/function () {
     key: "onPuzzleComplete",
     value: function onPuzzleComplete(result) {
       _Logger["default"].info('PuzzleUI', 'Practice puzzle completed', result);
-
-      // Update statistics
-      var statisticsSystem = _Game["default"].getSystem('statistics');
-      if (statisticsSystem) {
-        // Increment games played
+      _StateManager["default"].dispatch({
+        type: 'INCREMENT_STATISTIC',
+        payload: {
+          key: 'puzzlesPlayed',
+          amount: 1
+        }
+      });
+      var currentHighScore = _StateManager["default"].getState().statistics.puzzleHighScore || 0;
+      if (result.score > currentHighScore) {
+        _StateManager["default"].dispatch({
+          type: 'UPDATE_STATISTIC',
+          payload: {
+            key: 'puzzleHighScore',
+            value: result.score
+          }
+        });
+        _EventBus["default"].emit('notification:show', {
+          message: '🏆 New High Score!',
+          type: 'success',
+          duration: 3000
+        });
+      }
+      if (result.won) {
         _StateManager["default"].dispatch({
           type: 'INCREMENT_STATISTIC',
           payload: {
-            key: 'puzzlesPlayed',
+            key: 'puzzlesWon',
             amount: 1
           }
         });
-
-        // Update high score if needed
-        var currentHighScore = _StateManager["default"].getState().statistics.puzzleHighScore || 0;
-        if (result.score > currentHighScore) {
-          _StateManager["default"].dispatch({
-            type: 'UPDATE_STATISTIC',
-            payload: {
-              key: 'puzzleHighScore',
-              value: result.score
-            }
-          });
-          _EventBus["default"].emit('notification:show', {
-            message: '🏆 New High Score!',
-            type: 'success',
-            duration: 3000
-          });
-        }
       }
-
-      // Show results
       this.showPuzzleResults(result);
-
-      // Emit event
       _EventBus["default"].emit('puzzle:practice-completed', result);
     }
   }, {
     key: "onBossPuzzleComplete",
     value: function onBossPuzzleComplete(result, bossKey) {
       _Logger["default"].info('PuzzleUI', 'Boss puzzle completed', result);
-
-      // Emit to boss system
       _EventBus["default"].emit('puzzle:completed', {
         score: result.score,
         combo: result.bestCombo,
         moves: result.movesUsed,
         bossKey: bossKey
       });
-
-      // Show damage notification
       var damage = result.totalDamage || result.score;
       _EventBus["default"].emit('notification:show', {
         message: "\uD83D\uDCA5 ".concat(damage, " damage dealt! Combo: ").concat(result.bestCombo, "x"),
@@ -14033,32 +14116,292 @@ var PuzzleUI = /*#__PURE__*/function () {
         duration: 3000
       });
     }
+
+    // ===== 2048 GAME =====
+  }, {
+    key: "start2048Game",
+    value: function start2048Game() {
+      if (!this.check2048Unlock()) {
+        _EventBus["default"].emit('notification:show', {
+          message: '🔒 Complete requirements to unlock 2048!',
+          type: 'error',
+          duration: 3000
+        });
+        return;
+      }
+      _Logger["default"].info('PuzzleUI', 'Starting 2048 game');
+      var grid = this.container.querySelector('.puzzle-games-grid');
+      if (grid) grid.style.display = 'none';
+      var gameContainer = document.getElementById('puzzle-game-active');
+      if (gameContainer) {
+        gameContainer.style.display = 'block';
+        var gameState = this.game2048.newGame();
+        this.render2048UI(gameContainer, gameState);
+      }
+    }
+  }, {
+    key: "render2048UI",
+    value: function render2048UI(container, gameState) {
+      container.innerHTML = "\n      <div class=\"game-2048-container\">\n        <div class=\"game-2048-header\">\n          <div class=\"game-2048-score\">\n            <div class=\"score-label\">Score</div>\n            <div class=\"score-value\" id=\"2048-score\">".concat(gameState.score, "</div>\n          </div>\n          <button class=\"btn btn-secondary\" id=\"2048-new-game\">New Game</button>\n          <button class=\"btn btn-secondary\" id=\"2048-exit\">Exit</button>\n        </div>\n        \n        <div class=\"game-2048-grid\" id=\"2048-grid\">\n          ").concat(this.render2048Grid(gameState.grid), "\n        </div>\n        \n        <div class=\"game-2048-controls\">\n          <p class=\"swipe-hint\">Use arrow keys or swipe to move tiles</p>\n        </div>\n      </div>\n    ");
+      this.bind2048Controls(container);
+    }
+  }, {
+    key: "render2048Grid",
+    value: function render2048Grid(grid) {
+      var html = '';
+      var _iterator = _createForOfIteratorHelper(grid),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var row = _step.value;
+          var _iterator2 = _createForOfIteratorHelper(row),
+            _step2;
+          try {
+            for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+              var cell = _step2.value;
+              var value = cell || '';
+              html += "<div class=\"grid-cell ".concat(cell ? '' : 'empty', "\" data-value=\"").concat(cell, "\">").concat(value, "</div>");
+            }
+          } catch (err) {
+            _iterator2.e(err);
+          } finally {
+            _iterator2.f();
+          }
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      return html;
+    }
+  }, {
+    key: "bind2048Controls",
+    value: function bind2048Controls(container) {
+      var _this5 = this,
+        _document$getElementB,
+        _document$getElementB2;
+      var handleKeyPress = function handleKeyPress(e) {
+        var keyMap = {
+          'ArrowUp': 'up',
+          'ArrowDown': 'down',
+          'ArrowLeft': 'left',
+          'ArrowRight': 'right'
+        };
+        var direction = keyMap[e.key];
+        if (direction) {
+          e.preventDefault();
+          _this5.move2048(direction);
+        }
+      };
+      document.addEventListener('keydown', handleKeyPress);
+      container._keyHandler = handleKeyPress;
+
+      // Touch controls
+      var touchStartX = 0;
+      var touchStartY = 0;
+      var gridEl = container.querySelector('#2048-grid');
+      gridEl.addEventListener('touchstart', function (e) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      });
+      gridEl.addEventListener('touchend', function (e) {
+        var touchEndX = e.changedTouches[0].clientX;
+        var touchEndY = e.changedTouches[0].clientY;
+        var diffX = touchEndX - touchStartX;
+        var diffY = touchEndY - touchStartY;
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          _this5.move2048(diffX > 0 ? 'right' : 'left');
+        } else {
+          _this5.move2048(diffY > 0 ? 'down' : 'up');
+        }
+      });
+      (_document$getElementB = document.getElementById('2048-new-game')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
+        var newState = _this5.game2048.newGame();
+        _this5.render2048UI(container, newState);
+      });
+      (_document$getElementB2 = document.getElementById('2048-exit')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', function () {
+        _this5.exit2048Game(container);
+      });
+    }
+  }, {
+    key: "move2048",
+    value: function move2048(direction) {
+      var _this6 = this;
+      var result = this.game2048.move(direction);
+      if (result) {
+        var scoreEl = document.getElementById('2048-score');
+        if (scoreEl) scoreEl.textContent = result.score;
+        var gridEl = document.getElementById('2048-grid');
+        if (gridEl) gridEl.innerHTML = this.render2048Grid(result.grid);
+        if (result.gameOver) {
+          setTimeout(function () {
+            _this6.show2048GameOver(result);
+          }, 500);
+        }
+      }
+    }
+  }, {
+    key: "show2048GameOver",
+    value: function show2048GameOver(result) {
+      var _document$getElementB3,
+        _this7 = this,
+        _document$getElementB4;
+      var container = document.getElementById('puzzle-game-active');
+      if (!container) return;
+      var isHighScore = result.score > (this.game2048.getStats().highScore || 0);
+      container.innerHTML = "\n      <div class=\"puzzle-results\">\n        <h2>".concat(result.won ? '🎉 You Won!' : '😔 Game Over', "</h2>\n        <div class=\"puzzle-results-stats\">\n          <div class=\"result-stat\">\n            <span class=\"label\">Final Score:</span>\n            <span class=\"value\">").concat(result.score, "</span>\n          </div>\n          ").concat(isHighScore ? '<p class="high-score-badge">🏆 New High Score!</p>' : '', "\n        </div>\n        <div class=\"result-actions\">\n          <button class=\"btn btn-primary\" id=\"2048-play-again\">Play Again</button>\n          <button class=\"btn btn-secondary\" id=\"2048-results-exit\">Exit</button>\n        </div>\n      </div>\n    ");
+      (_document$getElementB3 = document.getElementById('2048-play-again')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', function () {
+        _this7.start2048Game();
+      });
+      (_document$getElementB4 = document.getElementById('2048-results-exit')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', function () {
+        _this7.exitPuzzle();
+      });
+    }
+  }, {
+    key: "exit2048Game",
+    value: function exit2048Game(container) {
+      if (container._keyHandler) {
+        document.removeEventListener('keydown', container._keyHandler);
+      }
+      this.exitPuzzle();
+    }
+
+    // ===== DAILY SPIN =====
+  }, {
+    key: "startDailySpin",
+    value: function startDailySpin() {
+      if (!this.checkDailySpinUnlock()) {
+        _EventBus["default"].emit('notification:show', {
+          message: '🔒 Complete requirements to unlock Daily Spin!',
+          type: 'error',
+          duration: 3000
+        });
+        return;
+      }
+      var canSpinResult = this.dailySpinGame.canSpin();
+      if (!canSpinResult.can) {
+        var hoursLeft = Math.ceil(canSpinResult.nextFreeIn / 3600000);
+        _EventBus["default"].emit('notification:show', {
+          message: "\u23F0 Next free spin in ".concat(hoursLeft, "h"),
+          type: 'info',
+          duration: 3000
+        });
+        return;
+      }
+      _Logger["default"].info('PuzzleUI', 'Starting Daily Spin');
+      var grid = this.container.querySelector('.puzzle-games-grid');
+      if (grid) grid.style.display = 'none';
+      var gameContainer = document.getElementById('puzzle-game-active');
+      if (gameContainer) {
+        gameContainer.style.display = 'block';
+        this.renderDailySpinUI(gameContainer);
+      }
+    }
+  }, {
+    key: "renderDailySpinUI",
+    value: function renderDailySpinUI(container) {
+      var _document$getElementB5,
+        _this8 = this,
+        _document$getElementB6;
+      container.innerHTML = "\n      <div class=\"daily-spin-container\">\n        <h2>\uD83C\uDFA1 Daily Spin</h2>\n        <div class=\"spin-info\">\n          <p>Spin the wheel for amazing rewards!</p>\n        </div>\n        \n        <div class=\"wheel-container\">\n          <div class=\"wheel-pointer\"></div>\n          <div class=\"wheel\" id=\"spin-wheel\">\n            ".concat(this.renderWheelSegments(), "\n            <div class=\"wheel-center\">\uD83C\uDFA1</div>\n          </div>\n        </div>\n        \n        <div class=\"spin-controls\">\n          <button class=\"btn btn-primary btn-large\" id=\"spin-btn\">\n            \uD83C\uDFA1 SPIN!\n          </button>\n          <button class=\"btn btn-secondary\" id=\"spin-exit\">Exit</button>\n        </div>\n      </div>\n    ");
+      (_document$getElementB5 = document.getElementById('spin-btn')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', function () {
+        _this8.executeSpin();
+      });
+      (_document$getElementB6 = document.getElementById('spin-exit')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', function () {
+        _this8.exitPuzzle();
+      });
+    }
+  }, {
+    key: "renderWheelSegments",
+    value: function renderWheelSegments() {
+      var segments = this.dailySpinGame.segments;
+      var html = '';
+      segments.forEach(function (segment, index) {
+        var angle = 360 / segments.length * index;
+        html += "\n        <div class=\"wheel-segment\" style=\"\n          transform: rotate(".concat(angle, "deg);\n          background: ").concat(segment.color, ";\n        \">\n          <span class=\"wheel-segment-label\">").concat(segment.label, "</span>\n        </div>\n      ");
+      });
+      return html;
+    }
+  }, {
+    key: "executeSpin",
+    value: function executeSpin() {
+      var _this9 = this;
+      var spinBtn = document.getElementById('spin-btn');
+      if (spinBtn) spinBtn.disabled = true;
+      var spinResult = this.dailySpinGame.spin(false);
+      if (!spinResult) {
+        if (spinBtn) spinBtn.disabled = false;
+        return;
+      }
+      var wheel = document.getElementById('spin-wheel');
+      if (wheel) {
+        wheel.style.transition = "transform ".concat(spinResult.duration, "ms cubic-bezier(0.17, 0.67, 0.12, 0.99)");
+        wheel.style.transform = "rotate(".concat(spinResult.rotation, "deg)");
+        setTimeout(function () {
+          _this9.dailySpinGame.grantReward(spinResult.segment);
+          _this9.showSpinResult(spinResult.segment);
+        }, spinResult.duration);
+      }
+    }
+  }, {
+    key: "showSpinResult",
+    value: function showSpinResult(segment) {
+      var _document$getElementB7,
+        _this0 = this;
+      var container = document.getElementById('puzzle-game-active');
+      if (!container) return;
+      container.innerHTML = "\n      <div class=\"puzzle-results\">\n        <h2>\uD83C\uDF89 You Won!</h2>\n        <div class=\"spin-result-icon\">".concat(segment.label, "</div>\n        <div class=\"puzzle-results-stats\">\n          <p>Congratulations! You received:</p>\n          <div class=\"reward-display\">\n            ").concat(this.formatSpinReward(segment.reward), "\n          </div>\n        </div>\n        <button class=\"btn btn-primary btn-large\" id=\"spin-result-close\">\n          Collect\n        </button>\n      </div>\n    ");
+      (_document$getElementB7 = document.getElementById('spin-result-close')) === null || _document$getElementB7 === void 0 || _document$getElementB7.addEventListener('click', function () {
+        _this0.exitPuzzle();
+      });
+    }
+  }, {
+    key: "formatSpinReward",
+    value: function formatSpinReward(reward) {
+      var icons = {
+        gems: '💎',
+        energy: '⚡',
+        crystals: '💠',
+        guardian: '🛡️'
+      };
+      var html = '';
+      for (var _i = 0, _Object$entries = Object.entries(reward); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          resource = _Object$entries$_i[0],
+          amount = _Object$entries$_i[1];
+        if (resource === 'guardian') {
+          html += "<div class=\"reward-item\">\uD83D\uDEE1\uFE0F Guardian Summon!</div>";
+        } else {
+          html += "<div class=\"reward-item\">".concat(amount, " ").concat(icons[resource], "</div>");
+        }
+      }
+      return html;
+    }
+
+    // ===== SHARED =====
   }, {
     key: "showPuzzleResults",
     value: function showPuzzleResults(result) {
-      var _this5 = this;
+      var _document$getElementB8,
+        _this1 = this;
       var gameContainer = document.getElementById('puzzle-game-active');
       if (!gameContainer) return;
       gameContainer.innerHTML = "\n      <div class=\"puzzle-results\">\n        <h2>\uD83C\uDF89 Game Complete!</h2>\n        <div class=\"puzzle-results-stats\">\n          <div class=\"result-stat\">\n            <span class=\"label\">Score:</span>\n            <span class=\"value\">".concat(result.score, "</span>\n          </div>\n          <div class=\"result-stat\">\n            <span class=\"label\">Moves Used:</span>\n            <span class=\"value\">").concat(result.movesUsed, " / ").concat(result.maxMoves, "</span>\n          </div>\n          <div class=\"result-stat\">\n            <span class=\"label\">Best Combo:</span>\n            <span class=\"value\">").concat(result.bestCombo, "x</span>\n          </div>\n        </div>\n        <button class=\"btn btn-primary btn-large\" id=\"puzzle-results-close\">\n          Continue\n        </button>\n      </div>\n    ");
-      document.getElementById('puzzle-results-close').addEventListener('click', function () {
-        _this5.exitPuzzle();
+      (_document$getElementB8 = document.getElementById('puzzle-results-close')) === null || _document$getElementB8 === void 0 || _document$getElementB8.addEventListener('click', function () {
+        _this1.exitPuzzle();
       });
     }
   }, {
     key: "exitPuzzle",
     value: function exitPuzzle() {
-      // Hide game container
       var gameContainer = document.getElementById('puzzle-game-active');
       if (gameContainer) {
         gameContainer.style.display = 'none';
         gameContainer.innerHTML = '';
       }
-
-      // Show game cards
       var grid = this.container.querySelector('.puzzle-games-grid');
       if (grid) grid.style.display = 'grid';
-
-      // Cleanup
       if (this.match3Game) {
         this.match3Game.destroy();
         this.match3Game = null;
@@ -14068,12 +14411,9 @@ var PuzzleUI = /*#__PURE__*/function () {
   }, {
     key: "exitBossPuzzle",
     value: function exitBossPuzzle() {
-      // Close boss battle modal
       _EventBus["default"].emit('modal:hide', {
         modalId: 'boss-battle-modal'
       });
-
-      // Cleanup
       if (this.match3Game) {
         this.match3Game.destroy();
         this.match3Game = null;
@@ -14083,7 +14423,7 @@ var PuzzleUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = PuzzleUI;
 
-},{"../core/Game.js":2,"../core/StateManager.js":5,"../utils/EventBus.js":48,"../utils/Logger.js":50,"./games/Match3Game.js":47}],38:[function(require,module,exports){
+},{"../core/Game.js":2,"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./games/DailySpinGame.js":47,"./games/Game2048.js":48,"./games/Match3Game.js":49}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14245,7 +14585,7 @@ window.claimQuest = function (questId) {
 };
 var _default = exports["default"] = QuestsUI;
 
-},{"../core/StateManager.js":5,"../systems/QuestSystem.js":22,"../utils/EventBus.js":48,"../utils/Formatters.js":49}],39:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/QuestSystem.js":22,"../utils/EventBus.js":50,"../utils/Formatters.js":51}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14353,7 +14693,7 @@ window.watchAd = function (adType) {
 };
 var _default = exports["default"] = ShopUI;
 
-},{"../systems/ShopSystem.js":24,"../utils/EventBus.js":48,"../utils/Formatters.js":49}],40:[function(require,module,exports){
+},{"../systems/ShopSystem.js":24,"../utils/EventBus.js":50,"../utils/Formatters.js":51}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14460,7 +14800,7 @@ var StatisticsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StatisticsUI;
 
-},{"../systems/StatisticsSystem.js":25,"../utils/EventBus.js":48}],41:[function(require,module,exports){
+},{"../systems/StatisticsSystem.js":25,"../utils/EventBus.js":50}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14664,7 +15004,7 @@ var StructuresUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructuresUI;
 
-},{"../core/StateManager.js":5,"../systems/StructureSystem.js":26,"../utils/EventBus.js":48,"../utils/Formatters.js":49,"./components/StructureCard.js":45}],42:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/StructureSystem.js":26,"../utils/EventBus.js":50,"../utils/Formatters.js":51,"./components/StructureCard.js":45}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14761,7 +15101,7 @@ var TabManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = TabManager;
 
-},{"../utils/EventBus.js":48,"../utils/Logger.js":50}],43:[function(require,module,exports){
+},{"../utils/EventBus.js":50,"../utils/Logger.js":52}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14940,7 +15280,7 @@ var UpgradesUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = UpgradesUI;
 
-},{"../core/StateManager.js":5,"../systems/UpgradeQueueSystem.js":28,"../systems/UpgradeSystem.js":29,"../utils/EventBus.js":48,"../utils/Formatters.js":49,"./components/UpgradeQueueDisplay.js":46}],44:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/UpgradeQueueSystem.js":28,"../systems/UpgradeSystem.js":29,"../utils/EventBus.js":50,"../utils/Formatters.js":51,"./components/UpgradeQueueDisplay.js":46}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15086,7 +15426,7 @@ var ResourceDisplay = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ResourceDisplay;
 
-},{"../../core/StateManager.js":5,"../../utils/EventBus.js":48,"../../utils/Formatters.js":49}],45:[function(require,module,exports){
+},{"../../core/StateManager.js":5,"../../utils/EventBus.js":50,"../../utils/Formatters.js":51}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15372,7 +15712,7 @@ var StructureCard = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructureCard;
 
-},{"../../core/StateManager.js":5,"../../systems/StructureSystem.js":26,"../../utils/EventBus.js":48,"../../utils/Formatters.js":49}],46:[function(require,module,exports){
+},{"../../core/StateManager.js":5,"../../systems/StructureSystem.js":26,"../../utils/EventBus.js":50,"../../utils/Formatters.js":51}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15516,7 +15856,622 @@ window.cancelQueuedUpgrade = function (upgradeKey) {
 };
 var _default = exports["default"] = UpgradeQueueDisplay;
 
-},{"../../systems/UpgradeQueueSystem.js":28,"../../systems/UpgradeSystem.js":29,"../../utils/EventBus.js":48,"../../utils/Formatters.js":49}],47:[function(require,module,exports){
+},{"../../systems/UpgradeQueueSystem.js":28,"../../systems/UpgradeSystem.js":29,"../../utils/EventBus.js":50,"../../utils/Formatters.js":51}],47:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+var _StateManager = _interopRequireDefault(require("../../core/StateManager.js"));
+var _EventBus = _interopRequireDefault(require("../../utils/EventBus.js"));
+var _Logger = _interopRequireDefault(require("../../utils/Logger.js"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
+ * DailySpinGame - Wheel of Fortune mini-game
+ */
+var DailySpinGame = /*#__PURE__*/function () {
+  function DailySpinGame() {
+    _classCallCheck(this, DailySpinGame);
+    this.spinning = false;
+    this.rotation = 0;
+
+    // Wheel segments (8 segments)
+    this.segments = [{
+      id: 1,
+      reward: {
+        gems: 50
+      },
+      label: '50💎',
+      color: '#8B5CF6',
+      weight: 20
+    }, {
+      id: 2,
+      reward: {
+        energy: 5000
+      },
+      label: '5K⚡',
+      color: '#3B82F6',
+      weight: 25
+    }, {
+      id: 3,
+      reward: {
+        gems: 100
+      },
+      label: '100💎',
+      color: '#8B5CF6',
+      weight: 15
+    }, {
+      id: 4,
+      reward: {
+        crystals: 5
+      },
+      label: '5💠',
+      color: '#10B981',
+      weight: 10
+    }, {
+      id: 5,
+      reward: {
+        gems: 200
+      },
+      label: '200💎',
+      color: '#8B5CF6',
+      weight: 10
+    }, {
+      id: 6,
+      reward: {
+        energy: 10000
+      },
+      label: '10K⚡',
+      color: '#3B82F6',
+      weight: 12
+    }, {
+      id: 7,
+      reward: {
+        guardian: 1
+      },
+      label: 'Guardian',
+      color: '#F59E0B',
+      weight: 5
+    }, {
+      id: 8,
+      reward: {
+        gems: 500
+      },
+      label: '500💎',
+      color: '#8B5CF6',
+      weight: 3
+    }];
+    this.segmentAngle = 360 / this.segments.length;
+    this.cooldown = 86400000; // 24 hours
+    this.gemSpinCost = 50;
+  }
+  return _createClass(DailySpinGame, [{
+    key: "canSpin",
+    value: function canSpin() {
+      var _state$miniGames;
+      var state = _StateManager["default"].getState();
+      var lastSpin = ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 || (_state$miniGames = _state$miniGames.dailySpin) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames.lastSpin) || 0;
+      var now = Date.now();
+      var timeSinceLastSpin = now - lastSpin;
+      if (timeSinceLastSpin >= this.cooldown) {
+        return {
+          can: true,
+          type: 'free'
+        };
+      }
+      if (state.resources.gems >= this.gemSpinCost) {
+        return {
+          can: true,
+          type: 'paid',
+          cost: this.gemSpinCost,
+          nextFreeIn: this.cooldown - timeSinceLastSpin
+        };
+      }
+      return {
+        can: false,
+        nextFreeIn: this.cooldown - timeSinceLastSpin
+      };
+    }
+  }, {
+    key: "spin",
+    value: function spin() {
+      var isPaid = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      var canSpinResult = this.canSpin();
+      if (!canSpinResult.can) {
+        _EventBus["default"].emit('notification:show', {
+          type: 'error',
+          message: 'Cannot spin yet!',
+          duration: 2000
+        });
+        return null;
+      }
+      if (isPaid) {
+        _StateManager["default"].dispatch({
+          type: 'SPEND_RESOURCE',
+          payload: {
+            resource: 'gems',
+            amount: this.gemSpinCost
+          }
+        });
+        _Logger["default"].info('DailySpinGame', 'Paid spin used', {
+          cost: this.gemSpinCost
+        });
+      } else {
+        _StateManager["default"].dispatch({
+          type: 'UPDATE_MINI_GAME',
+          payload: {
+            game: 'dailySpin',
+            data: {
+              lastSpin: Date.now()
+            }
+          }
+        });
+      }
+      var selectedSegment = this.selectRandomSegment();
+      var spins = 5;
+      var targetAngle = this.segmentAngle * (selectedSegment.id - 1) + this.segmentAngle / 2;
+      var finalRotation = 360 * spins + targetAngle + Math.random() * 20 - 10;
+      _Logger["default"].info('DailySpinGame', 'Spinning wheel', {
+        segment: selectedSegment.id,
+        reward: selectedSegment.reward,
+        rotation: finalRotation
+      });
+      return {
+        segment: selectedSegment,
+        rotation: finalRotation,
+        duration: 4000
+      };
+    }
+  }, {
+    key: "selectRandomSegment",
+    value: function selectRandomSegment() {
+      var totalWeight = this.segments.reduce(function (sum, seg) {
+        return sum + seg.weight;
+      }, 0);
+      var random = Math.random() * totalWeight;
+      var _iterator = _createForOfIteratorHelper(this.segments),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var segment = _step.value;
+          random -= segment.weight;
+          if (random <= 0) {
+            return segment;
+          }
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      return this.segments[0];
+    }
+  }, {
+    key: "grantReward",
+    value: function grantReward(segment) {
+      var reward = segment.reward;
+      for (var _i = 0, _Object$entries = Object.entries(reward); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          resource = _Object$entries$_i[0],
+          amount = _Object$entries$_i[1];
+        if (resource === 'guardian') {
+          _EventBus["default"].emit('guardian:summon', {
+            amount: amount,
+            source: 'daily-spin',
+            guaranteed: true
+          });
+        } else {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: resource,
+              amount: amount
+            }
+          });
+        }
+      }
+      _StateManager["default"].dispatch({
+        type: 'INCREMENT_MINI_GAME_STAT',
+        payload: {
+          game: 'dailySpin',
+          stat: 'totalSpins'
+        }
+      });
+      _Logger["default"].info('DailySpinGame', 'Reward granted', reward);
+      _EventBus["default"].emit('daily-spin:reward-granted', {
+        reward: reward,
+        segment: segment
+      });
+      this.showRewardNotification(reward);
+      return reward;
+    }
+  }, {
+    key: "showRewardNotification",
+    value: function showRewardNotification(reward) {
+      var parts = [];
+      for (var _i2 = 0, _Object$entries2 = Object.entries(reward); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+          resource = _Object$entries2$_i[0],
+          amount = _Object$entries2$_i[1];
+        var icons = {
+          gems: '💎',
+          energy: '⚡',
+          crystals: '💠',
+          guardian: '🛡️'
+        };
+        if (resource === 'guardian') {
+          parts.push('Guardian!');
+        } else {
+          parts.push("".concat(amount, " ").concat(icons[resource]));
+        }
+      }
+      _EventBus["default"].emit('notification:show', {
+        type: 'reward',
+        title: '🎡 Spin Reward!',
+        message: parts.join(', '),
+        duration: 5000
+      });
+    }
+  }, {
+    key: "getStats",
+    value: function getStats() {
+      var _state$miniGames2;
+      var state = _StateManager["default"].getState();
+      var spinData = ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2.dailySpin) || {};
+      return {
+        lastSpin: spinData.lastSpin || 0,
+        totalSpins: spinData.totalSpins || 0,
+        canSpin: this.canSpin()
+      };
+    }
+  }]);
+}();
+var _default = exports["default"] = new DailySpinGame();
+
+},{"../../core/StateManager.js":5,"../../utils/EventBus.js":50,"../../utils/Logger.js":52}],48:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+var _StateManager = _interopRequireDefault(require("../../core/StateManager.js"));
+var _EventBus = _interopRequireDefault(require("../../utils/EventBus.js"));
+var _Logger = _interopRequireDefault(require("../../utils/Logger.js"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
+ * Game2048 - Classic 2048 puzzle game
+ */
+var Game2048 = /*#__PURE__*/function () {
+  function Game2048() {
+    _classCallCheck(this, Game2048);
+    this.size = 4;
+    this.grid = [];
+    this.score = 0;
+    this.gameOver = false;
+    this.won = false;
+    this.milestones = {
+      512: {
+        gems: 50,
+        crystals: 2,
+        energy: 5000
+      },
+      1024: {
+        gems: 100,
+        crystals: 5,
+        energy: 10000
+      },
+      2048: {
+        gems: 250,
+        crystals: 10,
+        energy: 25000,
+        guardian: 1
+      }
+    };
+    this.claimedMilestones = new Set();
+  }
+  return _createClass(Game2048, [{
+    key: "newGame",
+    value: function newGame() {
+      var _this = this;
+      this.grid = Array(this.size).fill(null).map(function () {
+        return Array(_this.size).fill(0);
+      });
+      this.score = 0;
+      this.gameOver = false;
+      this.won = false;
+      this.claimedMilestones.clear();
+      this.addRandomTile();
+      this.addRandomTile();
+      _Logger["default"].info('Game2048', 'New game started');
+      return this.getGameState();
+    }
+  }, {
+    key: "addRandomTile",
+    value: function addRandomTile() {
+      var emptyCells = [];
+      for (var _row = 0; _row < this.size; _row++) {
+        for (var _col = 0; _col < this.size; _col++) {
+          if (this.grid[_row][_col] === 0) {
+            emptyCells.push({
+              row: _row,
+              col: _col
+            });
+          }
+        }
+      }
+      if (emptyCells.length === 0) return false;
+      var _emptyCells$Math$floo = emptyCells[Math.floor(Math.random() * emptyCells.length)],
+        row = _emptyCells$Math$floo.row,
+        col = _emptyCells$Math$floo.col;
+      this.grid[row][col] = Math.random() < 0.9 ? 2 : 4;
+      return true;
+    }
+  }, {
+    key: "move",
+    value: function move(direction) {
+      if (this.gameOver) return null;
+      var oldGrid = JSON.stringify(this.grid);
+      var oldScore = this.score;
+      switch (direction) {
+        case 'left':
+          this.moveLeft();
+          break;
+        case 'right':
+          this.moveRight();
+          break;
+        case 'up':
+          this.moveUp();
+          break;
+        case 'down':
+          this.moveDown();
+          break;
+      }
+      if (oldGrid !== JSON.stringify(this.grid)) {
+        this.addRandomTile();
+        if (!this.canMove()) {
+          this.gameOver = true;
+          this.handleGameOver();
+        }
+        if (this.score > oldScore) {
+          this.checkMilestones();
+        }
+        return this.getGameState();
+      }
+      return null;
+    }
+  }, {
+    key: "moveLeft",
+    value: function moveLeft() {
+      for (var row = 0; row < this.size; row++) {
+        var tiles = this.grid[row].filter(function (val) {
+          return val !== 0;
+        });
+        for (var i = 0; i < tiles.length - 1; i++) {
+          if (tiles[i] === tiles[i + 1]) {
+            tiles[i] *= 2;
+            tiles[i + 1] = 0;
+            this.score += tiles[i];
+            if (tiles[i] === 2048 && !this.won) {
+              this.won = true;
+            }
+          }
+        }
+        tiles = tiles.filter(function (val) {
+          return val !== 0;
+        });
+        while (tiles.length < this.size) {
+          tiles.push(0);
+        }
+        this.grid[row] = tiles;
+      }
+    }
+  }, {
+    key: "moveRight",
+    value: function moveRight() {
+      this.grid = this.grid.map(function (row) {
+        return row.reverse();
+      });
+      this.moveLeft();
+      this.grid = this.grid.map(function (row) {
+        return row.reverse();
+      });
+    }
+  }, {
+    key: "moveUp",
+    value: function moveUp() {
+      this.transpose();
+      this.moveLeft();
+      this.transpose();
+    }
+  }, {
+    key: "moveDown",
+    value: function moveDown() {
+      this.transpose();
+      this.moveRight();
+      this.transpose();
+    }
+  }, {
+    key: "transpose",
+    value: function transpose() {
+      var _this2 = this;
+      var newGrid = Array(this.size).fill(null).map(function () {
+        return Array(_this2.size).fill(0);
+      });
+      for (var row = 0; row < this.size; row++) {
+        for (var col = 0; col < this.size; col++) {
+          newGrid[col][row] = this.grid[row][col];
+        }
+      }
+      this.grid = newGrid;
+    }
+  }, {
+    key: "canMove",
+    value: function canMove() {
+      for (var row = 0; row < this.size; row++) {
+        for (var col = 0; col < this.size; col++) {
+          if (this.grid[row][col] === 0) return true;
+          if (col < this.size - 1 && this.grid[row][col] === this.grid[row][col + 1]) return true;
+          if (row < this.size - 1 && this.grid[row][col] === this.grid[row + 1][col]) return true;
+        }
+      }
+      return false;
+    }
+  }, {
+    key: "checkMilestones",
+    value: function checkMilestones() {
+      var maxTile = Math.max.apply(Math, _toConsumableArray(this.grid.flat()));
+      for (var _i = 0, _Object$entries = Object.entries(this.milestones); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          milestone = _Object$entries$_i[0],
+          reward = _Object$entries$_i[1];
+        var milestoneValue = parseInt(milestone);
+        if (maxTile >= milestoneValue && !this.claimedMilestones.has(milestone)) {
+          this.claimedMilestones.add(milestone);
+          this.grantReward(milestoneValue, reward);
+        }
+      }
+    }
+  }, {
+    key: "grantReward",
+    value: function grantReward(milestone, reward) {
+      for (var _i2 = 0, _Object$entries2 = Object.entries(reward); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+          resource = _Object$entries2$_i[0],
+          amount = _Object$entries2$_i[1];
+        if (resource === 'guardian') {
+          _EventBus["default"].emit('guardian:summon', {
+            amount: amount,
+            source: '2048-game',
+            guaranteed: true
+          });
+        } else {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: resource,
+              amount: amount
+            }
+          });
+        }
+      }
+      _Logger["default"].info('Game2048', "Milestone ".concat(milestone, " reached!"), reward);
+      _EventBus["default"].emit('notification:show', {
+        type: 'reward',
+        title: "\uD83C\uDF89 ".concat(milestone, " Milestone!"),
+        message: this.formatReward(reward),
+        duration: 5000
+      });
+    }
+  }, {
+    key: "handleGameOver",
+    value: function handleGameOver() {
+      var _state$miniGames;
+      var state = _StateManager["default"].getState();
+      var highScore = ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 || (_state$miniGames = _state$miniGames.game2048) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames.highScore) || 0;
+      if (this.score > highScore) {
+        _StateManager["default"].dispatch({
+          type: 'UPDATE_MINI_GAME',
+          payload: {
+            game: 'game2048',
+            data: {
+              highScore: this.score
+            }
+          }
+        });
+        _Logger["default"].info('Game2048', 'New high score!', {
+          score: this.score
+        });
+      }
+      _StateManager["default"].dispatch({
+        type: 'INCREMENT_MINI_GAME_STAT',
+        payload: {
+          game: 'game2048',
+          stat: 'gamesPlayed'
+        }
+      });
+      _EventBus["default"].emit('game-2048:game-over', {
+        score: this.score,
+        isHighScore: this.score > highScore
+      });
+    }
+  }, {
+    key: "formatReward",
+    value: function formatReward(reward) {
+      var parts = [];
+      for (var _i3 = 0, _Object$entries3 = Object.entries(reward); _i3 < _Object$entries3.length; _i3++) {
+        var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
+          resource = _Object$entries3$_i[0],
+          amount = _Object$entries3$_i[1];
+        var icons = {
+          gems: '💎',
+          energy: '⚡',
+          crystals: '💠',
+          guardian: '🛡️'
+        };
+        if (resource === 'guardian') {
+          parts.push('Guardian!');
+        } else {
+          parts.push("".concat(amount, " ").concat(icons[resource]));
+        }
+      }
+      return parts.join(', ');
+    }
+  }, {
+    key: "getGameState",
+    value: function getGameState() {
+      return {
+        grid: this.grid,
+        score: this.score,
+        gameOver: this.gameOver,
+        won: this.won,
+        canMove: this.canMove()
+      };
+    }
+  }, {
+    key: "getStats",
+    value: function getStats() {
+      var _state$miniGames2;
+      var state = _StateManager["default"].getState();
+      var gameData = ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2.game2048) || {};
+      return {
+        highScore: gameData.highScore || 0,
+        gamesPlayed: gameData.gamesPlayed || 0
+      };
+    }
+  }]);
+}();
+var _default = exports["default"] = new Game2048();
+
+},{"../../core/StateManager.js":5,"../../utils/EventBus.js":50,"../../utils/Logger.js":52}],49:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16304,7 +17259,7 @@ var Match3Game = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Match3Game;
 
-},{"../../utils/EventBus.js":48,"../../utils/Logger.js":50}],48:[function(require,module,exports){
+},{"../../utils/EventBus.js":50,"../../utils/Logger.js":52}],50:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16477,7 +17432,7 @@ var EventBus = /*#__PURE__*/function () {
 var eventBus = new EventBus();
 var _default = exports["default"] = eventBus;
 
-},{"../config.js":1}],49:[function(require,module,exports){
+},{"../config.js":1}],51:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16665,7 +17620,7 @@ var Formatters = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Formatters;
 
-},{}],50:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

@@ -1,0 +1,233 @@
+/**
+ * Daily Spin Game Styles
+ */
+
+.daily-spin-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xl);
+  padding: var(--spacing-xl);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.daily-spin-container h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--info) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.spin-info {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.spin-info p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Wheel Container */
+.wheel-container {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  margin: var(--spacing-xl) 0;
+}
+
+/* Wheel */
+.wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 8px var(--accent),
+    inset 0 0 0 12px var(--bg-primary);
+  transform-origin: center center;
+}
+
+/* Wheel Pointer */
+.wheel-pointer {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 25px solid transparent;
+  border-right: 25px solid transparent;
+  border-top: 50px solid var(--danger);
+  z-index: 10;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.wheel-pointer::after {
+  content: '▼';
+  position: absolute;
+  top: -45px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  color: var(--danger);
+}
+
+/* Wheel Segments */
+.wheel-segment {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  transform-origin: 100% 100%;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.3s ease;
+}
+
+.wheel-segment:nth-child(1) { transform: rotate(0deg); }
+.wheel-segment:nth-child(2) { transform: rotate(45deg); }
+.wheel-segment:nth-child(3) { transform: rotate(90deg); }
+.wheel-segment:nth-child(4) { transform: rotate(135deg); }
+.wheel-segment:nth-child(5) { transform: rotate(180deg); }
+.wheel-segment:nth-child(6) { transform: rotate(225deg); }
+.wheel-segment:nth-child(7) { transform: rotate(270deg); }
+.wheel-segment:nth-child(8) { transform: rotate(315deg); }
+
+/* Wheel Segment Label */
+.wheel-segment-label {
+  position: absolute;
+  left: 70%;
+  top: 25%;
+  transform: rotate(-22.5deg);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: white;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 10px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+/* Wheel Center */
+.wheel-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--info) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  z-index: 5;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+/* Spinning State */
+.wheel.spinning {
+  pointer-events: none;
+}
+
+/* Spin Controls */
+.spin-controls {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.spin-controls .btn {
+  min-width: 200px;
+}
+
+/* Cooldown Timer */
+.cooldown-timer {
+  font-size: 1.25rem;
+  color: var(--accent);
+  font-weight: 700;
+  background: var(--bg-tertiary);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  margin-top: var(--spacing-md);
+}
+
+/* Spin Result Icon */
+.spin-result-icon {
+  font-size: 5rem;
+  margin: var(--spacing-xl) 0;
+  animation: pop-in 0.5s ease;
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .wheel-container {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .wheel-center {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+  
+  .wheel-pointer {
+    top: -25px;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 40px solid var(--danger);
+  }
+  
+  .wheel-segment-label {
+    font-size: 0.75rem;
+    left: 65%;
+  }
+  
+  .daily-spin-container h2 {
+    font-size: 2rem;
+  }
+  
+  .spin-controls {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .spin-controls .btn {
+    width: 100%;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .wheel-container {
+    width: 350px;
+    height: 350px;
+  }
+}

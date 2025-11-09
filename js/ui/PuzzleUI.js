@@ -396,29 +396,29 @@ class PuzzleUI {
   }
   
   render2048UI(container, gameState) {
-    container.innerHTML = `
-      <div class="game-2048-container">
-        <div class="game-2048-header">
-          <div class="game-2048-score">
-            <div class="score-label">Score</div>
-            <div class="score-value" id="2048-score">${gameState.score}</div>
-          </div>
-          <button class="btn btn-secondary" id="2048-new-game">New Game</button>
-          <button class="btn btn-secondary" id="2048-exit">Exit</button>
+  container.innerHTML = `
+    <div class="game-2048-container">
+      <div class="game-2048-header">
+        <div class="game-2048-score">
+          <div class="score-label">Score</div>
+          <div class="score-value" id="game2048-score">${gameState.score}</div>
         </div>
-        
-        <div class="game-2048-grid" id="2048-grid">
-          ${this.render2048Grid(gameState.grid)}
-        </div>
-        
-        <div class="game-2048-controls">
-          <p class="swipe-hint">Use arrow keys or swipe to move tiles</p>
-        </div>
+        <button class="btn btn-secondary" id="game2048-new-game">New Game</button>
+        <button class="btn btn-secondary" id="game2048-exit">Exit</button>
       </div>
-    `;
-    
-    this.bind2048Controls(container);
-  }
+      
+      <div class="game-2048-grid" id="game2048-grid">
+        ${this.render2048Grid(gameState.grid)}
+      </div>
+      
+      <div class="game-2048-controls">
+        <p class="swipe-hint">Use arrow keys or swipe to move tiles</p>
+      </div>
+    </div>
+  `;
+  
+  this.bind2048Controls(container);
+}
   
   render2048Grid(grid) {
     let html = '';
@@ -432,30 +432,47 @@ class PuzzleUI {
   }
   
   bind2048Controls(container) {
-    const handleKeyPress = (e) => {
-      const keyMap = {
-        'ArrowUp': 'up',
-        'ArrowDown': 'down',
-        'ArrowLeft': 'left',
-        'ArrowRight': 'right'
-      };
-      
-      const direction = keyMap[e.key];
-      if (direction) {
-        e.preventDefault();
-        this.move2048(direction);
-      }
+  const handleKeyPress = (e) => {
+    console.log('Key detected in 2048:', e.key); // DEBUG
+    
+    const keyMap = {
+      'ArrowUp': 'up',
+      'ArrowDown': 'down',
+      'ArrowLeft': 'left',
+      'ArrowRight': 'right',
+      'w': 'up',
+      'W': 'up',
+      's': 'down',
+      'S': 'down',
+      'a': 'left',
+      'A': 'left',
+      'd': 'right',
+      'D': 'right'
     };
     
-    document.addEventListener('keydown', handleKeyPress);
-    container._keyHandler = handleKeyPress;
-    
-    // Touch controls
-    let touchStartX = 0;
-    let touchStartY = 0;
-    
-    const gridEl = container.querySelector('#2048-grid');
-    
+    const direction = keyMap[e.key];
+    if (direction) {
+      e.preventDefault();
+      console.log('Moving:', direction); // DEBUG
+      this.move2048(direction);
+    }
+  };
+  
+  // Remove any old handlers first
+  if (container._keyHandler) {
+    document.removeEventListener('keydown', container._keyHandler);
+  }
+  
+  document.addEventListener('keydown', handleKeyPress);
+  container._keyHandler = handleKeyPress;
+  
+  // Touch controls
+  let touchStartX = 0;
+  let touchStartY = 0;
+  
+  const gridEl = container.querySelector('#game2048-grid'); // SCHIMBAT
+  
+  if (gridEl) {
     gridEl.addEventListener('touchstart', (e) => {
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
@@ -474,34 +491,35 @@ class PuzzleUI {
         this.move2048(diffY > 0 ? 'down' : 'up');
       }
     });
-    
-    document.getElementById('2048-new-game')?.addEventListener('click', () => {
-      const newState = this.game2048.newGame();
-      this.render2048UI(container, newState);
-    });
-    
-    document.getElementById('2048-exit')?.addEventListener('click', () => {
-      this.exit2048Game(container);
-    });
   }
   
-  move2048(direction) {
-    const result = this.game2048.move(direction);
+  document.getElementById('game2048-new-game')?.addEventListener('click', () => {
+    const newState = this.game2048.newGame();
+    this.render2048UI(container, newState);
+  });
+  
+  document.getElementById('game2048-exit')?.addEventListener('click', () => {
+    this.exit2048Game(container);
+  });
+}
+
+move2048(direction) {
+  const result = this.game2048.move(direction);
+  
+  if (result) {
+    const scoreEl = document.getElementById('game2048-score'); // SCHIMBAT
+    if (scoreEl) scoreEl.textContent = result.score;
     
-    if (result) {
-      const scoreEl = document.getElementById('2048-score');
-      if (scoreEl) scoreEl.textContent = result.score;
-      
-      const gridEl = document.getElementById('2048-grid');
-      if (gridEl) gridEl.innerHTML = this.render2048Grid(result.grid);
-      
-      if (result.gameOver) {
-        setTimeout(() => {
-          this.show2048GameOver(result);
-        }, 500);
-      }
+    const gridEl = document.getElementById('game2048-grid'); // SCHIMBAT
+    if (gridEl) gridEl.innerHTML = this.render2048Grid(result.grid);
+    
+    if (result.gameOver) {
+      setTimeout(() => {
+        this.show2048GameOver(result);
+      }, 500);
     }
   }
+}
   
   show2048GameOver(result) {
     const container = document.getElementById('puzzle-game-active');

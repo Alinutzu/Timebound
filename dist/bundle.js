@@ -14142,7 +14142,7 @@ var PuzzleUI = /*#__PURE__*/function () {
   }, {
     key: "render2048UI",
     value: function render2048UI(container, gameState) {
-      container.innerHTML = "\n      <div class=\"game-2048-container\">\n        <div class=\"game-2048-header\">\n          <div class=\"game-2048-score\">\n            <div class=\"score-label\">Score</div>\n            <div class=\"score-value\" id=\"2048-score\">".concat(gameState.score, "</div>\n          </div>\n          <button class=\"btn btn-secondary\" id=\"2048-new-game\">New Game</button>\n          <button class=\"btn btn-secondary\" id=\"2048-exit\">Exit</button>\n        </div>\n        \n        <div class=\"game-2048-grid\" id=\"2048-grid\">\n          ").concat(this.render2048Grid(gameState.grid), "\n        </div>\n        \n        <div class=\"game-2048-controls\">\n          <p class=\"swipe-hint\">Use arrow keys or swipe to move tiles</p>\n        </div>\n      </div>\n    ");
+      container.innerHTML = "\n    <div class=\"game-2048-container\">\n      <div class=\"game-2048-header\">\n        <div class=\"game-2048-score\">\n          <div class=\"score-label\">Score</div>\n          <div class=\"score-value\" id=\"game2048-score\">".concat(gameState.score, "</div>\n        </div>\n        <button class=\"btn btn-secondary\" id=\"game2048-new-game\">New Game</button>\n        <button class=\"btn btn-secondary\" id=\"game2048-exit\">Exit</button>\n      </div>\n      \n      <div class=\"game-2048-grid\" id=\"game2048-grid\">\n        ").concat(this.render2048Grid(gameState.grid), "\n      </div>\n      \n      <div class=\"game-2048-controls\">\n        <p class=\"swipe-hint\">Use arrow keys or swipe to move tiles</p>\n      </div>\n    </div>\n  ");
       this.bind2048Controls(container);
     }
   }, {
@@ -14182,45 +14182,64 @@ var PuzzleUI = /*#__PURE__*/function () {
         _document$getElementB,
         _document$getElementB2;
       var handleKeyPress = function handleKeyPress(e) {
+        console.log('Key detected in 2048:', e.key); // DEBUG
+
         var keyMap = {
           'ArrowUp': 'up',
           'ArrowDown': 'down',
           'ArrowLeft': 'left',
-          'ArrowRight': 'right'
+          'ArrowRight': 'right',
+          'w': 'up',
+          'W': 'up',
+          's': 'down',
+          'S': 'down',
+          'a': 'left',
+          'A': 'left',
+          'd': 'right',
+          'D': 'right'
         };
         var direction = keyMap[e.key];
         if (direction) {
           e.preventDefault();
+          console.log('Moving:', direction); // DEBUG
           _this5.move2048(direction);
         }
       };
+
+      // Remove any old handlers first
+      if (container._keyHandler) {
+        document.removeEventListener('keydown', container._keyHandler);
+      }
       document.addEventListener('keydown', handleKeyPress);
       container._keyHandler = handleKeyPress;
 
       // Touch controls
       var touchStartX = 0;
       var touchStartY = 0;
-      var gridEl = container.querySelector('#2048-grid');
-      gridEl.addEventListener('touchstart', function (e) {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-      });
-      gridEl.addEventListener('touchend', function (e) {
-        var touchEndX = e.changedTouches[0].clientX;
-        var touchEndY = e.changedTouches[0].clientY;
-        var diffX = touchEndX - touchStartX;
-        var diffY = touchEndY - touchStartY;
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-          _this5.move2048(diffX > 0 ? 'right' : 'left');
-        } else {
-          _this5.move2048(diffY > 0 ? 'down' : 'up');
-        }
-      });
-      (_document$getElementB = document.getElementById('2048-new-game')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
+      var gridEl = container.querySelector('#game2048-grid'); // SCHIMBAT
+
+      if (gridEl) {
+        gridEl.addEventListener('touchstart', function (e) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        });
+        gridEl.addEventListener('touchend', function (e) {
+          var touchEndX = e.changedTouches[0].clientX;
+          var touchEndY = e.changedTouches[0].clientY;
+          var diffX = touchEndX - touchStartX;
+          var diffY = touchEndY - touchStartY;
+          if (Math.abs(diffX) > Math.abs(diffY)) {
+            _this5.move2048(diffX > 0 ? 'right' : 'left');
+          } else {
+            _this5.move2048(diffY > 0 ? 'down' : 'up');
+          }
+        });
+      }
+      (_document$getElementB = document.getElementById('game2048-new-game')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
         var newState = _this5.game2048.newGame();
         _this5.render2048UI(container, newState);
       });
-      (_document$getElementB2 = document.getElementById('2048-exit')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', function () {
+      (_document$getElementB2 = document.getElementById('game2048-exit')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', function () {
         _this5.exit2048Game(container);
       });
     }
@@ -14230,9 +14249,9 @@ var PuzzleUI = /*#__PURE__*/function () {
       var _this6 = this;
       var result = this.game2048.move(direction);
       if (result) {
-        var scoreEl = document.getElementById('2048-score');
+        var scoreEl = document.getElementById('game2048-score'); // SCHIMBAT
         if (scoreEl) scoreEl.textContent = result.score;
-        var gridEl = document.getElementById('2048-grid');
+        var gridEl = document.getElementById('game2048-grid'); // SCHIMBAT
         if (gridEl) gridEl.innerHTML = this.render2048Grid(result.grid);
         if (result.gameOver) {
           setTimeout(function () {

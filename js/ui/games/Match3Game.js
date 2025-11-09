@@ -167,6 +167,15 @@ createSpecialGem(row, col, type) {
   this.grid[row][col] = this.specialGems[type];
   
   console.log(`✨ Created ${type} special gem at ${row},${col}`);
+
+  stateManager.dispatch({
+  type: 'TRACK_SPECIAL_GEM_CREATED',
+  payload: {
+    game: 'match3',
+    gemType: type
+  }
+});
+
 }
 
 /**
@@ -686,15 +695,34 @@ handleTouchMove(e) {
   }
   
   const result = {
+  score: this.score,
+  moves: this.moves,
+  movesUsed: this.moves,
+  maxMoves: this.options.maxMoves,
+  bestCombo: this.bestCombo,
+  totalDamage: Math.floor(this.score / 5),
+  success: this.score >= this.options.targetScore
+};
+
+// Track game completion for achievements
+const isPerfect = this.score >= 3000 && this.options.mode === 'boss';
+
+stateManager.dispatch({
+  type: 'TRACK_MATCH3_GAME',
+  payload: {
     score: this.score,
-    moves: this.moves,
-    movesUsed: this.moves,
-    maxMoves: this.options.maxMoves,
-    bestCombo: this.bestCombo,
-    totalDamage: Math.floor(this.score / 5),
-    success: this.score >= this.options.targetScore
-  };
-  
+    combo: this.bestCombo,
+    isPerfect
+  }
+});
+
+// Emit stats update for achievement checking
+eventBus.emit('mini-game:stats-updated', { game: 'match3' });
+
+// Emit completion event (pentru boss battles)
+eventBus.emit('match3:game-complete', { result });
+
+
   console.log('📊 Final results:', result);
   
   // Show game over overlay

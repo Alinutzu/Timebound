@@ -231,7 +231,19 @@ class Game2048 {
       score: this.score,
       isHighScore: this.score > highScore
     });
+
+    // Track stats for achievements
+const maxTile = Math.max(...this.grid.flat());
+
+stateManager.dispatch({
+  type: 'TRACK_2048_TILE',
+  payload: {
+    tile: maxTile,
+    score: this.score
   }
+});
+
+ }
   
   formatReward(reward) {
     const parts = [];

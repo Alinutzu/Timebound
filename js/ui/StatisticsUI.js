@@ -4,6 +4,7 @@
 
 import statisticsSystem from '../systems/StatisticsSystem.js';
 import eventBus from '../utils/EventBus.js';
+import miniGameStatsUI from './MiniGameStatsUI.js'; // ✅ ADĂUGAT
 
 class StatisticsUI {
   constructor(containerId) {
@@ -30,6 +31,7 @@ class StatisticsUI {
     }, 5000);
   }
   
+  // ✅ MODIFICAT - render() cu mini-game stats
   render() {
     const stats = statisticsSystem.getAllStats();
     
@@ -42,6 +44,13 @@ class StatisticsUI {
     
     // Add milestones
     this.renderMilestones();
+    
+    // ✅ ADĂUGAT - Render mini-game statistics
+    const miniGameContainer = document.createElement('div');
+    miniGameContainer.id = 'mini-game-statistics';
+    this.container.appendChild(miniGameContainer);
+    
+    miniGameStatsUI.renderMiniGameStats(miniGameContainer);
   }
   
   createCategorySection(category, data) {

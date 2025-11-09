@@ -68,8 +68,19 @@ class StateManager {
         lastReset: Date.now()
       },
       
-      // Achievements
-      achievements: {},
+      // ✅ MODIFICAT - Achievements cu structură completă
+      achievements: {
+        // Pentru achievement system-ul principal (idle game)
+        unlocked: [],        // ← ADĂUGAT
+        claimed: [],         // ← ADĂUGAT
+        // Pentru mini-game achievements
+        miniGames: {
+          dailySpin: [],
+          game2048: [],
+          match3: []
+        },
+        miniGamesTimestamps: {}
+      },
       
       // Bosses
       bosses: {},
@@ -118,6 +129,7 @@ class StateManager {
         sessionsPlayed: 0,
         totalPlayTime: 0,
         sessionStartTime: Date.now(),
+        totalClicks: 0,        // ← ADĂUGAT pentru firstClick achievement
         structuresPurchased: 0,
         upgradesPurchased: 0,
         guardiansSummoned: 0,
@@ -143,6 +155,13 @@ class StateManager {
         game2048: {
           highScore: 0,
           gamesPlayed: 0
+        },
+        match3: {              // ← ADĂUGAT
+          highScore: 0,
+          gamesPlayed: 0,
+          bestCombo: 0,
+          specialGemsCreated: {},
+          perfectVictories: 0
         }
       },
       
@@ -407,32 +426,41 @@ class StateManager {
           }
         };
       
-      // ===== ACHIEVEMENTS =====
-      case 'UNLOCK_ACHIEVEMENT':
+      // ===== ACHIEVEMENTS (General Idle Game) =====
+      case 'UNLOCK_ACHIEVEMENT': {
+        const achievementId = action.payload.id || action.payload.achievementKey;
+        
+        // Check if already unlocked
+        if (state.achievements?.unlocked?.includes(achievementId)) {
+          return state;
+        }
+        
         return {
           ...state,
           achievements: {
             ...state.achievements,
-            [action.payload.achievementKey]: {
-              unlocked: true,
-              unlockedAt: Date.now(),
-              claimed: false
-            }
+            unlocked: [
+              ...(state.achievements?.unlocked || []),
+              achievementId
+            ]
           }
         };
+      }
       
-      case 'CLAIM_ACHIEVEMENT':
+      case 'CLAIM_ACHIEVEMENT': {
+        const achievementId = action.payload.id || action.payload.achievementKey;
+        
         return {
           ...state,
           achievements: {
             ...state.achievements,
-            [action.payload.achievementKey]: {
-              ...state.achievements[action.payload.achievementKey],
-              claimed: true,
-              claimedAt: Date.now()
-            }
+            claimed: [
+              ...(state.achievements?.claimed || []),
+              achievementId
+            ]
           }
         };
+      }
       
       case 'TRIGGER_ACHIEVEMENT':
         return {
@@ -445,6 +473,124 @@ class StateManager {
             }
           }
         };
+      
+      // ===== MINI-GAME ACHIEVEMENTS =====
+      case 'UNLOCK_MINI_GAME_ACHIEVEMENT': {
+        const { game, achievementId, timestamp } = action.payload;
+        
+        return {
+          ...state,
+          achievements: {
+            ...state.achievements,
+            miniGames: {
+              ...state.achievements?.miniGames,
+              [game]: [
+                ...(state.achievements?.miniGames?.[game] || []),
+                achievementId
+              ]
+            },
+            miniGamesTimestamps: {
+              ...state.achievements?.miniGamesTimestamps,
+              [game]: {
+                ...state.achievements?.miniGamesTimestamps?.[game],
+                [achievementId]: timestamp
+              }
+            }
+          }
+        };
+      }
+
+      case 'UPDATE_MINI_GAME_STATS': {
+        const { game, stats } = action.payload;
+        
+        return {
+          ...state,
+          miniGames: {
+            ...state.miniGames,
+            [game]: {
+              ...state.miniGames?.[game],
+              ...stats
+            }
+          }
+        };
+      }
+
+      case 'TRACK_SPECIAL_GEM_CREATED': {
+        const { game, gemType } = action.payload;
+        const currentStats = state.miniGames?.[game] || {};
+        const specialGems = currentStats.specialGemsCreated || {};
+        
+        return {
+          ...state,
+          miniGames: {
+            ...state.miniGames,
+            [game]: {
+              ...currentStats,
+              specialGemsCreated: {
+                ...specialGems,
+                [gemType]: (specialGems[gemType] || 0) + 1
+              }
+            }
+          }
+        };
+      }
+
+      case 'TRACK_SPIN_REWARD': {
+        const { gemAmount, hasGuardian } = action.payload;
+        const spinData = state.miniGames?.dailySpin || {};
+        
+        return {
+          ...state,
+          miniGames: {
+            ...state.miniGames,
+            dailySpin: {
+              ...spinData,
+              highestGemReward: Math.max(spinData.highestGemReward || 0, gemAmount || 0),
+              guardiansWon: (spinData.guardiansWon || 0) + (hasGuardian ? 1 : 0),
+              spinHistory: [
+                ...(spinData.spinHistory || []),
+                Date.now()
+              ].slice(-100)
+            }
+          }
+        };
+      }
+
+      case 'TRACK_2048_TILE': {
+        const { tile, score } = action.payload;
+        const gameData = state.miniGames?.game2048 || {};
+        
+        return {
+          ...state,
+          miniGames: {
+            ...state.miniGames,
+            game2048: {
+              ...gameData,
+              highestTile: Math.max(gameData.highestTile || 0, tile),
+              highScore: Math.max(gameData.highScore || 0, score)
+            }
+          }
+        };
+      }
+
+      case 'TRACK_MATCH3_GAME': {
+        const { score, combo, isPerfect } = action.payload;
+        const gameData = state.miniGames?.match3 || {};
+        
+        return {
+          ...state,
+          miniGames: {
+            ...state.miniGames,
+            match3: {
+              ...gameData,
+              gamesPlayed: (gameData.gamesPlayed || 0) + 1,
+              highScore: Math.max(gameData.highScore || 0, score),
+              bestCombo: Math.max(gameData.bestCombo || 0, combo),
+              perfectVictories: (gameData.perfectVictories || 0) + (isPerfect ? 1 : 0)
+            }
+          }
+        };
+      }
       
       // ===== BOSSES =====
       case 'INIT_BOSSES':

@@ -200,6 +200,18 @@ class DailySpinGame {
     });
     
     logger.info('DailySpinGame', 'Reward granted', reward);
+
+    // Track rewards for achievements
+const gemAmount = reward.gems || 0;
+const hasGuardian = reward.guardian ? true : false;
+
+stateManager.dispatch({
+  type: 'TRACK_SPIN_REWARD',
+  payload: {
+    gemAmount,
+    hasGuardian
+  }
+});
     
     eventBus.emit('daily-spin:reward-granted', { reward, segment });
     

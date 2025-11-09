@@ -324,7 +324,7 @@ if (_config["default"].DEBUG_MODE) {
 }
 var _default = exports["default"] = game;
 
-},{"../config.js":1,"../systems/AchievementSystem.js":16,"../systems/AscensionSystem.js":17,"../systems/AutomationSystem.js":18,"../systems/BossSystem.js":19,"../systems/DailyRewardSystem.js":20,"../systems/GuardianSystem.js":21,"../systems/QuestSystem.js":22,"../systems/RealmSystem.js":23,"../systems/ShopSystem.js":24,"../systems/StatisticsSystem.js":25,"../systems/StructureSystem.js":26,"../systems/TutorialSystem.js":27,"../systems/UpgradeQueueSystem.js":28,"../systems/UpgradeSystem.js":29,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./SaveManager.js":4,"./StateManager.js":5,"./TickManager.js":6}],3:[function(require,module,exports){
+},{"../config.js":1,"../systems/AchievementSystem.js":17,"../systems/AscensionSystem.js":18,"../systems/AutomationSystem.js":19,"../systems/BossSystem.js":20,"../systems/DailyRewardSystem.js":21,"../systems/GuardianSystem.js":22,"../systems/QuestSystem.js":24,"../systems/RealmSystem.js":25,"../systems/ShopSystem.js":26,"../systems/StatisticsSystem.js":27,"../systems/StructureSystem.js":28,"../systems/TutorialSystem.js":29,"../systems/UpgradeQueueSystem.js":30,"../systems/UpgradeSystem.js":31,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./SaveManager.js":4,"./StateManager.js":5,"./TickManager.js":6}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -605,7 +605,7 @@ var ResourceManager = /*#__PURE__*/function () {
 var resourceManager = new ResourceManager();
 var _default = exports["default"] = resourceManager;
 
-},{"../utils/Logger.js":52}],4:[function(require,module,exports){
+},{"../utils/Logger.js":55}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1095,7 +1095,7 @@ var SaveManager = /*#__PURE__*/function () {
 var saveManager = new SaveManager();
 var _default = exports["default"] = saveManager;
 
-},{"../config.js":1,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./StateManager.js":5}],5:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./StateManager.js":5}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1180,8 +1180,21 @@ var StateManager = /*#__PURE__*/function () {
           dailyLimit: _config["default"].BALANCING.DAILY_QUEST_LIMIT,
           lastReset: Date.now()
         },
-        // Achievements
-        achievements: {},
+        // ✅ MODIFICAT - Achievements cu structură completă
+        achievements: {
+          // Pentru achievement system-ul principal (idle game)
+          unlocked: [],
+          // ← ADĂUGAT
+          claimed: [],
+          // ← ADĂUGAT
+          // Pentru mini-game achievements
+          miniGames: {
+            dailySpin: [],
+            game2048: [],
+            match3: []
+          },
+          miniGamesTimestamps: {}
+        },
         // Bosses
         bosses: {},
         currentBoss: null,
@@ -1223,6 +1236,8 @@ var StateManager = /*#__PURE__*/function () {
           sessionsPlayed: 0,
           totalPlayTime: 0,
           sessionStartTime: Date.now(),
+          totalClicks: 0,
+          // ← ADĂUGAT pentru firstClick achievement
           structuresPurchased: 0,
           upgradesPurchased: 0,
           guardiansSummoned: 0,
@@ -1247,6 +1262,14 @@ var StateManager = /*#__PURE__*/function () {
           game2048: {
             highScore: 0,
             gamesPlayed: 0
+          },
+          match3: {
+            // ← ADĂUGAT
+            highScore: 0,
+            gamesPlayed: 0,
+            bestCombo: 0,
+            specialGemsCreated: {},
+            perfectVictories: 0
           }
         },
         // Upgrade Queue
@@ -1321,7 +1344,7 @@ var StateManager = /*#__PURE__*/function () {
   }, {
     key: "reducer",
     value: function reducer(state, action) {
-      var _state$structures$str, _state$structures$str2, _state$upgrades$upgra, _state$upgradeQueue, _state$shop$adWatchCo, _state$miniGames, _state$miniGames2, _state$miniGames3, _state$miniGames4, _state$miniGames5, _state$miniGames6, _state$miniGames7, _state$miniGames8;
+      var _state$structures$str, _state$structures$str2, _state$upgrades$upgra, _state$upgradeQueue, _state$shop$adWatchCo, _state$miniGames6, _state$miniGames7, _state$miniGames8, _state$miniGames9, _state$miniGames0, _state$miniGames1, _state$miniGames10, _state$miniGames11;
       switch (action.type) {
         // ===== RESOURCES =====
         case 'ADD_RESOURCE':
@@ -1452,28 +1475,130 @@ var StateManager = /*#__PURE__*/function () {
             })
           });
 
-        // ===== ACHIEVEMENTS =====
+        // ===== ACHIEVEMENTS (General Idle Game) =====
         case 'UNLOCK_ACHIEVEMENT':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            achievements: _objectSpread(_objectSpread({}, state.achievements), {}, _defineProperty({}, action.payload.achievementKey, {
-              unlocked: true,
-              unlockedAt: Date.now(),
-              claimed: false
-            }))
-          });
+          {
+            var _state$achievements, _state$achievements2;
+            var achievementId = action.payload.id || action.payload.achievementKey;
+
+            // Check if already unlocked
+            if ((_state$achievements = state.achievements) !== null && _state$achievements !== void 0 && (_state$achievements = _state$achievements.unlocked) !== null && _state$achievements !== void 0 && _state$achievements.includes(achievementId)) {
+              return state;
+            }
+            return _objectSpread(_objectSpread({}, state), {}, {
+              achievements: _objectSpread(_objectSpread({}, state.achievements), {}, {
+                unlocked: [].concat(_toConsumableArray(((_state$achievements2 = state.achievements) === null || _state$achievements2 === void 0 ? void 0 : _state$achievements2.unlocked) || []), [achievementId])
+              })
+            });
+          }
         case 'CLAIM_ACHIEVEMENT':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            achievements: _objectSpread(_objectSpread({}, state.achievements), {}, _defineProperty({}, action.payload.achievementKey, _objectSpread(_objectSpread({}, state.achievements[action.payload.achievementKey]), {}, {
-              claimed: true,
-              claimedAt: Date.now()
-            })))
-          });
+          {
+            var _state$achievements3;
+            var _achievementId = action.payload.id || action.payload.achievementKey;
+            return _objectSpread(_objectSpread({}, state), {}, {
+              achievements: _objectSpread(_objectSpread({}, state.achievements), {}, {
+                claimed: [].concat(_toConsumableArray(((_state$achievements3 = state.achievements) === null || _state$achievements3 === void 0 ? void 0 : _state$achievements3.claimed) || []), [_achievementId])
+              })
+            });
+          }
         case 'TRIGGER_ACHIEVEMENT':
           return _objectSpread(_objectSpread({}, state), {}, {
             achievements: _objectSpread(_objectSpread({}, state.achievements), {}, _defineProperty({}, action.payload.achievementKey, _objectSpread(_objectSpread({}, state.achievements[action.payload.achievementKey]), {}, {
               triggered: true
             })))
           });
+
+        // ===== MINI-GAME ACHIEVEMENTS =====
+        case 'UNLOCK_MINI_GAME_ACHIEVEMENT':
+          {
+            var _state$achievements4, _state$achievements5, _state$achievements6, _state$achievements7;
+            var _action$payload3 = action.payload,
+              _game = _action$payload3.game,
+              _achievementId2 = _action$payload3.achievementId,
+              timestamp = _action$payload3.timestamp;
+            return _objectSpread(_objectSpread({}, state), {}, {
+              achievements: _objectSpread(_objectSpread({}, state.achievements), {}, {
+                miniGames: _objectSpread(_objectSpread({}, (_state$achievements4 = state.achievements) === null || _state$achievements4 === void 0 ? void 0 : _state$achievements4.miniGames), {}, _defineProperty({}, _game, [].concat(_toConsumableArray(((_state$achievements5 = state.achievements) === null || _state$achievements5 === void 0 || (_state$achievements5 = _state$achievements5.miniGames) === null || _state$achievements5 === void 0 ? void 0 : _state$achievements5[_game]) || []), [_achievementId2]))),
+                miniGamesTimestamps: _objectSpread(_objectSpread({}, (_state$achievements6 = state.achievements) === null || _state$achievements6 === void 0 ? void 0 : _state$achievements6.miniGamesTimestamps), {}, _defineProperty({}, _game, _objectSpread(_objectSpread({}, (_state$achievements7 = state.achievements) === null || _state$achievements7 === void 0 || (_state$achievements7 = _state$achievements7.miniGamesTimestamps) === null || _state$achievements7 === void 0 ? void 0 : _state$achievements7[_game]), {}, _defineProperty({}, _achievementId2, timestamp))))
+              })
+            });
+          }
+        case 'UPDATE_MINI_GAME_STATS':
+          {
+            var _state$miniGames;
+            var _action$payload4 = action.payload,
+              _game2 = _action$payload4.game,
+              stats = _action$payload4.stats;
+            return _objectSpread(_objectSpread({}, state), {}, {
+              miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, _game2, _objectSpread(_objectSpread({}, (_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames[_game2]), stats)))
+            });
+          }
+        case 'TRACK_SPECIAL_GEM_CREATED':
+          {
+            var _state$miniGames2;
+            var _action$payload5 = action.payload,
+              _game3 = _action$payload5.game,
+              gemType = _action$payload5.gemType;
+            var currentStats = ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2[_game3]) || {};
+            var specialGems = currentStats.specialGemsCreated || {};
+            return _objectSpread(_objectSpread({}, state), {}, {
+              miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, _game3, _objectSpread(_objectSpread({}, currentStats), {}, {
+                specialGemsCreated: _objectSpread(_objectSpread({}, specialGems), {}, _defineProperty({}, gemType, (specialGems[gemType] || 0) + 1))
+              })))
+            });
+          }
+        case 'TRACK_SPIN_REWARD':
+          {
+            var _state$miniGames3;
+            var _action$payload6 = action.payload,
+              gemAmount = _action$payload6.gemAmount,
+              hasGuardian = _action$payload6.hasGuardian;
+            var spinData = ((_state$miniGames3 = state.miniGames) === null || _state$miniGames3 === void 0 ? void 0 : _state$miniGames3.dailySpin) || {};
+            return _objectSpread(_objectSpread({}, state), {}, {
+              miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, {
+                dailySpin: _objectSpread(_objectSpread({}, spinData), {}, {
+                  highestGemReward: Math.max(spinData.highestGemReward || 0, gemAmount || 0),
+                  guardiansWon: (spinData.guardiansWon || 0) + (hasGuardian ? 1 : 0),
+                  spinHistory: [].concat(_toConsumableArray(spinData.spinHistory || []), [Date.now()]).slice(-100)
+                })
+              })
+            });
+          }
+        case 'TRACK_2048_TILE':
+          {
+            var _state$miniGames4;
+            var _action$payload7 = action.payload,
+              tile = _action$payload7.tile,
+              score = _action$payload7.score;
+            var gameData = ((_state$miniGames4 = state.miniGames) === null || _state$miniGames4 === void 0 ? void 0 : _state$miniGames4.game2048) || {};
+            return _objectSpread(_objectSpread({}, state), {}, {
+              miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, {
+                game2048: _objectSpread(_objectSpread({}, gameData), {}, {
+                  highestTile: Math.max(gameData.highestTile || 0, tile),
+                  highScore: Math.max(gameData.highScore || 0, score)
+                })
+              })
+            });
+          }
+        case 'TRACK_MATCH3_GAME':
+          {
+            var _state$miniGames5;
+            var _action$payload8 = action.payload,
+              _score = _action$payload8.score,
+              combo = _action$payload8.combo,
+              isPerfect = _action$payload8.isPerfect;
+            var _gameData = ((_state$miniGames5 = state.miniGames) === null || _state$miniGames5 === void 0 ? void 0 : _state$miniGames5.match3) || {};
+            return _objectSpread(_objectSpread({}, state), {}, {
+              miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, {
+                match3: _objectSpread(_objectSpread({}, _gameData), {}, {
+                  gamesPlayed: (_gameData.gamesPlayed || 0) + 1,
+                  highScore: Math.max(_gameData.highScore || 0, _score),
+                  bestCombo: Math.max(_gameData.bestCombo || 0, combo),
+                  perfectVictories: (_gameData.perfectVictories || 0) + (isPerfect ? 1 : 0)
+                })
+              })
+            });
+          }
 
         // ===== BOSSES =====
         case 'INIT_BOSSES':
@@ -1679,34 +1804,34 @@ var StateManager = /*#__PURE__*/function () {
         // ===== MINI-GAMES =====
         case 'UPDATE_MINI_GAME':
           return _objectSpread(_objectSpread({}, state), {}, {
-            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, action.payload.game, _objectSpread(_objectSpread({}, ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames[action.payload.game]) || {}), action.payload.data)))
+            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, action.payload.game, _objectSpread(_objectSpread({}, ((_state$miniGames6 = state.miniGames) === null || _state$miniGames6 === void 0 ? void 0 : _state$miniGames6[action.payload.game]) || {}), action.payload.data)))
           });
         case 'INCREMENT_MINI_GAME_STAT':
           var game = action.payload.game;
           var stat = action.payload.stat;
           return _objectSpread(_objectSpread({}, state), {}, {
-            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, game, _objectSpread(_objectSpread({}, ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2[game]) || {}), {}, _defineProperty({}, stat, (((_state$miniGames3 = state.miniGames) === null || _state$miniGames3 === void 0 || (_state$miniGames3 = _state$miniGames3[game]) === null || _state$miniGames3 === void 0 ? void 0 : _state$miniGames3[stat]) || 0) + 1))))
+            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, game, _objectSpread(_objectSpread({}, ((_state$miniGames7 = state.miniGames) === null || _state$miniGames7 === void 0 ? void 0 : _state$miniGames7[game]) || {}), {}, _defineProperty({}, stat, (((_state$miniGames8 = state.miniGames) === null || _state$miniGames8 === void 0 || (_state$miniGames8 = _state$miniGames8[game]) === null || _state$miniGames8 === void 0 ? void 0 : _state$miniGames8[stat]) || 0) + 1))))
           });
         case 'ADD_PURCHASED_SPINS':
           return _objectSpread(_objectSpread({}, state), {}, {
             miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, {
-              dailySpin: _objectSpread(_objectSpread({}, ((_state$miniGames4 = state.miniGames) === null || _state$miniGames4 === void 0 ? void 0 : _state$miniGames4.dailySpin) || {}), {}, {
-                purchasedSpins: (((_state$miniGames5 = state.miniGames) === null || _state$miniGames5 === void 0 || (_state$miniGames5 = _state$miniGames5.dailySpin) === null || _state$miniGames5 === void 0 ? void 0 : _state$miniGames5.purchasedSpins) || 0) + action.payload.count
+              dailySpin: _objectSpread(_objectSpread({}, ((_state$miniGames9 = state.miniGames) === null || _state$miniGames9 === void 0 ? void 0 : _state$miniGames9.dailySpin) || {}), {}, {
+                purchasedSpins: (((_state$miniGames0 = state.miniGames) === null || _state$miniGames0 === void 0 || (_state$miniGames0 = _state$miniGames0.dailySpin) === null || _state$miniGames0 === void 0 ? void 0 : _state$miniGames0.purchasedSpins) || 0) + action.payload.count
               })
             })
           });
         case 'DECREMENT_PURCHASED_SPINS':
           return _objectSpread(_objectSpread({}, state), {}, {
             miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, {
-              dailySpin: _objectSpread(_objectSpread({}, ((_state$miniGames6 = state.miniGames) === null || _state$miniGames6 === void 0 ? void 0 : _state$miniGames6.dailySpin) || {}), {}, {
-                purchasedSpins: Math.max(0, (((_state$miniGames7 = state.miniGames) === null || _state$miniGames7 === void 0 || (_state$miniGames7 = _state$miniGames7.dailySpin) === null || _state$miniGames7 === void 0 ? void 0 : _state$miniGames7.purchasedSpins) || 0) - 1)
+              dailySpin: _objectSpread(_objectSpread({}, ((_state$miniGames1 = state.miniGames) === null || _state$miniGames1 === void 0 ? void 0 : _state$miniGames1.dailySpin) || {}), {}, {
+                purchasedSpins: Math.max(0, (((_state$miniGames10 = state.miniGames) === null || _state$miniGames10 === void 0 || (_state$miniGames10 = _state$miniGames10.dailySpin) === null || _state$miniGames10 === void 0 ? void 0 : _state$miniGames10.purchasedSpins) || 0) - 1)
               })
             })
           });
         case 'ACTIVATE_UNLIMITED_SPINS':
           return _objectSpread(_objectSpread({}, state), {}, {
             miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, {
-              dailySpin: _objectSpread(_objectSpread({}, ((_state$miniGames8 = state.miniGames) === null || _state$miniGames8 === void 0 ? void 0 : _state$miniGames8.dailySpin) || {}), {}, {
+              dailySpin: _objectSpread(_objectSpread({}, ((_state$miniGames11 = state.miniGames) === null || _state$miniGames11 === void 0 ? void 0 : _state$miniGames11.dailySpin) || {}), {}, {
                 unlimitedUntil: action.payload.expiresAt
               })
             })
@@ -1929,7 +2054,7 @@ var StateManager = /*#__PURE__*/function () {
 var stateManager = new StateManager();
 var _default = exports["default"] = stateManager;
 
-},{"../config.js":1,"../utils/EventBus.js":50,"../utils/Logger.js":52}],6:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":53,"../utils/Logger.js":55}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2292,7 +2417,7 @@ var TickManager = /*#__PURE__*/function () {
 var tickManager = new TickManager();
 var _default = exports["default"] = tickManager;
 
-},{"../config.js":1,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./ResourceManager.js":3,"./StateManager.js":5}],7:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./ResourceManager.js":3,"./StateManager.js":5}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3100,7 +3225,7 @@ var ACHIEVEMENTS = {
 };
 var _default = exports["default"] = ACHIEVEMENTS;
 
-},{"../core/StateManager.js":5,"../systems/StructureSystem.js":26}],8:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/StructureSystem.js":28}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3698,6 +3823,554 @@ var _default = exports["default"] = GUARDIAN_POOL;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.MINI_GAME_ACHIEVEMENTS = exports.ACHIEVEMENT_TIERS = void 0;
+exports.getAchievementById = getAchievementById;
+exports.getAchievementsByGame = getAchievementsByGame;
+exports.getAllMiniGameAchievements = getAllMiniGameAchievements;
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+/**
+ * Mini-Game Achievements Database
+ * Achievements specific pentru Daily Spin, 2048, și Match-3
+ */
+
+var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
+  // ==================== DAILY SPIN ACHIEVEMENTS ====================
+  dailySpin: [{
+    id: 'spin_first',
+    name: 'First Spin',
+    description: 'Complete your first daily spin',
+    icon: '🎰',
+    category: 'dailySpin',
+    tier: 'bronze',
+    reward: {
+      timeShards: 50,
+      energy: 1000
+    },
+    condition: function condition(stats) {
+      return stats.totalSpins >= 1;
+    },
+    hidden: false
+  }, {
+    id: 'spin_streak_3',
+    name: 'Spin Streak',
+    description: 'Spin 3 days in a row',
+    icon: '🔥',
+    category: 'dailySpin',
+    tier: 'bronze',
+    reward: {
+      timeShards: 100,
+      gems: 25
+    },
+    condition: function condition(stats) {
+      return stats.currentStreak >= 3;
+    },
+    hidden: false
+  }, {
+    id: 'spin_streak_7',
+    name: 'Lucky Week',
+    description: 'Spin 7 days in a row',
+    icon: '🍀',
+    category: 'dailySpin',
+    tier: 'silver',
+    reward: {
+      timeShards: 250,
+      gems: 50,
+      crystals: 2
+    },
+    condition: function condition(stats) {
+      return stats.currentStreak >= 7;
+    },
+    hidden: false
+  }, {
+    id: 'spin_streak_30',
+    name: 'Spin Master',
+    description: 'Spin 30 days in a row',
+    icon: '👑',
+    category: 'dailySpin',
+    tier: 'gold',
+    reward: {
+      timeShards: 1000,
+      gems: 200,
+      crystals: 10,
+      guardian: 1
+    },
+    condition: function condition(stats) {
+      return stats.currentStreak >= 30;
+    },
+    hidden: false
+  }, {
+    id: 'spin_total_50',
+    name: 'Frequent Spinner',
+    description: 'Complete 50 total spins',
+    icon: '🎡',
+    category: 'dailySpin',
+    tier: 'silver',
+    reward: {
+      timeShards: 300,
+      gems: 75
+    },
+    condition: function condition(stats) {
+      return stats.totalSpins >= 50;
+    },
+    hidden: false
+  }, {
+    id: 'spin_total_100',
+    name: 'Spin Veteran',
+    description: 'Complete 100 total spins',
+    icon: '🏆',
+    category: 'dailySpin',
+    tier: 'gold',
+    reward: {
+      timeShards: 750,
+      gems: 150,
+      crystals: 5
+    },
+    condition: function condition(stats) {
+      return stats.totalSpins >= 100;
+    },
+    hidden: false
+  }, {
+    id: 'spin_jackpot_gems',
+    name: 'Gem Jackpot',
+    description: 'Land on the 500 Gems segment',
+    icon: '💎',
+    category: 'dailySpin',
+    tier: 'gold',
+    reward: {
+      timeShards: 500,
+      gems: 100
+    },
+    condition: function condition(stats) {
+      return stats.highestGemReward >= 500;
+    },
+    hidden: false
+  }, {
+    id: 'spin_guardian',
+    name: 'Guardian Summoner',
+    description: 'Win a Guardian from the wheel',
+    icon: '🛡️',
+    category: 'dailySpin',
+    tier: 'platinum',
+    reward: {
+      timeShards: 1000,
+      crystals: 15
+    },
+    condition: function condition(stats) {
+      return stats.guardiansWon >= 1;
+    },
+    hidden: false
+  }],
+  // ==================== 2048 ACHIEVEMENTS ====================
+  game2048: [{
+    id: '2048_first_game',
+    name: 'Tile Beginner',
+    description: 'Play your first 2048 game',
+    icon: '🎮',
+    category: 'game2048',
+    tier: 'bronze',
+    reward: {
+      timeShards: 50,
+      energy: 2000
+    },
+    condition: function condition(stats) {
+      return stats.gamesPlayed >= 1;
+    },
+    hidden: false
+  }, {
+    id: '2048_reach_256',
+    name: 'Getting Started',
+    description: 'Reach the 256 tile',
+    icon: '🟦',
+    category: 'game2048',
+    tier: 'bronze',
+    reward: {
+      timeShards: 100,
+      gems: 30
+    },
+    condition: function condition(stats) {
+      return stats.highestTile >= 256;
+    },
+    hidden: false
+  }, {
+    id: '2048_reach_512',
+    name: 'Tile Adept',
+    description: 'Reach the 512 tile',
+    icon: '🟩',
+    category: 'game2048',
+    tier: 'silver',
+    reward: {
+      timeShards: 200,
+      gems: 50,
+      crystals: 3
+    },
+    condition: function condition(stats) {
+      return stats.highestTile >= 512;
+    },
+    hidden: false
+  }, {
+    id: '2048_reach_1024',
+    name: 'Tile Expert',
+    description: 'Reach the 1024 tile',
+    icon: '🟨',
+    category: 'game2048',
+    tier: 'gold',
+    reward: {
+      timeShards: 400,
+      gems: 100,
+      crystals: 5
+    },
+    condition: function condition(stats) {
+      return stats.highestTile >= 1024;
+    },
+    hidden: false
+  }, {
+    id: '2048_reach_2048',
+    name: 'Victory!',
+    description: 'Reach the legendary 2048 tile',
+    icon: '🏆',
+    category: 'game2048',
+    tier: 'platinum',
+    reward: {
+      timeShards: 1000,
+      gems: 250,
+      crystals: 15,
+      guardian: 1
+    },
+    condition: function condition(stats) {
+      return stats.highestTile >= 2048;
+    },
+    hidden: false
+  }, {
+    id: '2048_reach_4096',
+    name: 'Beyond Victory',
+    description: 'Reach the 4096 tile',
+    icon: '💫',
+    category: 'game2048',
+    tier: 'diamond',
+    reward: {
+      timeShards: 2500,
+      gems: 500,
+      crystals: 25
+    },
+    condition: function condition(stats) {
+      return stats.highestTile >= 4096;
+    },
+    hidden: false
+  }, {
+    id: '2048_score_10k',
+    name: 'Score Crusher',
+    description: 'Reach 10,000 points in a single game',
+    icon: '💥',
+    category: 'game2048',
+    tier: 'silver',
+    reward: {
+      timeShards: 250,
+      gems: 75
+    },
+    condition: function condition(stats) {
+      return stats.highScore >= 10000;
+    },
+    hidden: false
+  }, {
+    id: '2048_score_50k',
+    name: 'Score Master',
+    description: 'Reach 50,000 points in a single game',
+    icon: '🌟',
+    category: 'game2048',
+    tier: 'gold',
+    reward: {
+      timeShards: 750,
+      gems: 200,
+      crystals: 10
+    },
+    condition: function condition(stats) {
+      return stats.highScore >= 50000;
+    },
+    hidden: false
+  }, {
+    id: '2048_games_25',
+    name: 'Persistent Player',
+    description: 'Play 25 games',
+    icon: '🎯',
+    category: 'game2048',
+    tier: 'silver',
+    reward: {
+      timeShards: 300,
+      gems: 80
+    },
+    condition: function condition(stats) {
+      return stats.gamesPlayed >= 25;
+    },
+    hidden: false
+  }, {
+    id: '2048_games_100',
+    name: '2048 Veteran',
+    description: 'Play 100 games',
+    icon: '👾',
+    category: 'game2048',
+    tier: 'gold',
+    reward: {
+      timeShards: 1000,
+      gems: 250,
+      crystals: 10
+    },
+    condition: function condition(stats) {
+      return stats.gamesPlayed >= 100;
+    },
+    hidden: false
+  }],
+  // ==================== MATCH-3 ACHIEVEMENTS ====================
+  match3: [{
+    id: 'match3_first_game',
+    name: 'Match Beginner',
+    description: 'Play your first Match-3 game',
+    icon: '🧩',
+    category: 'match3',
+    tier: 'bronze',
+    reward: {
+      timeShards: 50,
+      energy: 2000
+    },
+    condition: function condition(stats) {
+      return stats.gamesPlayed >= 1;
+    },
+    hidden: false
+  }, {
+    id: 'match3_combo_5',
+    name: 'Combo Starter',
+    description: 'Achieve a 5x combo',
+    icon: '🔥',
+    category: 'match3',
+    tier: 'bronze',
+    reward: {
+      timeShards: 100,
+      gems: 30
+    },
+    condition: function condition(stats) {
+      return stats.bestCombo >= 5;
+    },
+    hidden: false
+  }, {
+    id: 'match3_combo_10',
+    name: 'Combo Expert',
+    description: 'Achieve a 10x combo',
+    icon: '⚡',
+    category: 'match3',
+    tier: 'silver',
+    reward: {
+      timeShards: 250,
+      gems: 75,
+      crystals: 3
+    },
+    condition: function condition(stats) {
+      return stats.bestCombo >= 10;
+    },
+    hidden: false
+  }, {
+    id: 'match3_combo_15',
+    name: 'Combo Master',
+    description: 'Achieve a 15x combo',
+    icon: '💥',
+    category: 'match3',
+    tier: 'gold',
+    reward: {
+      timeShards: 500,
+      gems: 150,
+      crystals: 8
+    },
+    condition: function condition(stats) {
+      return stats.bestCombo >= 15;
+    },
+    hidden: false
+  }, {
+    id: 'match3_score_1000',
+    name: 'High Scorer',
+    description: 'Score 1,000 points in a single game',
+    icon: '🎯',
+    category: 'match3',
+    tier: 'silver',
+    reward: {
+      timeShards: 200,
+      gems: 50
+    },
+    condition: function condition(stats) {
+      return stats.highScore >= 1000;
+    },
+    hidden: false
+  }, {
+    id: 'match3_score_2500',
+    name: 'Score Champion',
+    description: 'Score 2,500 points in a single game',
+    icon: '🏆',
+    category: 'match3',
+    tier: 'gold',
+    reward: {
+      timeShards: 600,
+      gems: 150,
+      crystals: 5
+    },
+    condition: function condition(stats) {
+      return stats.highScore >= 2500;
+    },
+    hidden: false
+  }, {
+    id: 'match3_special_bomb',
+    name: 'Bomb Master',
+    description: 'Create 10 bomb special gems',
+    icon: '💣',
+    category: 'match3',
+    tier: 'silver',
+    reward: {
+      timeShards: 250,
+      gems: 60
+    },
+    condition: function condition(stats) {
+      var _stats$specialGemsCre;
+      return ((_stats$specialGemsCre = stats.specialGemsCreated) === null || _stats$specialGemsCre === void 0 ? void 0 : _stats$specialGemsCre.bomb) >= 10;
+    },
+    hidden: false
+  }, {
+    id: 'match3_special_lightning',
+    name: 'Lightning Striker',
+    description: 'Create 5 lightning special gems',
+    icon: '⚡',
+    category: 'match3',
+    tier: 'gold',
+    reward: {
+      timeShards: 400,
+      gems: 100,
+      crystals: 5
+    },
+    condition: function condition(stats) {
+      var _stats$specialGemsCre2;
+      return ((_stats$specialGemsCre2 = stats.specialGemsCreated) === null || _stats$specialGemsCre2 === void 0 ? void 0 : _stats$specialGemsCre2.lightning) >= 5;
+    },
+    hidden: false
+  }, {
+    id: 'match3_special_rainbow',
+    name: 'Rainbow Wizard',
+    description: 'Create a rainbow special gem',
+    icon: '🌈',
+    category: 'match3',
+    tier: 'platinum',
+    reward: {
+      timeShards: 1000,
+      gems: 250,
+      crystals: 10
+    },
+    condition: function condition(stats) {
+      var _stats$specialGemsCre3;
+      return ((_stats$specialGemsCre3 = stats.specialGemsCreated) === null || _stats$specialGemsCre3 === void 0 ? void 0 : _stats$specialGemsCre3.rainbow) >= 1;
+    },
+    hidden: false
+  }, {
+    id: 'match3_games_50',
+    name: 'Match Veteran',
+    description: 'Play 50 Match-3 games',
+    icon: '🎮',
+    category: 'match3',
+    tier: 'gold',
+    reward: {
+      timeShards: 750,
+      gems: 200,
+      crystals: 8
+    },
+    condition: function condition(stats) {
+      return stats.gamesPlayed >= 50;
+    },
+    hidden: false
+  }, {
+    id: 'match3_perfect_score',
+    name: 'Perfect Victory',
+    description: 'Win a boss battle with 3000+ score',
+    icon: '⭐',
+    category: 'match3',
+    tier: 'platinum',
+    reward: {
+      timeShards: 1500,
+      gems: 300,
+      crystals: 15,
+      guardian: 1
+    },
+    condition: function condition(stats) {
+      return stats.perfectVictories >= 1;
+    },
+    hidden: false
+  }]
+};
+
+/**
+ * Achievement tier colors & rewards
+ */
+var ACHIEVEMENT_TIERS = exports.ACHIEVEMENT_TIERS = {
+  bronze: {
+    color: '#CD7F32',
+    icon: '🥉',
+    multiplier: 1
+  },
+  silver: {
+    color: '#C0C0C0',
+    icon: '🥈',
+    multiplier: 1.5
+  },
+  gold: {
+    color: '#FFD700',
+    icon: '🥇',
+    multiplier: 2
+  },
+  platinum: {
+    color: '#E5E4E2',
+    icon: '💎',
+    multiplier: 3
+  },
+  diamond: {
+    color: '#B9F2FF',
+    icon: '💠',
+    multiplier: 5
+  }
+};
+
+/**
+ * Get all achievements for a specific game
+ */
+function getAchievementsByGame(gameType) {
+  return MINI_GAME_ACHIEVEMENTS[gameType] || [];
+}
+
+/**
+ * Get achievement by ID
+ */
+function getAchievementById(achievementId) {
+  for (var _i = 0, _Object$entries = Object.entries(MINI_GAME_ACHIEVEMENTS); _i < _Object$entries.length; _i++) {
+    var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+      game = _Object$entries$_i[0],
+      achievements = _Object$entries$_i[1];
+    var achievement = achievements.find(function (a) {
+      return a.id === achievementId;
+    });
+    if (achievement) return achievement;
+  }
+  return null;
+}
+
+/**
+ * Get all achievements (flat array)
+ */
+function getAllMiniGameAchievements() {
+  return Object.values(MINI_GAME_ACHIEVEMENTS).flat();
+}
+
+},{}],11:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports["default"] = void 0;
 /**
  * Quest templates for generation
@@ -4107,7 +4780,7 @@ var QUEST_TEMPLATES = {
 };
 var _default = exports["default"] = QUEST_TEMPLATES;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4234,7 +4907,7 @@ var REALMS = {
 };
 var _default = exports["default"] = REALMS;
 
-},{"../config.js":1}],12:[function(require,module,exports){
+},{"../config.js":1}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4511,7 +5184,7 @@ var SHOP_ITEMS = {
 };
 var _default = exports["default"] = SHOP_ITEMS;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4877,7 +5550,7 @@ var STRUCTURES = {
 };
 var _default = exports["default"] = STRUCTURES;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5425,7 +6098,7 @@ var UPGRADES = {
 };
 var _default = exports["default"] = UPGRADES;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 
 var _config = _interopRequireDefault(require("./config.js"));
@@ -5434,6 +6107,7 @@ var _EventBus = _interopRequireDefault(require("./utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("./utils/Logger.js"));
 var _StateManager = _interopRequireDefault(require("./core/StateManager.js"));
 var _Formatters = _interopRequireDefault(require("./utils/Formatters.js"));
+var _MiniGameAchievementSystem = _interopRequireDefault(require("./systems/MiniGameAchievementSystem.js"));
 var _ResourceDisplay = _interopRequireDefault(require("./ui/components/ResourceDisplay.js"));
 var _StructuresUI = _interopRequireDefault(require("./ui/StructuresUI.js"));
 var _UpgradesUI = _interopRequireDefault(require("./ui/UpgradesUI.js"));
@@ -5462,7 +6136,8 @@ function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; } /**
  * Main Entry Point
  * Initializes the game and binds UI
- */ // UI Managers
+ */ // ✅ ADĂUGAT
+// UI Managers
 // Component Managers
 /**
  * Initialize application
@@ -5490,6 +6165,10 @@ function _initApp() {
           _context2.n = 3;
           return _Game["default"].init();
         case 3:
+          // ✅ ADĂUGAT - Initialize mini-game achievement system
+          _MiniGameAchievementSystem["default"].init();
+          _Logger["default"].info('Main', '✅ Mini-game achievement system initialized');
+
           // Initialize UI
           initUI();
 
@@ -5932,7 +6611,7 @@ if (_config["default"].DEBUG_MODE) {
   console.log('    cheat.ascend()');
 }
 
-},{"./config.js":1,"./core/Game.js":2,"./core/StateManager.js":5,"./ui/AchievementsUI.js":30,"./ui/AutomationUI.js":31,"./ui/BossesUI.js":32,"./ui/DailyRewardUI.js":33,"./ui/GuardiansUI.js":34,"./ui/ModalManager.js":35,"./ui/NotificationManager.js":36,"./ui/PuzzleUI.js":37,"./ui/QuestsUI.js":38,"./ui/ShopUI.js":39,"./ui/StatisticsUI.js":40,"./ui/StructuresUI.js":41,"./ui/TabManager.js":42,"./ui/UpgradesUI.js":43,"./ui/components/ResourceDisplay.js":44,"./utils/EventBus.js":50,"./utils/Formatters.js":51,"./utils/Logger.js":52}],16:[function(require,module,exports){
+},{"./config.js":1,"./core/Game.js":2,"./core/StateManager.js":5,"./systems/MiniGameAchievementSystem.js":23,"./ui/AchievementsUI.js":32,"./ui/AutomationUI.js":33,"./ui/BossesUI.js":34,"./ui/DailyRewardUI.js":35,"./ui/GuardiansUI.js":36,"./ui/ModalManager.js":38,"./ui/NotificationManager.js":39,"./ui/PuzzleUI.js":40,"./ui/QuestsUI.js":41,"./ui/ShopUI.js":42,"./ui/StatisticsUI.js":43,"./ui/StructuresUI.js":44,"./ui/TabManager.js":45,"./ui/UpgradesUI.js":46,"./ui/components/ResourceDisplay.js":47,"./utils/EventBus.js":53,"./utils/Formatters.js":54,"./utils/Logger.js":55}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5946,6 +6625,7 @@ var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _ResourceManager = _interopRequireDefault(require("../core/ResourceManager.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -5958,12 +6638,15 @@ function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), 
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
  * AchievementSystem - Tracks and unlocks achievements
+ * OPTIMIZED VERSION with proper state management
  */
 var AchievementSystem = /*#__PURE__*/function () {
   function AchievementSystem() {
     _classCallCheck(this, AchievementSystem);
     this.achievements = _achievements["default"];
     this.checkInterval = null;
+    this.debugMode = false; // ✅ Toggle pentru logging
+
     this.initializeState();
     this.subscribeToEvents();
     this.startPeriodicCheck();
@@ -5977,20 +6660,10 @@ var AchievementSystem = /*#__PURE__*/function () {
     key: "initializeState",
     value: function initializeState() {
       var state = _StateManager["default"].getState();
-      if (!state.achievements || Object.keys(state.achievements).length === 0) {
-        var initialAchievements = {};
-        for (var _i = 0, _Object$keys = Object.keys(this.achievements); _i < _Object$keys.length; _i++) {
-          var key = _Object$keys[_i];
-          initialAchievements[key] = {
-            unlocked: false,
-            claimed: false,
-            unlockedAt: null,
-            claimedAt: null
-          };
-        }
 
-        // This would need a new action in StateManager
-        // For now, we'll assume it's initialized in getInitialState
+      // Verifică dacă avem structura nouă (unlocked/claimed arrays)
+      if (!state.achievements.unlocked || !state.achievements.claimed) {
+        _Logger["default"].warn('AchievementSystem', 'Legacy achievement structure detected - using new format');
       }
     }
 
@@ -6065,11 +6738,12 @@ var AchievementSystem = /*#__PURE__*/function () {
     value: function checkAchievements() {
       var state = _StateManager["default"].getState();
       var newUnlocks = 0;
-      for (var _i2 = 0, _Object$entries = Object.entries(this.achievements); _i2 < _Object$entries.length; _i2++) {
-        var _Object$entries$_i = _slicedToArray(_Object$entries[_i2], 2),
+      for (var _i = 0, _Object$entries = Object.entries(this.achievements); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
           key = _Object$entries$_i[0],
           achievement = _Object$entries$_i[1];
-        var achievementState = state.achievements[key];
+        // ✅ FIX: Folosește getAchievementState pentru verificare corectă
+        var achievementState = this.getAchievementState(key);
 
         // Skip if already unlocked
         if (achievementState !== null && achievementState !== void 0 && achievementState.unlocked) continue;
@@ -6100,13 +6774,15 @@ var AchievementSystem = /*#__PURE__*/function () {
         _Logger["default"].error('AchievementSystem', "Achievement ".concat(achievementKey, " not found"));
         return;
       }
+
+      // ✅ FIX: Dispatch cu 'id' în loc de 'achievementKey'
       _StateManager["default"].dispatch({
         type: 'UNLOCK_ACHIEVEMENT',
         payload: {
-          achievementKey: achievementKey
+          id: achievementKey
         }
       });
-      _Logger["default"].info('AchievementSystem', "Unlocked: ".concat(achievement.name));
+      _Logger["default"].info('AchievementSystem', "\u2705 Unlocked: ".concat(achievement.name));
 
       // Show notification
       this.showUnlockNotification(achievementKey, achievement);
@@ -6126,7 +6802,7 @@ var AchievementSystem = /*#__PURE__*/function () {
     value: function showUnlockNotification(key, achievement) {
       var notification = {
         type: 'achievement',
-        title: 'Achievement Unlocked!',
+        title: '🏆 Achievement Unlocked!',
         message: "".concat(achievement.emoji, " ").concat(achievement.name),
         description: achievement.description,
         duration: 5000
@@ -6135,31 +6811,48 @@ var AchievementSystem = /*#__PURE__*/function () {
     }
 
     /**
-     * Claim achievement rewards
+     * ✅ FIXED: Claim achievement rewards
      */
   }, {
     key: "claim",
     value: function claim(achievementKey) {
-      var state = _StateManager["default"].getState();
-      var achievementState = state.achievements[achievementKey];
+      if (this.debugMode) {
+        _Logger["default"].info('AchievementSystem', '🎯 Attempting to claim:', achievementKey);
+      }
+      var state = this.getAchievementState(achievementKey);
       var achievement = this.achievements[achievementKey];
       if (!achievement) {
-        _Logger["default"].error('AchievementSystem', "Achievement ".concat(achievementKey, " not found"));
-        return false;
-      }
-      if (!(achievementState !== null && achievementState !== void 0 && achievementState.unlocked)) {
-        _Logger["default"].warn('AchievementSystem', "Achievement ".concat(achievementKey, " not unlocked"));
-        return false;
-      }
-      if (achievementState.claimed) {
-        _Logger["default"].warn('AchievementSystem', "Achievement ".concat(achievementKey, " already claimed"));
+        _Logger["default"].error('AchievementSystem', "\u274C Achievement ".concat(achievementKey, " not found"));
         return false;
       }
 
-      // Give rewards
+      // ✅ Validations
+      if (!state.unlocked) {
+        _Logger["default"].warn('AchievementSystem', "\u274C Achievement ".concat(achievementKey, " not unlocked"));
+        _EventBus["default"].emit('notification:show', {
+          type: 'error',
+          message: 'Achievement not unlocked yet!',
+          duration: 2000
+        });
+        return false;
+      }
+      if (state.claimed) {
+        _Logger["default"].warn('AchievementSystem', "\u26A0\uFE0F Achievement ".concat(achievementKey, " already claimed"));
+        _EventBus["default"].emit('notification:show', {
+          type: 'warning',
+          message: 'Already claimed!',
+          duration: 2000
+        });
+        return false;
+      }
+
+      // ✅ Give rewards
       var rewards = achievement.reward;
-      for (var _i3 = 0, _Object$entries2 = Object.entries(rewards); _i3 < _Object$entries2.length; _i3++) {
-        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i3], 2),
+      if (this.debugMode) {
+        _Logger["default"].info('AchievementSystem', '✅ Granting rewards:', rewards);
+      }
+      for (var _i2 = 0, _Object$entries2 = Object.entries(rewards); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
           resource = _Object$entries2$_i[0],
           amount = _Object$entries2$_i[1];
         _StateManager["default"].dispatch({
@@ -6182,14 +6875,36 @@ var AchievementSystem = /*#__PURE__*/function () {
         }
       }
 
-      // Mark as claimed
+      // ✅ Mark as claimed (folosește 'id' nu 'achievementKey')
       _StateManager["default"].dispatch({
         type: 'CLAIM_ACHIEVEMENT',
         payload: {
-          achievementKey: achievementKey
+          id: achievementKey
         }
       });
-      _Logger["default"].info('AchievementSystem', "Claimed ".concat(achievement.name, ":"), rewards);
+      _Logger["default"].info('AchievementSystem', "\u2705 Claimed ".concat(achievement.name, ":"), rewards);
+
+      // ✅ Show success notification
+      var rewardText = Object.entries(rewards).map(function (_ref) {
+        var _ref2 = _slicedToArray(_ref, 2),
+          r = _ref2[0],
+          a = _ref2[1];
+        var icons = {
+          gems: '💎',
+          crystals: '💠',
+          energy: '⚡',
+          timeShards: '⏰'
+        };
+        return "".concat(a, " ").concat(icons[r] || r);
+      }).join(', ');
+      _EventBus["default"].emit('notification:show', {
+        type: 'success',
+        title: "\uD83C\uDFC6 ".concat(achievement.name),
+        message: "Claimed: ".concat(rewardText),
+        duration: 4000
+      });
+
+      // Emit event
       _EventBus["default"].emit('achievement:claimed', {
         achievementKey: achievementKey,
         rewards: rewards
@@ -6198,13 +6913,35 @@ var AchievementSystem = /*#__PURE__*/function () {
     }
 
     /**
-     * Get achievement state
+     * ✅ FIXED: Get achievement state from new structure
      */
   }, {
     key: "getAchievementState",
     value: function getAchievementState(achievementKey) {
+      var _state$achievements$u, _state$achievements$c;
       var state = _StateManager["default"].getState();
-      return state.achievements[achievementKey];
+      if (!state.achievements) {
+        return {
+          unlocked: false,
+          claimed: false
+        };
+      }
+
+      // ✅ Check în unlocked/claimed arrays
+      var isUnlocked = ((_state$achievements$u = state.achievements.unlocked) === null || _state$achievements$u === void 0 ? void 0 : _state$achievements$u.includes(achievementKey)) || false;
+      var isClaimed = ((_state$achievements$c = state.achievements.claimed) === null || _state$achievements$c === void 0 ? void 0 : _state$achievements$c.includes(achievementKey)) || false;
+
+      // ✅ Doar debug logging, nu spam
+      if (this.debugMode) {
+        _Logger["default"].debug('AchievementSystem', "getState(".concat(achievementKey, "):"), {
+          unlocked: isUnlocked,
+          claimed: isClaimed
+        });
+      }
+      return {
+        unlocked: isUnlocked,
+        claimed: isClaimed
+      };
     }
 
     /**
@@ -6217,66 +6954,56 @@ var AchievementSystem = /*#__PURE__*/function () {
       if (!category) {
         return this.achievements;
       }
-      return Object.entries(this.achievements).filter(function (_ref) {
-        var _ref2 = _slicedToArray(_ref, 2),
-          key = _ref2[0],
-          data = _ref2[1];
-        return data.category === category;
-      }).reduce(function (obj, _ref3) {
+      return Object.entries(this.achievements).filter(function (_ref3) {
         var _ref4 = _slicedToArray(_ref3, 2),
           key = _ref4[0],
           data = _ref4[1];
+        return data.category === category;
+      }).reduce(function (obj, _ref5) {
+        var _ref6 = _slicedToArray(_ref5, 2),
+          key = _ref6[0],
+          data = _ref6[1];
         obj[key] = data;
         return obj;
       }, {});
     }
 
     /**
-     * Get achievement progress
+     * ✅ FIXED: Get achievement progress
      */
   }, {
     key: "getProgress",
     value: function getProgress() {
+      var _state$achievements, _state$achievements2;
       var state = _StateManager["default"].getState();
-      var total = 0;
-      var unlocked = 0;
-      var claimed = 0;
-      for (var _i4 = 0, _Object$keys2 = Object.keys(this.achievements); _i4 < _Object$keys2.length; _i4++) {
-        var key = _Object$keys2[_i4];
-        total++;
-        var achievementState = state.achievements[key];
-        if (achievementState !== null && achievementState !== void 0 && achievementState.unlocked) {
-          unlocked++;
-        }
-        if (achievementState !== null && achievementState !== void 0 && achievementState.claimed) {
-          claimed++;
-        }
-      }
+      var total = Object.keys(this.achievements).length;
+      var unlocked = ((_state$achievements = state.achievements) === null || _state$achievements === void 0 || (_state$achievements = _state$achievements.unlocked) === null || _state$achievements === void 0 ? void 0 : _state$achievements.length) || 0;
+      var claimed = ((_state$achievements2 = state.achievements) === null || _state$achievements2 === void 0 || (_state$achievements2 = _state$achievements2.claimed) === null || _state$achievements2 === void 0 ? void 0 : _state$achievements2.length) || 0;
       return {
         total: total,
         unlocked: unlocked,
         claimed: claimed,
-        percentageUnlocked: unlocked / total * 100,
-        percentageClaimed: claimed / total * 100
+        percentageUnlocked: total > 0 ? unlocked / total * 100 : 0,
+        percentageClaimed: total > 0 ? claimed / total * 100 : 0
       };
     }
 
     /**
-     * Get unclaimed achievements count
+     * ✅ FIXED: Get unclaimed achievements count
      */
   }, {
     key: "getUnclaimedCount",
     value: function getUnclaimedCount() {
+      var _state$achievements3, _state$achievements4;
       var state = _StateManager["default"].getState();
-      var count = 0;
-      for (var _i5 = 0, _Object$keys3 = Object.keys(this.achievements); _i5 < _Object$keys3.length; _i5++) {
-        var key = _Object$keys3[_i5];
-        var achievementState = state.achievements[key];
-        if (achievementState !== null && achievementState !== void 0 && achievementState.unlocked && !achievementState.claimed) {
-          count++;
-        }
-      }
-      return count;
+      var unlocked = ((_state$achievements3 = state.achievements) === null || _state$achievements3 === void 0 ? void 0 : _state$achievements3.unlocked) || [];
+      var claimed = ((_state$achievements4 = state.achievements) === null || _state$achievements4 === void 0 ? void 0 : _state$achievements4.claimed) || [];
+
+      // Unclaimed = unlocked dar nu claimed
+      var unclaimed = unlocked.filter(function (key) {
+        return !claimed.includes(key);
+      });
+      return unclaimed.length;
     }
 
     /**
@@ -6308,47 +7035,54 @@ var AchievementSystem = /*#__PURE__*/function () {
           unlocked: 0
         }
       };
-      for (var _i6 = 0, _Object$entries3 = Object.entries(this.achievements); _i6 < _Object$entries3.length; _i6++) {
-        var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i6], 2),
+      for (var _i3 = 0, _Object$entries3 = Object.entries(this.achievements); _i3 < _Object$entries3.length; _i3++) {
+        var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
           key = _Object$entries3$_i[0],
           achievement = _Object$entries3$_i[1];
         var tier = achievement.tier;
-        stats[tier].total++;
-        var achievementState = state.achievements[key];
-        if (achievementState !== null && achievementState !== void 0 && achievementState.unlocked) {
-          stats[tier].unlocked++;
+        if (stats[tier]) {
+          stats[tier].total++;
+          var achievementState = this.getAchievementState(key);
+          if (achievementState.unlocked) {
+            stats[tier].unlocked++;
+          }
         }
       }
       return stats;
     }
 
     /**
-     * Get recently unlocked achievements
+     * ✅ FIXED: Get recently unlocked achievements
      */
   }, {
     key: "getRecentlyUnlocked",
     value: function getRecentlyUnlocked() {
+      var _state$achievements5;
       var count = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 5;
       var state = _StateManager["default"].getState();
       var unlocked = [];
-      for (var _i7 = 0, _Object$entries4 = Object.entries(this.achievements); _i7 < _Object$entries4.length; _i7++) {
-        var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i7], 2),
-          key = _Object$entries4$_i[0],
-          achievement = _Object$entries4$_i[1];
-        var achievementState = state.achievements[key];
-        if (achievementState !== null && achievementState !== void 0 && achievementState.unlocked) {
-          unlocked.push({
-            key: key,
-            achievement: achievement,
-            unlockedAt: achievementState.unlockedAt
-          });
-        }
-      }
 
-      // Sort by unlock time (newest first)
-      unlocked.sort(function (a, b) {
-        return b.unlockedAt - a.unlockedAt;
-      });
+      // Get all unlocked achievement keys
+      var unlockedKeys = ((_state$achievements5 = state.achievements) === null || _state$achievements5 === void 0 ? void 0 : _state$achievements5.unlocked) || [];
+      var _iterator = _createForOfIteratorHelper(unlockedKeys),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var key = _step.value;
+          var achievement = this.achievements[key];
+          if (achievement) {
+            unlocked.push({
+              key: key,
+              achievement: achievement,
+              unlockedAt: Date.now() // Would need timestamp tracking
+            });
+          }
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
       return unlocked.slice(0, count);
     }
 
@@ -6367,12 +7101,27 @@ var AchievementSystem = /*#__PURE__*/function () {
 
       return hints;
     }
+
+    /**
+     * ✅ Enable/disable debug logging
+     */
+  }, {
+    key: "setDebugMode",
+    value: function setDebugMode(enabled) {
+      this.debugMode = enabled;
+      _Logger["default"].info('AchievementSystem', "Debug mode: ".concat(enabled ? 'ON' : 'OFF'));
+    }
   }]);
 }(); // Singleton
 var achievementSystem = new AchievementSystem();
+
+// ✅ Make claim globally accessible
+window.claimAchievement = function (achievementKey) {
+  return achievementSystem.claim(achievementKey);
+};
 var _default = exports["default"] = achievementSystem;
 
-},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../data/achievements.js":7,"../utils/EventBus.js":50,"../utils/Logger.js":52}],17:[function(require,module,exports){
+},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../data/achievements.js":7,"../utils/EventBus.js":53,"../utils/Logger.js":55}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6703,7 +7452,7 @@ var AscensionSystem = /*#__PURE__*/function () {
 var ascensionSystem = new AscensionSystem();
 var _default = exports["default"] = ascensionSystem;
 
-},{"../config.js":1,"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./UpgradeSystem.js":29}],18:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":5,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./UpgradeSystem.js":31}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7246,7 +7995,7 @@ var AutomationSystem = /*#__PURE__*/function () {
 var automationSystem = new AutomationSystem();
 var _default = exports["default"] = automationSystem;
 
-},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./GuardianSystem.js":21,"./QuestSystem.js":22,"./StructureSystem.js":26,"./UpgradeQueueSystem.js":28,"./UpgradeSystem.js":29}],19:[function(require,module,exports){
+},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./GuardianSystem.js":22,"./QuestSystem.js":24,"./StructureSystem.js":28,"./UpgradeQueueSystem.js":30,"./UpgradeSystem.js":31}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7864,7 +8613,7 @@ var BossSystem = /*#__PURE__*/function () {
 var bossSystem = new BossSystem();
 var _default = exports["default"] = bossSystem;
 
-},{"../core/StateManager.js":5,"../data/bosses.js":8,"../data/guardians.js":9,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./GuardianSystem.js":21,"./StructureSystem.js":26}],20:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/bosses.js":8,"../data/guardians.js":9,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./GuardianSystem.js":22,"./StructureSystem.js":28}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8217,7 +8966,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
 var dailyRewardSystem = new DailyRewardSystem();
 var _default = exports["default"] = dailyRewardSystem;
 
-},{"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./GuardianSystem.js":21}],21:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./GuardianSystem.js":22}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8707,7 +9456,366 @@ var GuardianSystem = /*#__PURE__*/function () {
 var guardianSystem = new GuardianSystem();
 var _default = exports["default"] = guardianSystem;
 
-},{"../config.js":1,"../core/StateManager.js":5,"../data/guardians.js":9,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./UpgradeSystem.js":29}],22:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":5,"../data/guardians.js":9,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./UpgradeSystem.js":31}],23:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
+var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
+var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _miniGameAchievements = require("../data/miniGameAchievements.js");
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
+ * MiniGameAchievementSystem - Manages mini-game specific achievements
+ * Tracks progress, unlocks, and rewards
+ */
+var MiniGameAchievementSystem = /*#__PURE__*/function () {
+  function MiniGameAchievementSystem() {
+    _classCallCheck(this, MiniGameAchievementSystem);
+    this.checkQueue = [];
+    this.isProcessing = false;
+    this.init();
+  }
+  return _createClass(MiniGameAchievementSystem, [{
+    key: "init",
+    value: function init() {
+      var _this = this;
+      // Listen for mini-game events
+      _EventBus["default"].on('daily-spin:reward-granted', function () {
+        return _this.checkAchievements('dailySpin');
+      });
+      _EventBus["default"].on('game-2048:game-over', function () {
+        return _this.checkAchievements('game2048');
+      });
+      _EventBus["default"].on('match3:game-complete', function () {
+        return _this.checkAchievements('match3');
+      });
+
+      // Also check on stats update
+      _EventBus["default"].on('mini-game:stats-updated', function (data) {
+        if (data.game) {
+          _this.checkAchievements(data.game);
+        }
+      });
+      _Logger["default"].info('MiniGameAchievementSystem', 'Initialized');
+    }
+
+    /**
+     * Check all achievements for a specific game
+     */
+  }, {
+    key: "checkAchievements",
+    value: function checkAchievements(gameType) {
+      var _state$achievements,
+        _this2 = this;
+      var achievements = (0, _miniGameAchievements.getAchievementsByGame)(gameType);
+      if (!achievements || achievements.length === 0) return;
+      var stats = this.getMiniGameStats(gameType);
+      var state = _StateManager["default"].getState();
+      var unlockedAchievements = ((_state$achievements = state.achievements) === null || _state$achievements === void 0 || (_state$achievements = _state$achievements.miniGames) === null || _state$achievements === void 0 ? void 0 : _state$achievements[gameType]) || [];
+      achievements.forEach(function (achievement) {
+        // Skip if already unlocked
+        if (unlockedAchievements.includes(achievement.id)) return;
+
+        // Check condition
+        if (achievement.condition(stats)) {
+          _this2.unlockAchievement(achievement);
+        }
+      });
+    }
+
+    /**
+     * Get mini-game stats from state
+     */
+  }, {
+    key: "getMiniGameStats",
+    value: function getMiniGameStats(gameType) {
+      var _state$miniGames;
+      var state = _StateManager["default"].getState();
+      var miniGameData = ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames[gameType]) || {};
+      switch (gameType) {
+        case 'dailySpin':
+          return {
+            totalSpins: miniGameData.totalSpins || 0,
+            currentStreak: this.calculateSpinStreak(),
+            highestGemReward: miniGameData.highestGemReward || 0,
+            guardiansWon: miniGameData.guardiansWon || 0
+          };
+        case 'game2048':
+          return {
+            gamesPlayed: miniGameData.gamesPlayed || 0,
+            highScore: miniGameData.highScore || 0,
+            highestTile: miniGameData.highestTile || 0
+          };
+        case 'match3':
+          return {
+            gamesPlayed: miniGameData.gamesPlayed || 0,
+            highScore: miniGameData.highScore || 0,
+            bestCombo: miniGameData.bestCombo || 0,
+            specialGemsCreated: miniGameData.specialGemsCreated || {},
+            perfectVictories: miniGameData.perfectVictories || 0
+          };
+        default:
+          return {};
+      }
+    }
+
+    /**
+     * Calculate spin streak (consecutive days)
+     */
+  }, {
+    key: "calculateSpinStreak",
+    value: function calculateSpinStreak() {
+      var _state$miniGames2;
+      var state = _StateManager["default"].getState();
+      var spinData = ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2.dailySpin) || {};
+      var spinHistory = spinData.spinHistory || [];
+      if (spinHistory.length === 0) return 0;
+      var streak = 1;
+      var today = new Date().toDateString();
+
+      // Check backward from today
+      for (var i = 1; i < spinHistory.length; i++) {
+        var prevDate = new Date(spinHistory[i]);
+        var expectedDate = new Date();
+        expectedDate.setDate(expectedDate.getDate() - i);
+        if (prevDate.toDateString() === expectedDate.toDateString()) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+      return streak;
+    }
+
+    /**
+     * Unlock achievement
+     */
+  }, {
+    key: "unlockAchievement",
+    value: function unlockAchievement(achievement) {
+      _Logger["default"].info('MiniGameAchievementSystem', "Achievement unlocked: ".concat(achievement.name), achievement);
+
+      // Mark as unlocked
+      _StateManager["default"].dispatch({
+        type: 'UNLOCK_MINI_GAME_ACHIEVEMENT',
+        payload: {
+          game: achievement.category,
+          achievementId: achievement.id,
+          timestamp: Date.now()
+        }
+      });
+
+      // Grant rewards
+      this.grantReward(achievement);
+
+      // Show notification
+      this.showAchievementNotification(achievement);
+
+      // Emit event
+      _EventBus["default"].emit('mini-game-achievement:unlocked', {
+        achievement: achievement
+      });
+
+      // Update statistics
+      _StateManager["default"].dispatch({
+        type: 'INCREMENT_STATISTIC',
+        payload: {
+          key: 'miniGameAchievementsUnlocked',
+          value: 1
+        }
+      });
+    }
+
+    /**
+     * Grant achievement rewards
+     */
+  }, {
+    key: "grantReward",
+    value: function grantReward(achievement) {
+      var reward = achievement.reward;
+      for (var _i = 0, _Object$entries = Object.entries(reward); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          resource = _Object$entries$_i[0],
+          amount = _Object$entries$_i[1];
+        if (resource === 'guardian') {
+          // Trigger guardian summon
+          _EventBus["default"].emit('guardian:summon', {
+            amount: amount,
+            source: "achievement-".concat(achievement.id),
+            guaranteed: true
+          });
+        } else {
+          // Add resource
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: resource,
+              amount: amount
+            }
+          });
+        }
+      }
+      _Logger["default"].info('MiniGameAchievementSystem', 'Rewards granted', reward);
+    }
+
+    /**
+     * Show achievement unlock notification
+     */
+  }, {
+    key: "showAchievementNotification",
+    value: function showAchievementNotification(achievement) {
+      var tier = _miniGameAchievements.ACHIEVEMENT_TIERS[achievement.tier];
+      var rewardText = this.formatReward(achievement.reward);
+      _EventBus["default"].emit('notification:show', {
+        type: 'achievement',
+        title: "".concat(tier.icon, " Achievement Unlocked!"),
+        message: "<strong>".concat(achievement.name, "</strong><br>").concat(achievement.description, "<br><small>Reward: ").concat(rewardText, "</small>"),
+        duration: 7000,
+        sound: 'achievement'
+      });
+    }
+
+    /**
+     * Format reward for display
+     */
+  }, {
+    key: "formatReward",
+    value: function formatReward(reward) {
+      var parts = [];
+      var icons = {
+        timeShards: '⏰',
+        gems: '💎',
+        energy: '⚡',
+        crystals: '💠',
+        guardian: '🛡️'
+      };
+      for (var _i2 = 0, _Object$entries2 = Object.entries(reward); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+          resource = _Object$entries2$_i[0],
+          amount = _Object$entries2$_i[1];
+        if (resource === 'guardian') {
+          parts.push("".concat(icons[resource], " Guardian"));
+        } else {
+          parts.push("".concat(amount, " ").concat(icons[resource]));
+        }
+      }
+      return parts.join(', ');
+    }
+
+    /**
+     * Get achievement progress for a specific game
+     */
+  }, {
+    key: "getProgress",
+    value: function getProgress(gameType) {
+      var _state$achievements2,
+        _this3 = this;
+      var achievements = (0, _miniGameAchievements.getAchievementsByGame)(gameType);
+      var state = _StateManager["default"].getState();
+      var unlocked = ((_state$achievements2 = state.achievements) === null || _state$achievements2 === void 0 || (_state$achievements2 = _state$achievements2.miniGames) === null || _state$achievements2 === void 0 ? void 0 : _state$achievements2[gameType]) || [];
+      var stats = this.getMiniGameStats(gameType);
+      return achievements.map(function (achievement) {
+        var isUnlocked = unlocked.includes(achievement.id);
+        return _objectSpread(_objectSpread({}, achievement), {}, {
+          unlocked: isUnlocked,
+          progress: _this3.calculateProgress(achievement, stats),
+          timestamp: isUnlocked ? _this3.getUnlockTimestamp(gameType, achievement.id) : null
+        });
+      });
+    }
+
+    /**
+     * Calculate progress percentage
+     */
+  }, {
+    key: "calculateProgress",
+    value: function calculateProgress(achievement, stats) {
+      // Simple heuristic - can be improved per achievement
+      try {
+        var result = achievement.condition(stats);
+        return result ? 100 : 0;
+      } catch (e) {
+        return 0;
+      }
+    }
+
+    /**
+     * Get unlock timestamp
+     */
+  }, {
+    key: "getUnlockTimestamp",
+    value: function getUnlockTimestamp(gameType, achievementId) {
+      var _state$achievements3;
+      var state = _StateManager["default"].getState();
+      var unlockData = (_state$achievements3 = state.achievements) === null || _state$achievements3 === void 0 || (_state$achievements3 = _state$achievements3.miniGamesTimestamps) === null || _state$achievements3 === void 0 || (_state$achievements3 = _state$achievements3[gameType]) === null || _state$achievements3 === void 0 ? void 0 : _state$achievements3[achievementId];
+      return unlockData || null;
+    }
+
+    /**
+     * Get overall mini-game achievement stats
+     */
+  }, {
+    key: "getOverallStats",
+    value: function getOverallStats() {
+      var _state$achievements4;
+      var allAchievements = (0, _miniGameAchievements.getAllMiniGameAchievements)();
+      var state = _StateManager["default"].getState();
+      var miniGameAchievements = ((_state$achievements4 = state.achievements) === null || _state$achievements4 === void 0 ? void 0 : _state$achievements4.miniGames) || {};
+      var totalUnlocked = 0;
+      Object.values(miniGameAchievements).forEach(function (gameAchievements) {
+        totalUnlocked += gameAchievements.length;
+      });
+      return {
+        total: allAchievements.length,
+        unlocked: totalUnlocked,
+        percentage: Math.round(totalUnlocked / allAchievements.length * 100),
+        byGame: {
+          dailySpin: this.getGameStats('dailySpin'),
+          game2048: this.getGameStats('game2048'),
+          match3: this.getGameStats('match3')
+        }
+      };
+    }
+
+    /**
+     * Get stats for a specific game
+     */
+  }, {
+    key: "getGameStats",
+    value: function getGameStats(gameType) {
+      var _state$achievements5;
+      var achievements = (0, _miniGameAchievements.getAchievementsByGame)(gameType);
+      var state = _StateManager["default"].getState();
+      var unlocked = ((_state$achievements5 = state.achievements) === null || _state$achievements5 === void 0 || (_state$achievements5 = _state$achievements5.miniGames) === null || _state$achievements5 === void 0 ? void 0 : _state$achievements5[gameType]) || [];
+      return {
+        total: achievements.length,
+        unlocked: unlocked.length,
+        percentage: achievements.length > 0 ? Math.round(unlocked.length / achievements.length * 100) : 0
+      };
+    }
+  }]);
+}();
+var _default = exports["default"] = new MiniGameAchievementSystem();
+
+},{"../core/StateManager.js":5,"../data/miniGameAchievements.js":10,"../utils/EventBus.js":53,"../utils/Logger.js":55}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9324,7 +10432,7 @@ var QuestSystem = /*#__PURE__*/function () {
 var questSystem = new QuestSystem();
 var _default = exports["default"] = questSystem;
 
-},{"../config.js":1,"../core/StateManager.js":5,"../data/quests.js":10,"../utils/EventBus.js":50,"../utils/Logger.js":52}],23:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":5,"../data/quests.js":11,"../utils/EventBus.js":53,"../utils/Logger.js":55}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9666,7 +10774,7 @@ var RealmSystem = /*#__PURE__*/function () {
 var realmSystem = new RealmSystem();
 var _default = exports["default"] = realmSystem;
 
-},{"../core/StateManager.js":5,"../data/realms.js":11,"../utils/EventBus.js":50,"../utils/Logger.js":52}],24:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/realms.js":12,"../utils/EventBus.js":53,"../utils/Logger.js":55}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10279,7 +11387,7 @@ var ShopSystem = /*#__PURE__*/function () {
 var shopSystem = new ShopSystem();
 var _default = exports["default"] = shopSystem;
 
-},{"../core/StateManager.js":5,"../data/guardians.js":9,"../data/shop.js":12,"../ui/games/DailySpinGame.js":47,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./GuardianSystem.js":21}],25:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/guardians.js":9,"../data/shop.js":13,"../ui/games/DailySpinGame.js":50,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./GuardianSystem.js":22}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10794,7 +11902,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
 var statisticsSystem = new StatisticsSystem();
 var _default = exports["default"] = statisticsSystem;
 
-},{"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Formatters.js":51,"../utils/Logger.js":52,"./AchievementSystem.js":16,"./BossSystem.js":19,"./GuardianSystem.js":21,"./StructureSystem.js":26,"./UpgradeSystem.js":29}],26:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../utils/EventBus.js":53,"../utils/Formatters.js":54,"../utils/Logger.js":55,"./AchievementSystem.js":17,"./BossSystem.js":20,"./GuardianSystem.js":22,"./StructureSystem.js":28,"./UpgradeSystem.js":31}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11308,7 +12416,7 @@ var StructureSystem = /*#__PURE__*/function () {
 var structureSystem = new StructureSystem();
 var _default = exports["default"] = structureSystem;
 
-},{"../core/StateManager.js":5,"../data/structures.js":13,"../utils/EventBus.js":50,"../utils/Logger.js":52}],27:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/structures.js":14,"../utils/EventBus.js":53,"../utils/Logger.js":55}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11908,7 +13016,7 @@ var TutorialSystem = /*#__PURE__*/function () {
 var tutorialSystem = new TutorialSystem();
 var _default = exports["default"] = tutorialSystem;
 
-},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./UpgradeSystem.js":29}],28:[function(require,module,exports){
+},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./UpgradeSystem.js":31}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12433,7 +13541,7 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
 var upgradeQueueSystem = new UpgradeQueueSystem();
 var _default = exports["default"] = upgradeQueueSystem;
 
-},{"../config.js":1,"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./UpgradeSystem.js":29}],29:[function(require,module,exports){
+},{"../config.js":1,"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./UpgradeSystem.js":31}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13036,7 +14144,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
 var upgradeSystem = new UpgradeSystem();
 var _default = exports["default"] = upgradeSystem;
 
-},{"../core/StateManager.js":5,"../data/upgrades.js":14,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./UpgradeQueueSystem.js":28}],30:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/upgrades.js":15,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./UpgradeQueueSystem.js":30}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13046,6 +14154,8 @@ exports["default"] = void 0;
 var _AchievementSystem = _interopRequireDefault(require("../systems/AchievementSystem.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
+var _MiniGameStatsUI = _interopRequireDefault(require("./MiniGameStatsUI.js"));
+var _achievements = _interopRequireDefault(require("../data/achievements.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -13066,13 +14176,14 @@ var AchievementsUI = /*#__PURE__*/function () {
     _classCallCheck(this, AchievementsUI);
     this.container = document.getElementById(containerId);
     this.currentCategory = 'all';
+    this.currentMainTab = 'general'; // 'general' or 'mini-games'
+
     if (!this.container) {
       console.error("AchievementsUI: Container ".concat(containerId, " not found"));
       return;
     }
     this.render();
     this.subscribe();
-    this.bindCategoryButtons();
   }
   return _createClass(AchievementsUI, [{
     key: "subscribe",
@@ -13084,64 +14195,45 @@ var AchievementsUI = /*#__PURE__*/function () {
       _EventBus["default"].on('achievement:claimed', function () {
         return _this.render();
       });
-    }
-  }, {
-    key: "bindCategoryButtons",
-    value: function bindCategoryButtons() {
-      var _this2 = this;
-      var categoryButtons = document.querySelectorAll('.category-btn');
-      categoryButtons.forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var category = btn.dataset.category;
-          _this2.switchCategory(category);
-
-          // Update button states
-          categoryButtons.forEach(function (b) {
-            return b.classList.remove('active');
-          });
-          btn.classList.add('active');
-        });
+      _EventBus["default"].on('mini-game-achievement:unlocked', function () {
+        return _this.render();
       });
-    }
-  }, {
-    key: "switchCategory",
-    value: function switchCategory(category) {
-      this.currentCategory = category;
-      this.render();
     }
   }, {
     key: "render",
     value: function render() {
-      this.updateProgress();
-      this.renderAchievements();
-      this.updateBadge();
-    }
-  }, {
-    key: "updateProgress",
-    value: function updateProgress() {
-      var progress = _AchievementSystem["default"].getProgress();
-      document.getElementById('achievements-unlocked').textContent = progress.unlocked;
-      document.getElementById('achievements-total').textContent = progress.total;
-    }
-  }, {
-    key: "renderAchievements",
-    value: function renderAchievements() {
-      var _this3 = this;
-      this.container.innerHTML = '';
-      var achievements = this.currentCategory === 'all' ? _AchievementSystem["default"].achievements : _AchievementSystem["default"].getByCategory(this.currentCategory);
-      if (Object.keys(achievements).length === 0) {
-        this.container.innerHTML = "\n        <div class=\"empty-state\">\n          <p>No achievements in this category</p>\n        </div>\n      ";
+      if (!this.container) {
+        console.error('AchievementsUI: Container not found!');
         return;
       }
 
+      // Clear și rebuild complet
+      this.container.innerHTML = "\n      <div class=\"achievements-wrapper\">\n        <!-- Main Tabs: General vs Mini-Games -->\n        <div class=\"achievements-main-tabs\">\n          <button class=\"achievement-main-tab ".concat(this.currentMainTab === 'general' ? 'active' : '', "\" data-main-tab=\"general\">\n            \uD83C\uDFC6 General Achievements\n          </button>\n          <button class=\"achievement-main-tab ").concat(this.currentMainTab === 'mini-games' ? 'active' : '', "\" data-main-tab=\"mini-games\">\n            \uD83C\uDFAE Mini-Game Achievements\n          </button>\n        </div>\n        \n        <!-- Content Area -->\n        <div class=\"achievements-content-area\">\n          ").concat(this.currentMainTab === 'general' ? this.renderGeneralAchievements() : this.renderMiniGameSection(), "\n        </div>\n      </div>\n    ");
+      this.bindEvents();
+    }
+  }, {
+    key: "renderGeneralAchievements",
+    value: function renderGeneralAchievements() {
+      var _this2 = this;
+      // Filtrează achievements după categorie
+      var achievements = this.currentCategory === 'all' ? _achievements["default"] : Object.fromEntries(Object.entries(_achievements["default"]).filter(function (_ref) {
+        var _ref2 = _slicedToArray(_ref, 2),
+          key = _ref2[0],
+          ach = _ref2[1];
+        return ach.category === _this2.currentCategory;
+      }));
+      if (!achievements || Object.keys(achievements).length === 0) {
+        return "\n        <div class=\"empty-state\">\n          <p>No achievements in this category</p>\n        </div>\n      ";
+      }
+
       // Sort: unlocked first, then by tier
-      var sorted = Object.entries(achievements).sort(function (_ref, _ref2) {
-        var _ref3 = _slicedToArray(_ref, 2),
-          keyA = _ref3[0],
-          achA = _ref3[1];
-        var _ref4 = _slicedToArray(_ref2, 2),
-          keyB = _ref4[0],
-          achB = _ref4[1];
+      var sorted = Object.entries(achievements).sort(function (_ref3, _ref4) {
+        var _ref5 = _slicedToArray(_ref3, 2),
+          keyA = _ref5[0],
+          achA = _ref5[1];
+        var _ref6 = _slicedToArray(_ref4, 2),
+          keyB = _ref6[0],
+          achB = _ref6[1];
         var stateA = _AchievementSystem["default"].getAchievementState(keyA);
         var stateB = _AchievementSystem["default"].getAchievementState(keyB);
         if (stateA !== null && stateA !== void 0 && stateA.unlocked && !(stateB !== null && stateB !== void 0 && stateB.unlocked)) return -1;
@@ -13153,34 +14245,39 @@ var AchievementsUI = /*#__PURE__*/function () {
           platinum: 4,
           diamond: 5
         };
-        return tierOrder[achB.tier] - tierOrder[achA.tier];
+        return (tierOrder[achB.tier] || 0) - (tierOrder[achA.tier] || 0);
       });
-      sorted.forEach(function (_ref5) {
-        var _ref6 = _slicedToArray(_ref5, 2),
-          key = _ref6[0],
-          achievement = _ref6[1];
-        var card = _this3.createAchievementCard(key, achievement);
-        _this3.container.appendChild(card);
-      });
+      return "\n      <!-- Category Filters -->\n      <div class=\"category-filters\">\n        <button class=\"category-btn ".concat(this.currentCategory === 'all' ? 'active' : '', "\" data-category=\"all\">\n          All\n        </button>\n        <button class=\"category-btn ").concat(this.currentCategory === 'tutorial' ? 'active' : '', "\" data-category=\"tutorial\">\n          Tutorial\n        </button>\n        <button class=\"category-btn ").concat(this.currentCategory === 'production' ? 'active' : '', "\" data-category=\"production\">\n          Production\n        </button>\n        <button class=\"category-btn ").concat(this.currentCategory === 'structures' ? 'active' : '', "\" data-category=\"structures\">\n          Structures\n        </button>\n        <button class=\"category-btn ").concat(this.currentCategory === 'upgrades' ? 'active' : '', "\" data-category=\"upgrades\">\n          Upgrades\n        </button>\n        <button class=\"category-btn ").concat(this.currentCategory === 'guardians' ? 'active' : '', "\" data-category=\"guardians\">\n          Guardians\n        </button>\n        <button class=\"category-btn ").concat(this.currentCategory === 'quests' ? 'active' : '', "\" data-category=\"quests\">\n          Quests\n        </button>\n        <button class=\"category-btn ").concat(this.currentCategory === 'bosses' ? 'active' : '', "\" data-category=\"bosses\">\n          Bosses\n        </button>\n        <button class=\"category-btn ").concat(this.currentCategory === 'special' ? 'active' : '', "\" data-category=\"special\">\n          Special\n        </button>\n      </div>\n      \n      <!-- Achievements Grid -->\n      <div class=\"achievements-grid\">\n        ").concat(sorted.map(function (_ref7) {
+        var _ref8 = _slicedToArray(_ref7, 2),
+          key = _ref8[0],
+          achievement = _ref8[1];
+        return _this2.renderAchievementCardHTML(key, achievement);
+      }).join(''), "\n      </div>\n    ");
     }
   }, {
-    key: "createAchievementCard",
-    value: function createAchievementCard(key, achievement) {
-      var state = _AchievementSystem["default"].getAchievementState(key);
-      var card = document.createElement('div');
-      card.className = 'achievement-card';
-      card.dataset.key = key;
-      if (!(state !== null && state !== void 0 && state.unlocked)) card.classList.add('locked');
-      if (state !== null && state !== void 0 && state.unlocked && !(state !== null && state !== void 0 && state.claimed)) card.classList.add('unlocked');
-      if (state !== null && state !== void 0 && state.claimed) card.classList.add('claimed');
+    key: "renderMiniGameSection",
+    value: function renderMiniGameSection() {
+      return "\n      <div class=\"mini-game-tabs\">\n        <button class=\"mini-game-tab active\" data-game=\"dailySpin\">\n          \uD83C\uDFB0 Daily Spin\n        </button>\n        <button class=\"mini-game-tab\" data-game=\"game2048\">\n          \uD83C\uDFAE 2048\n        </button>\n        <button class=\"mini-game-tab\" data-game=\"match3\">\n          \uD83E\uDDE9 Match-3\n        </button>\n      </div>\n      <div class=\"mini-game-tab-content\" id=\"mini-game-achievements-content\"></div>\n    ";
+    }
+  }, {
+    key: "renderAchievementCardHTML",
+    value: function renderAchievementCardHTML(key, achievement) {
+      var _state$achievements, _state$achievements2;
+      var state = _StateManager["default"].getState();
+      var isUnlocked = (_state$achievements = state.achievements) === null || _state$achievements === void 0 || (_state$achievements = _state$achievements.unlocked) === null || _state$achievements === void 0 ? void 0 : _state$achievements.includes(key);
+      var isClaimed = (_state$achievements2 = state.achievements) === null || _state$achievements2 === void 0 || (_state$achievements2 = _state$achievements2.claimed) === null || _state$achievements2 === void 0 ? void 0 : _state$achievements2.includes(key);
+      var cardClass = 'achievement-card';
+      if (!isUnlocked) cardClass += ' locked';
+      if (isUnlocked && !isClaimed) cardClass += ' unlocked';
+      if (isClaimed) cardClass += ' claimed';
 
       // Format rewards
       var rewardParts = [];
       if (achievement.reward.gems) rewardParts.push("".concat(achievement.reward.gems, " \uD83D\uDC8E"));
       if (achievement.reward.crystals) rewardParts.push("".concat(achievement.reward.crystals, " \uD83D\uDCA0"));
       if (achievement.reward.energy) rewardParts.push("".concat(achievement.reward.energy, " \u26A1"));
-      card.innerHTML = "\n      <div class=\"achievement-tier-badge ".concat(achievement.tier, "\">\n        ").concat(this.getTierIcon(achievement.tier), "\n      </div>\n      \n      <div class=\"achievement-content\">\n        <span class=\"achievement-emoji\">").concat(achievement.emoji, "</span>\n        <div class=\"achievement-info\">\n          <h4 class=\"achievement-name\">").concat(achievement.name, "</h4>\n          <p class=\"achievement-description\">").concat(achievement.description, "</p>\n        </div>\n      </div>\n      \n      <div class=\"achievement-reward\">\n        Reward: ").concat(rewardParts.join(', '), "\n      </div>\n      \n      ").concat(state !== null && state !== void 0 && state.unlocked && !(state !== null && state !== void 0 && state.claimed) ? "\n        <button class=\"btn btn-success\" onclick=\"claimAchievement('".concat(key, "')\">\n          \u2705 Claim Reward\n        </button>\n      ") : state !== null && state !== void 0 && state.claimed ? "\n        <div class=\"achievement-claimed\">\n          \u2713 Claimed\n        </div>\n      " : "\n        <div class=\"achievement-locked\">\n          \uD83D\uDD12 Locked\n        </div>\n      ", "\n    ");
-      return card;
+      if (achievement.reward.timeShards) rewardParts.push("".concat(achievement.reward.timeShards, " \u23F0"));
+      return "\n      <div class=\"".concat(cardClass, "\" data-key=\"").concat(key, "\">\n        <div class=\"achievement-tier-badge ").concat(achievement.tier, "\">\n          ").concat(this.getTierIcon(achievement.tier), "\n        </div>\n        \n        <div class=\"achievement-content\">\n          <span class=\"achievement-emoji\">").concat(achievement.emoji, "</span>\n          <div class=\"achievement-info\">\n            <h4 class=\"achievement-name\">").concat(achievement.name, "</h4>\n            <p class=\"achievement-description\">").concat(achievement.description, "</p>\n          </div>\n        </div>\n        \n        <div class=\"achievement-reward\">\n          Reward: ").concat(rewardParts.join(', '), "\n        </div>\n        \n        ").concat(isUnlocked && !isClaimed ? "\n          <button class=\"btn btn-success\" onclick=\"claimAchievement('".concat(key, "')\">\n            \u2705 Claim Reward\n          </button>\n        ") : isClaimed ? "\n          <div class=\"achievement-claimed\">\n            \u2713 Claimed\n          </div>\n        " : "\n          <div class=\"achievement-locked\">\n            \uD83D\uDD12 Locked\n          </div>\n        ", "\n      </div>\n    ");
     }
   }, {
     key: "getTierIcon",
@@ -13193,6 +14290,54 @@ var AchievementsUI = /*#__PURE__*/function () {
         diamond: '💎'
       };
       return icons[tier] || '🏆';
+    }
+  }, {
+    key: "bindEvents",
+    value: function bindEvents() {
+      var _this3 = this;
+      // Main tabs (General vs Mini-Games)
+      var mainTabs = this.container.querySelectorAll('.achievement-main-tab');
+      mainTabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          _this3.currentMainTab = tab.dataset.mainTab;
+          _this3.render();
+        });
+      });
+
+      // Category filters (pentru General tab)
+      var categoryBtns = this.container.querySelectorAll('.category-btn');
+      categoryBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          _this3.currentCategory = btn.dataset.category;
+          _this3.render();
+        });
+      });
+
+      // Mini-game tabs
+      var miniGameTabs = this.container.querySelectorAll('.mini-game-tab');
+      miniGameTabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          miniGameTabs.forEach(function (t) {
+            return t.classList.remove('active');
+          });
+          tab.classList.add('active');
+          var gameType = tab.dataset.game;
+          var content = document.getElementById('mini-game-achievements-content');
+          if (content) {
+            _MiniGameStatsUI["default"].renderMiniGameAchievements(content, gameType);
+          }
+        });
+      });
+
+      // Render initial mini-game content
+      if (this.currentMainTab === 'mini-games') {
+        setTimeout(function () {
+          var content = document.getElementById('mini-game-achievements-content');
+          if (content) {
+            _MiniGameStatsUI["default"].renderMiniGameAchievements(content, 'dailySpin');
+          }
+        }, 100);
+      }
     }
   }, {
     key: "updateBadge",
@@ -13210,7 +14355,7 @@ window.claimAchievement = function (key) {
 };
 var _default = exports["default"] = AchievementsUI;
 
-},{"../core/StateManager.js":5,"../systems/AchievementSystem.js":16,"../utils/EventBus.js":50}],31:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/achievements.js":7,"../systems/AchievementSystem.js":17,"../utils/EventBus.js":53,"./MiniGameStatsUI.js":37}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13281,7 +14426,7 @@ window.toggleAutomation = function (featureKey) {
 new AutomationUI();
 var _default = exports["default"] = AutomationUI;
 
-},{"../systems/AutomationSystem.js":18,"../utils/EventBus.js":50}],32:[function(require,module,exports){
+},{"../systems/AutomationSystem.js":19,"../utils/EventBus.js":53}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13443,7 +14588,7 @@ window.challengeBoss = function (bossKey) {
 };
 var _default = exports["default"] = BossesUI;
 
-},{"../core/StateManager.js":5,"../systems/BossSystem.js":19,"../utils/EventBus.js":50,"../utils/Formatters.js":51}],33:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/BossSystem.js":20,"../utils/EventBus.js":53,"../utils/Formatters.js":54}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13531,7 +14676,7 @@ var DailyRewardUI = /*#__PURE__*/function () {
 new DailyRewardUI();
 var _default = exports["default"] = DailyRewardUI;
 
-},{"../systems/DailyRewardSystem.js":20,"../utils/EventBus.js":50}],34:[function(require,module,exports){
+},{"../systems/DailyRewardSystem.js":21,"../utils/EventBus.js":53}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13690,7 +14835,138 @@ window.dismissGuardian = function (guardianId) {
 };
 var _default = exports["default"] = GuardiansUI;
 
-},{"../core/StateManager.js":5,"../systems/GuardianSystem.js":21,"../utils/EventBus.js":50,"../utils/Formatters.js":51}],35:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/GuardianSystem.js":22,"../utils/EventBus.js":53,"../utils/Formatters.js":54}],37:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+var _MiniGameAchievementSystem = _interopRequireDefault(require("../systems/MiniGameAchievementSystem.js"));
+var _miniGameAchievements = require("../data/miniGameAchievements.js");
+var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
+ * MiniGameStatsUI - Display mini-game statistics and achievements
+ */
+var MiniGameStatsUI = /*#__PURE__*/function () {
+  function MiniGameStatsUI() {
+    _classCallCheck(this, MiniGameStatsUI);
+  }
+  return _createClass(MiniGameStatsUI, [{
+    key: "renderMiniGameAchievements",
+    value:
+    /**
+     * Render mini-game achievements section in Achievements UI
+     */
+    function renderMiniGameAchievements(container, gameType) {
+      var _this = this;
+      var progress = _MiniGameAchievementSystem["default"].getProgress(gameType);
+      var stats = _MiniGameAchievementSystem["default"].getGameStats(gameType);
+      var gameNames = {
+        dailySpin: '🎰 Daily Spin',
+        game2048: '🎮 2048',
+        match3: '🧩 Match-3'
+      };
+      container.innerHTML = "\n      <div class=\"mini-game-achievements\">\n        <div class=\"achievement-header\">\n          <h3>".concat(gameNames[gameType], "</h3>\n          <div class=\"achievement-progress-bar\">\n            <div class=\"progress-fill\" style=\"width: ").concat(stats.percentage, "%\"></div>\n            <span class=\"progress-text\">").concat(stats.unlocked, "/").concat(stats.total, " (").concat(stats.percentage, "%)</span>\n          </div>\n        </div>\n        \n        <div class=\"achievements-grid\">\n          ").concat(progress.map(function (achievement) {
+        return _this.renderAchievementCard(achievement);
+      }).join(''), "\n        </div>\n      </div>\n    ");
+    }
+
+    /**
+     * Render single achievement card - MATCHES GENERAL ACHIEVEMENTS STRUCTURE
+     */
+  }, {
+    key: "renderAchievementCard",
+    value: function renderAchievementCard(achievement) {
+      var tier = _miniGameAchievements.ACHIEVEMENT_TIERS[achievement.tier];
+      var unlocked = achievement.unlocked;
+
+      // Format rewards (match general achievements format)
+      var rewardParts = [];
+      if (achievement.reward.gems) rewardParts.push("".concat(achievement.reward.gems, " \uD83D\uDC8E"));
+      if (achievement.reward.crystals) rewardParts.push("".concat(achievement.reward.crystals, " \uD83D\uDCA0"));
+      if (achievement.reward.energy) rewardParts.push("".concat(_Formatters["default"].formatNumber(achievement.reward.energy), " \u26A1"));
+      if (achievement.reward.timeShards) rewardParts.push("".concat(achievement.reward.timeShards, " \u23F0"));
+      if (achievement.reward.guardian) rewardParts.push("\uD83D\uDEE1\uFE0F Guardian");
+      return "\n      <div class=\"achievement-card ".concat(unlocked ? 'unlocked' : 'locked', "\">\n        <div class=\"achievement-tier-badge ").concat(achievement.tier, "\">\n          ").concat(tier.icon, "\n        </div>\n        \n        <div class=\"achievement-content\">\n          <span class=\"achievement-emoji\">").concat(achievement.icon, "</span>\n          <div class=\"achievement-info\">\n            <h4 class=\"achievement-name\">").concat(achievement.name, "</h4>\n            <p class=\"achievement-description\">").concat(achievement.description, "</p>\n          </div>\n        </div>\n        \n        <div class=\"achievement-reward\">\n          Reward: ").concat(rewardParts.join(', '), "\n        </div>\n        \n        ").concat(unlocked ? "\n          <div class=\"achievement-claimed\">\n            \u2713 Unlocked".concat(achievement.timestamp ? " - ".concat(this.formatDate(achievement.timestamp)) : '', "\n          </div>\n        ") : "\n          <div class=\"achievement-locked\">\n            \uD83D\uDD12 Locked\n          </div>\n        ", "\n      </div>\n    ");
+    }
+
+    /**
+     * Format reward display (DEPRECATED - kept for backwards compatibility)
+     */
+  }, {
+    key: "formatReward",
+    value: function formatReward(reward) {
+      var icons = {
+        timeShards: '⏰',
+        gems: '💎',
+        energy: '⚡',
+        crystals: '💠',
+        guardian: '🛡️'
+      };
+      var parts = [];
+      for (var _i = 0, _Object$entries = Object.entries(reward); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          resource = _Object$entries$_i[0],
+          amount = _Object$entries$_i[1];
+        if (resource === 'guardian') {
+          parts.push("<span class=\"reward-item\">".concat(icons[resource], " Guardian</span>"));
+        } else {
+          parts.push("<span class=\"reward-item\">".concat(_Formatters["default"].formatNumber(amount), " ").concat(icons[resource], "</span>"));
+        }
+      }
+      return parts.join(' ');
+    }
+
+    /**
+     * Format date
+     */
+  }, {
+    key: "formatDate",
+    value: function formatDate(timestamp) {
+      var date = new Date(timestamp);
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    /**
+     * Render mini-game stats in Statistics UI
+     */
+  }, {
+    key: "renderMiniGameStats",
+    value: function renderMiniGameStats(container) {
+      var overallStats = _MiniGameAchievementSystem["default"].getOverallStats();
+      container.innerHTML = "\n      <div class=\"mini-game-stats-section\">\n        <h3>\uD83C\uDFAE Mini-Game Progress</h3>\n        \n        <div class=\"overall-progress\">\n          <div class=\"stat-card\">\n            <div class=\"stat-value\">".concat(overallStats.unlocked, "/").concat(overallStats.total, "</div>\n            <div class=\"stat-label\">Total Achievements</div>\n            <div class=\"progress-bar\">\n              <div class=\"progress-fill\" style=\"width: ").concat(overallStats.percentage, "%\"></div>\n            </div>\n          </div>\n        </div>\n        \n        <div class=\"game-stats-grid\">\n          ").concat(this.renderGameStatCard('dailySpin', '🎰 Daily Spin', overallStats.byGame.dailySpin), "\n          ").concat(this.renderGameStatCard('game2048', '🎮 2048', overallStats.byGame.game2048), "\n          ").concat(this.renderGameStatCard('match3', '🧩 Match-3', overallStats.byGame.match3), "\n        </div>\n      </div>\n    ");
+    }
+
+    /**
+     * Render game stat card
+     */
+  }, {
+    key: "renderGameStatCard",
+    value: function renderGameStatCard(gameType, name, stats) {
+      return "\n      <div class=\"game-stat-card\" data-game=\"".concat(gameType, "\">\n        <h4>").concat(name, "</h4>\n        <div class=\"stat-value\">").concat(stats.unlocked, "/").concat(stats.total, "</div>\n        <div class=\"progress-bar small\">\n          <div class=\"progress-fill\" style=\"width: ").concat(stats.percentage, "%\"></div>\n        </div>\n        <div class=\"stat-label\">").concat(stats.percentage, "% Complete</div>\n      </div>\n    ");
+    }
+  }]);
+}();
+var _default = exports["default"] = new MiniGameStatsUI();
+
+},{"../data/miniGameAchievements.js":10,"../systems/MiniGameAchievementSystem.js":23,"../utils/Formatters.js":54}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13809,7 +15085,7 @@ var ModalManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ModalManager;
 
-},{"../utils/EventBus.js":50,"../utils/Logger.js":52}],36:[function(require,module,exports){
+},{"../utils/EventBus.js":53,"../utils/Logger.js":55}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13934,7 +15210,7 @@ var NotificationManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = NotificationManager;
 
-},{"../utils/EventBus.js":50,"../utils/Logger.js":52}],37:[function(require,module,exports){
+},{"../utils/EventBus.js":53,"../utils/Logger.js":55}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14568,7 +15844,7 @@ var PuzzleUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = PuzzleUI;
 
-},{"../core/Game.js":2,"../core/StateManager.js":5,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./games/DailySpinGame.js":47,"./games/Game2048.js":48,"./games/Match3Game.js":49}],38:[function(require,module,exports){
+},{"../core/Game.js":2,"../core/StateManager.js":5,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./games/DailySpinGame.js":50,"./games/Game2048.js":51,"./games/Match3Game.js":52}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14730,7 +16006,7 @@ window.claimQuest = function (questId) {
 };
 var _default = exports["default"] = QuestsUI;
 
-},{"../core/StateManager.js":5,"../systems/QuestSystem.js":22,"../utils/EventBus.js":50,"../utils/Formatters.js":51}],39:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/QuestSystem.js":24,"../utils/EventBus.js":53,"../utils/Formatters.js":54}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14862,7 +16138,7 @@ window.watchAd = function (adType) {
 };
 var _default = exports["default"] = ShopUI;
 
-},{"../systems/ShopSystem.js":24,"../utils/EventBus.js":50,"../utils/Formatters.js":51}],40:[function(require,module,exports){
+},{"../systems/ShopSystem.js":26,"../utils/EventBus.js":53,"../utils/Formatters.js":54}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14871,6 +16147,7 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 var _StatisticsSystem = _interopRequireDefault(require("../systems/StatisticsSystem.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
+var _MiniGameStatsUI = _interopRequireDefault(require("./MiniGameStatsUI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -14886,6 +16163,7 @@ function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" 
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
  * StatisticsUI - Manages statistics tab display
  */
+// ✅ ADĂUGAT
 var StatisticsUI = /*#__PURE__*/function () {
   function StatisticsUI(containerId) {
     var _document$getElementB;
@@ -14912,6 +16190,8 @@ var StatisticsUI = /*#__PURE__*/function () {
         _this.render();
       }, 5000);
     }
+
+    // ✅ MODIFICAT - render() cu mini-game stats
   }, {
     key: "render",
     value: function render() {
@@ -14927,6 +16207,12 @@ var StatisticsUI = /*#__PURE__*/function () {
 
       // Add milestones
       this.renderMilestones();
+
+      // ✅ ADĂUGAT - Render mini-game statistics
+      var miniGameContainer = document.createElement('div');
+      miniGameContainer.id = 'mini-game-statistics';
+      this.container.appendChild(miniGameContainer);
+      _MiniGameStatsUI["default"].renderMiniGameStats(miniGameContainer);
     }
   }, {
     key: "createCategorySection",
@@ -14969,7 +16255,7 @@ var StatisticsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StatisticsUI;
 
-},{"../systems/StatisticsSystem.js":25,"../utils/EventBus.js":50}],41:[function(require,module,exports){
+},{"../systems/StatisticsSystem.js":27,"../utils/EventBus.js":53,"./MiniGameStatsUI.js":37}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15173,7 +16459,7 @@ var StructuresUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructuresUI;
 
-},{"../core/StateManager.js":5,"../systems/StructureSystem.js":26,"../utils/EventBus.js":50,"../utils/Formatters.js":51,"./components/StructureCard.js":45}],42:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/StructureSystem.js":28,"../utils/EventBus.js":53,"../utils/Formatters.js":54,"./components/StructureCard.js":48}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15270,7 +16556,7 @@ var TabManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = TabManager;
 
-},{"../utils/EventBus.js":50,"../utils/Logger.js":52}],43:[function(require,module,exports){
+},{"../utils/EventBus.js":53,"../utils/Logger.js":55}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15449,7 +16735,7 @@ var UpgradesUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = UpgradesUI;
 
-},{"../core/StateManager.js":5,"../systems/UpgradeQueueSystem.js":28,"../systems/UpgradeSystem.js":29,"../utils/EventBus.js":50,"../utils/Formatters.js":51,"./components/UpgradeQueueDisplay.js":46}],44:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../systems/UpgradeQueueSystem.js":30,"../systems/UpgradeSystem.js":31,"../utils/EventBus.js":53,"../utils/Formatters.js":54,"./components/UpgradeQueueDisplay.js":49}],47:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15595,7 +16881,7 @@ var ResourceDisplay = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ResourceDisplay;
 
-},{"../../core/StateManager.js":5,"../../utils/EventBus.js":50,"../../utils/Formatters.js":51}],45:[function(require,module,exports){
+},{"../../core/StateManager.js":5,"../../utils/EventBus.js":53,"../../utils/Formatters.js":54}],48:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15881,7 +17167,7 @@ var StructureCard = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructureCard;
 
-},{"../../core/StateManager.js":5,"../../systems/StructureSystem.js":26,"../../utils/EventBus.js":50,"../../utils/Formatters.js":51}],46:[function(require,module,exports){
+},{"../../core/StateManager.js":5,"../../systems/StructureSystem.js":28,"../../utils/EventBus.js":53,"../../utils/Formatters.js":54}],49:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16025,7 +17311,7 @@ window.cancelQueuedUpgrade = function (upgradeKey) {
 };
 var _default = exports["default"] = UpgradeQueueDisplay;
 
-},{"../../systems/UpgradeQueueSystem.js":28,"../../systems/UpgradeSystem.js":29,"../../utils/EventBus.js":50,"../../utils/Formatters.js":51}],47:[function(require,module,exports){
+},{"../../systems/UpgradeQueueSystem.js":30,"../../systems/UpgradeSystem.js":31,"../../utils/EventBus.js":53,"../../utils/Formatters.js":54}],50:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16324,6 +17610,17 @@ var DailySpinGame = /*#__PURE__*/function () {
         }
       });
       _Logger["default"].info('DailySpinGame', 'Reward granted', reward);
+
+      // Track rewards for achievements
+      var gemAmount = reward.gems || 0;
+      var hasGuardian = reward.guardian ? true : false;
+      _StateManager["default"].dispatch({
+        type: 'TRACK_SPIN_REWARD',
+        payload: {
+          gemAmount: gemAmount,
+          hasGuardian: hasGuardian
+        }
+      });
       _EventBus["default"].emit('daily-spin:reward-granted', {
         reward: reward,
         segment: segment
@@ -16426,7 +17723,7 @@ var DailySpinGame = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new DailySpinGame();
 
-},{"../../core/StateManager.js":5,"../../utils/EventBus.js":50,"../../utils/Logger.js":52}],48:[function(require,module,exports){
+},{"../../core/StateManager.js":5,"../../utils/EventBus.js":53,"../../utils/Logger.js":55}],51:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16707,6 +18004,16 @@ var Game2048 = /*#__PURE__*/function () {
         score: this.score,
         isHighScore: this.score > highScore
       });
+
+      // Track stats for achievements
+      var maxTile = Math.max.apply(Math, _toConsumableArray(this.grid.flat()));
+      _StateManager["default"].dispatch({
+        type: 'TRACK_2048_TILE',
+        payload: {
+          tile: maxTile,
+          score: this.score
+        }
+      });
     }
   }, {
     key: "formatReward",
@@ -16756,7 +18063,7 @@ var Game2048 = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new Game2048();
 
-},{"../../core/StateManager.js":5,"../../utils/EventBus.js":50,"../../utils/Logger.js":52}],49:[function(require,module,exports){
+},{"../../core/StateManager.js":5,"../../utils/EventBus.js":53,"../../utils/Logger.js":55}],52:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16959,6 +18266,13 @@ var Match3Game = /*#__PURE__*/function () {
       this.specialGemTypes.set(key, type);
       this.grid[row][col] = this.specialGems[type];
       console.log("\u2728 Created ".concat(type, " special gem at ").concat(row, ",").concat(col));
+      stateManager.dispatch({
+        type: 'TRACK_SPECIAL_GEM_CREATED',
+        payload: {
+          game: 'match3',
+          gemType: type
+        }
+      });
     }
 
     /**
@@ -17513,6 +18827,27 @@ var Match3Game = /*#__PURE__*/function () {
         totalDamage: Math.floor(this.score / 5),
         success: this.score >= this.options.targetScore
       };
+
+      // Track game completion for achievements
+      var isPerfect = this.score >= 3000 && this.options.mode === 'boss';
+      stateManager.dispatch({
+        type: 'TRACK_MATCH3_GAME',
+        payload: {
+          score: this.score,
+          combo: this.bestCombo,
+          isPerfect: isPerfect
+        }
+      });
+
+      // Emit stats update for achievement checking
+      _EventBus["default"].emit('mini-game:stats-updated', {
+        game: 'match3'
+      });
+
+      // Emit completion event (pentru boss battles)
+      _EventBus["default"].emit('match3:game-complete', {
+        result: result
+      });
       console.log('📊 Final results:', result);
 
       // Show game over overlay
@@ -17544,7 +18879,7 @@ var Match3Game = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Match3Game;
 
-},{"../../utils/EventBus.js":50,"../../utils/Logger.js":52}],50:[function(require,module,exports){
+},{"../../utils/EventBus.js":53,"../../utils/Logger.js":55}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17717,7 +19052,7 @@ var EventBus = /*#__PURE__*/function () {
 var eventBus = new EventBus();
 var _default = exports["default"] = eventBus;
 
-},{"../config.js":1}],51:[function(require,module,exports){
+},{"../config.js":1}],54:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17905,7 +19240,7 @@ var Formatters = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Formatters;
 
-},{}],52:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18088,4 +19423,4 @@ var Logger = /*#__PURE__*/function () {
 var logger = new Logger();
 var _default = exports["default"] = logger;
 
-},{"../config.js":1}]},{},[15]);
+},{"../config.js":1}]},{},[16]);

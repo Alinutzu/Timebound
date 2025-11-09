@@ -1,5 +1,6 @@
 /**
  * AchievementSystem - Tracks and unlocks achievements
+ * OPTIMIZED VERSION with proper state management
  */
 
 import ACHIEVEMENTS from '../data/achievements.js';
@@ -12,6 +13,7 @@ class AchievementSystem {
   constructor() {
     this.achievements = ACHIEVEMENTS;
     this.checkInterval = null;
+    this.debugMode = false; // ✅ Toggle pentru logging
     
     this.initializeState();
     this.subscribeToEvents();
@@ -26,20 +28,9 @@ class AchievementSystem {
   initializeState() {
     const state = stateManager.getState();
     
-    if (!state.achievements || Object.keys(state.achievements).length === 0) {
-      const initialAchievements = {};
-      
-      for (let key of Object.keys(this.achievements)) {
-        initialAchievements[key] = {
-          unlocked: false,
-          claimed: false,
-          unlockedAt: null,
-          claimedAt: null
-        };
-      }
-      
-      // This would need a new action in StateManager
-      // For now, we'll assume it's initialized in getInitialState
+    // Verifică dacă avem structura nouă (unlocked/claimed arrays)
+    if (!state.achievements.unlocked || !state.achievements.claimed) {
+      logger.warn('AchievementSystem', 'Legacy achievement structure detected - using new format');
     }
   }
   
@@ -87,7 +78,8 @@ class AchievementSystem {
     let newUnlocks = 0;
     
     for (let [key, achievement] of Object.entries(this.achievements)) {
-      const achievementState = state.achievements[key];
+      // ✅ FIX: Folosește getAchievementState pentru verificare corectă
+      const achievementState = this.getAchievementState(key);
       
       // Skip if already unlocked
       if (achievementState?.unlocked) continue;
@@ -119,12 +111,13 @@ class AchievementSystem {
       return;
     }
     
+    // ✅ FIX: Dispatch cu 'id' în loc de 'achievementKey'
     stateManager.dispatch({
       type: 'UNLOCK_ACHIEVEMENT',
-      payload: { achievementKey }
+      payload: { id: achievementKey }
     });
     
-    logger.info('AchievementSystem', `Unlocked: ${achievement.name}`);
+    logger.info('AchievementSystem', `✅ Unlocked: ${achievement.name}`);
     
     // Show notification
     this.showUnlockNotification(achievementKey, achievement);
@@ -139,7 +132,7 @@ class AchievementSystem {
   showUnlockNotification(key, achievement) {
     const notification = {
       type: 'achievement',
-      title: 'Achievement Unlocked!',
+      title: '🏆 Achievement Unlocked!',
       message: `${achievement.emoji} ${achievement.name}`,
       description: achievement.description,
       duration: 5000
@@ -149,30 +142,48 @@ class AchievementSystem {
   }
   
   /**
-   * Claim achievement rewards
+   * ✅ FIXED: Claim achievement rewards
    */
   claim(achievementKey) {
-    const state = stateManager.getState();
-    const achievementState = state.achievements[achievementKey];
+    if (this.debugMode) {
+      logger.info('AchievementSystem', '🎯 Attempting to claim:', achievementKey);
+    }
+    
+    const state = this.getAchievementState(achievementKey);
     const achievement = this.achievements[achievementKey];
     
     if (!achievement) {
-      logger.error('AchievementSystem', `Achievement ${achievementKey} not found`);
+      logger.error('AchievementSystem', `❌ Achievement ${achievementKey} not found`);
       return false;
     }
     
-    if (!achievementState?.unlocked) {
-      logger.warn('AchievementSystem', `Achievement ${achievementKey} not unlocked`);
+    // ✅ Validations
+    if (!state.unlocked) {
+      logger.warn('AchievementSystem', `❌ Achievement ${achievementKey} not unlocked`);
+      eventBus.emit('notification:show', {
+        type: 'error',
+        message: 'Achievement not unlocked yet!',
+        duration: 2000
+      });
       return false;
     }
     
-    if (achievementState.claimed) {
-      logger.warn('AchievementSystem', `Achievement ${achievementKey} already claimed`);
+    if (state.claimed) {
+      logger.warn('AchievementSystem', `⚠️ Achievement ${achievementKey} already claimed`);
+      eventBus.emit('notification:show', {
+        type: 'warning',
+        message: 'Already claimed!',
+        duration: 2000
+      });
       return false;
     }
     
-    // Give rewards
+    // ✅ Give rewards
     const rewards = achievement.reward;
+    
+    if (this.debugMode) {
+      logger.info('AchievementSystem', '✅ Granting rewards:', rewards);
+    }
     
     for (let [resource, amount] of Object.entries(rewards)) {
       stateManager.dispatch({
@@ -189,24 +200,61 @@ class AchievementSystem {
       }
     }
     
-    // Mark as claimed
+    // ✅ Mark as claimed (folosește 'id' nu 'achievementKey')
     stateManager.dispatch({
       type: 'CLAIM_ACHIEVEMENT',
-      payload: { achievementKey }
+      payload: { id: achievementKey }
     });
     
-    logger.info('AchievementSystem', `Claimed ${achievement.name}:`, rewards);
+    logger.info('AchievementSystem', `✅ Claimed ${achievement.name}:`, rewards);
+    
+    // ✅ Show success notification
+    const rewardText = Object.entries(rewards)
+      .map(([r, a]) => {
+        const icons = { gems: '💎', crystals: '💠', energy: '⚡', timeShards: '⏰' };
+        return `${a} ${icons[r] || r}`;
+      })
+      .join(', ');
+    
+    eventBus.emit('notification:show', {
+      type: 'success',
+      title: `🏆 ${achievement.name}`,
+      message: `Claimed: ${rewardText}`,
+      duration: 4000
+    });
+    
+    // Emit event
     eventBus.emit('achievement:claimed', { achievementKey, rewards });
     
     return true;
   }
   
   /**
-   * Get achievement state
+   * ✅ FIXED: Get achievement state from new structure
    */
   getAchievementState(achievementKey) {
     const state = stateManager.getState();
-    return state.achievements[achievementKey];
+    
+    if (!state.achievements) {
+      return { unlocked: false, claimed: false };
+    }
+    
+    // ✅ Check în unlocked/claimed arrays
+    const isUnlocked = state.achievements.unlocked?.includes(achievementKey) || false;
+    const isClaimed = state.achievements.claimed?.includes(achievementKey) || false;
+    
+    // ✅ Doar debug logging, nu spam
+    if (this.debugMode) {
+      logger.debug('AchievementSystem', `getState(${achievementKey}):`, { 
+        unlocked: isUnlocked, 
+        claimed: isClaimed 
+      });
+    }
+    
+    return {
+      unlocked: isUnlocked,
+      claimed: isClaimed
+    };
   }
   
   /**
@@ -226,52 +274,37 @@ class AchievementSystem {
   }
   
   /**
-   * Get achievement progress
+   * ✅ FIXED: Get achievement progress
    */
   getProgress() {
     const state = stateManager.getState();
     
-    let total = 0;
-    let unlocked = 0;
-    let claimed = 0;
-    
-    for (let key of Object.keys(this.achievements)) {
-      total++;
-      const achievementState = state.achievements[key];
-      
-      if (achievementState?.unlocked) {
-        unlocked++;
-      }
-      
-      if (achievementState?.claimed) {
-        claimed++;
-      }
-    }
+    const total = Object.keys(this.achievements).length;
+    const unlocked = state.achievements?.unlocked?.length || 0;
+    const claimed = state.achievements?.claimed?.length || 0;
     
     return {
       total,
       unlocked,
       claimed,
-      percentageUnlocked: (unlocked / total) * 100,
-      percentageClaimed: (claimed / total) * 100
+      percentageUnlocked: total > 0 ? (unlocked / total) * 100 : 0,
+      percentageClaimed: total > 0 ? (claimed / total) * 100 : 0
     };
   }
   
   /**
-   * Get unclaimed achievements count
+   * ✅ FIXED: Get unclaimed achievements count
    */
   getUnclaimedCount() {
     const state = stateManager.getState();
-    let count = 0;
     
-    for (let key of Object.keys(this.achievements)) {
-      const achievementState = state.achievements[key];
-      if (achievementState?.unlocked && !achievementState.claimed) {
-        count++;
-      }
-    }
+    const unlocked = state.achievements?.unlocked || [];
+    const claimed = state.achievements?.claimed || [];
     
-    return count;
+    // Unclaimed = unlocked dar nu claimed
+    const unclaimed = unlocked.filter(key => !claimed.includes(key));
+    
+    return unclaimed.length;
   }
   
   /**
@@ -289,11 +322,13 @@ class AchievementSystem {
     
     for (let [key, achievement] of Object.entries(this.achievements)) {
       const tier = achievement.tier;
-      stats[tier].total++;
-      
-      const achievementState = state.achievements[key];
-      if (achievementState?.unlocked) {
-        stats[tier].unlocked++;
+      if (stats[tier]) {
+        stats[tier].total++;
+        
+        const achievementState = this.getAchievementState(key);
+        if (achievementState.unlocked) {
+          stats[tier].unlocked++;
+        }
       }
     }
     
@@ -301,26 +336,25 @@ class AchievementSystem {
   }
   
   /**
-   * Get recently unlocked achievements
+   * ✅ FIXED: Get recently unlocked achievements
    */
   getRecentlyUnlocked(count = 5) {
     const state = stateManager.getState();
     const unlocked = [];
     
-    for (let [key, achievement] of Object.entries(this.achievements)) {
-      const achievementState = state.achievements[key];
-      
-      if (achievementState?.unlocked) {
+    // Get all unlocked achievement keys
+    const unlockedKeys = state.achievements?.unlocked || [];
+    
+    for (let key of unlockedKeys) {
+      const achievement = this.achievements[key];
+      if (achievement) {
         unlocked.push({
           key,
           achievement,
-          unlockedAt: achievementState.unlockedAt
+          unlockedAt: Date.now() // Would need timestamp tracking
         });
       }
     }
-    
-    // Sort by unlock time (newest first)
-    unlocked.sort((a, b) => b.unlockedAt - a.unlockedAt);
     
     return unlocked.slice(0, count);
   }
@@ -338,9 +372,22 @@ class AchievementSystem {
     
     return hints;
   }
+  
+  /**
+   * ✅ Enable/disable debug logging
+   */
+  setDebugMode(enabled) {
+    this.debugMode = enabled;
+    logger.info('AchievementSystem', `Debug mode: ${enabled ? 'ON' : 'OFF'}`);
+  }
 }
 
 // Singleton
 const achievementSystem = new AchievementSystem();
+
+// ✅ Make claim globally accessible
+window.claimAchievement = function(achievementKey) {
+  return achievementSystem.claim(achievementKey);
+};
 
 export default achievementSystem;

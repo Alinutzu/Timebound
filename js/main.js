@@ -9,6 +9,7 @@ import eventBus from './utils/EventBus.js';
 import logger from './utils/Logger.js';
 import stateManager from './core/StateManager.js';
 import Formatters from './utils/Formatters.js';
+import miniGameAchievementSystem from './systems/MiniGameAchievementSystem.js'; // ✅ ADĂUGAT
 
 // UI Managers
 import ResourceDisplay from './ui/components/ResourceDisplay.js';
@@ -45,6 +46,10 @@ async function initApp() {
         
         // Initialize game
         await game.init();
+        
+        // ✅ ADĂUGAT - Initialize mini-game achievement system
+        miniGameAchievementSystem.init();
+        logger.info('Main', '✅ Mini-game achievement system initialized');
         
         // Initialize UI
         initUI();
@@ -452,8 +457,5 @@ if (CONFIG.DEBUG_MODE) {
     console.log('    cheat.addGems(10000)');
     console.log('    cheat.addCrystals(100)');
     console.log('    cheat.ascend()');
-
 }
-
-
 

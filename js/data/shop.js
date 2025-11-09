@@ -34,7 +34,7 @@ const SHOP_ITEMS = {
       priceDisplay: '$1.99',
       emoji: '💎',
       popular: true,
-      bonusPercentage: 20 // +20% gems
+      bonusPercentage: 20
     },
     
     large: {
@@ -46,13 +46,13 @@ const SHOP_ITEMS = {
         energy: 100000,
         mana: 1000,
         crystals: 15,
-        guardian: 1 // Free guardian summon
+        guardian: 1
       },
       price: 4.99,
       priceDisplay: '$4.99',
       emoji: '💎',
       popular: false,
-      bonusPercentage: 50 // +50% gems
+      bonusPercentage: 50
     },
     
     mega: {
@@ -70,7 +70,7 @@ const SHOP_ITEMS = {
       priceDisplay: '$9.99',
       emoji: '💎',
       popular: false,
-      bonusPercentage: 100 // +100% gems (double)
+      bonusPercentage: 100
     },
     
     ultimate: {
@@ -89,7 +89,7 @@ const SHOP_ITEMS = {
       priceDisplay: '$19.99',
       emoji: '💎',
       popular: false,
-      bonusPercentage: 150, // +150% gems
+      bonusPercentage: 150,
       special: true
     }
   },
@@ -101,15 +101,15 @@ const SHOP_ITEMS = {
     description: 'Premium benefits for 30 days',
     price: 4.99,
     priceDisplay: '$4.99/month',
-    duration: 2592000000, // 30 days in ms
+    duration: 2592000000,
     emoji: '👑',
     
     benefits: {
-      offlineProduction: 1.0, // 100% offline production
+      offlineProduction: 1.0,
       dailyGems: 50,
-      questSlots: 5, // +2 quest slots
-      upgradeQueueSlots: 5, // +2 upgrade slots
-      guardianDiscount: 0.5, // 50% off guardian summons
+      questSlots: 5,
+      upgradeQueueSlots: 5,
+      guardianDiscount: 0.5,
       noAds: true,
       exclusiveCosmetics: true
     },
@@ -140,11 +140,11 @@ const SHOP_ITEMS = {
       price: 2.99,
       priceDisplay: '$2.99',
       emoji: '🎁',
-      duration: 86400000, // 24 hours
+      duration: 86400000,
       condition: {
-        playTime: { max: 3600000 } // First hour only
+        playTime: { max: 3600000 }
       },
-      discount: 70 // 70% off
+      discount: 70
     },
     
     {
@@ -155,12 +155,12 @@ const SHOP_ITEMS = {
       bonus: {
         energy: 500000,
         crystals: 50,
-        quickStart: true // Triggers quick start bonus
+        quickStart: true
       },
       price: 3.99,
       priceDisplay: '$3.99',
       emoji: '✨',
-      duration: 1800000, // 30 minutes after ascension
+      duration: 1800000,
       condition: {
         justAscended: true
       },
@@ -177,7 +177,7 @@ const SHOP_ITEMS = {
       reward: {
         energy: 5000
       },
-      cooldown: 300000, // 5 minutes
+      cooldown: 300000,
       dailyLimit: 10,
       emoji: '⚡'
     },
@@ -189,7 +189,7 @@ const SHOP_ITEMS = {
       reward: {
         gems: 25
       },
-      cooldown: 600000, // 10 minutes
+      cooldown: 600000,
       dailyLimit: 5,
       emoji: '💎'
     },
@@ -200,9 +200,9 @@ const SHOP_ITEMS = {
       description: '2x all production for 10 minutes',
       reward: {
         multiplier: 2,
-        duration: 600000 // 10 minutes
+        duration: 600000
       },
-      cooldown: 1800000, // 30 minutes
+      cooldown: 1800000,
       dailyLimit: 3,
       emoji: '✨'
     }
@@ -210,7 +210,7 @@ const SHOP_ITEMS = {
   
   // ===== DAILY DEAL =====
   dailyDeal: {
-    refreshTime: 86400000, // 24 hours
+    refreshTime: 86400000,
     deals: [
       {
         id: 'energy_sale',
@@ -237,7 +237,55 @@ const SHOP_ITEMS = {
         discount: 40
       }
     ]
-  }
+  },  // ← VIRGULĂ AICI! ÎNCHIDE dailyDeal
+  
+  // ===== MINI-GAMES PACKAGES ===== ← AICI LA ACELAȘI NIVEL CU dailyDeal!
+  miniGamesPackages: {
+    extraSpins3: {
+      id: 'extra_spins_3',
+      name: '3 Extra Spins',
+      description: 'Get 3 additional spins for the Daily Wheel!',
+      spins: 3,
+      bonus: {
+        gems: 100
+      },
+      price: 0.99,
+      priceDisplay: '$0.99',
+      emoji: '🎡',
+      popular: false
+    },
+    
+    extraSpins10: {
+      id: 'extra_spins_10',
+      name: '10 Extra Spins',
+      description: 'Best value! 10 spins + bonus gems',
+      spins: 10,
+      bonus: {
+        gems: 500,
+        energy: 10000
+      },
+      price: 2.99,
+      priceDisplay: '$2.99',
+      emoji: '🎡',
+      popular: true,
+      bonusPercentage: 30
+    },
+    
+    unlimitedSpins24h: {
+      id: 'unlimited_spins_24h',
+      name: 'Unlimited Spins - 24h',
+      description: 'Spin as much as you want for 24 hours!',
+      unlimited: true,
+      duration: 86400000,
+      bonus: {
+        gems: 1000
+      },
+      price: 4.99,
+      priceDisplay: '$4.99',
+      emoji: '🎡✨',
+      special: true
+    }
+  }  // ← FĂRĂ VIRGULĂ (ultimul element)
 };
 
 export default SHOP_ITEMS;

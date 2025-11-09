@@ -120,14 +120,37 @@ class StateManager {
         sessionStartTime: Date.now(),
         structuresPurchased: 0,
         upgradesPurchased: 0,
-        guardiansSum: 0,
+        guardiansSummoned: 0,
         questsCompleted: 0,
         bossesDefeated: 0,
         puzzlesPlayed: 0,
+        puzzlesWon: 0,
         puzzleHighScore: 0,
         gemsSpent: 0,
         gemsEarned: 0,
         highestEnergyPerSecond: 0
+      },
+      
+      // Mini-Games
+      miniGames: {
+        dailySpin: {
+          lastSpinDate: '',
+          lastSpin: 0,
+          totalSpins: 0,
+          purchasedSpins: 0,
+          unlimitedUntil: 0
+        },
+        game2048: {
+          highScore: 0,
+          gamesPlayed: 0
+        }
+      },
+      
+      // Upgrade Queue
+      upgradeQueue: {
+        queue: [],
+        slots: 1,
+        activeUpgrade: null
       },
       
       // Settings
@@ -317,9 +340,15 @@ class StateManager {
           },
           statistics: {
             ...state.statistics,
-            guardiansSummoned: state.statistics.guardiansSummoned + 1,
+            guardiansSummoned: (state.statistics.guardiansSummoned || 0) + 1,
             gemsSpent: state.statistics.gemsSpent + CONFIG.BALANCING.GUARDIAN_SUMMON_COST
           }
+        };
+      
+      case 'ADD_GUARDIAN_DIRECT':
+        return {
+          ...state,
+          guardians: [...state.guardians, action.payload.guardian]
         };
       
       case 'REMOVE_GUARDIAN':
@@ -364,8 +393,6 @@ class StateManager {
         };
       
       case 'COMPLETE_QUEST':
-        const completedQuest = state.quests.active.find(q => q.id === action.payload.questId);
-        
         return {
           ...state,
           quests: {
@@ -407,6 +434,86 @@ class StateManager {
           }
         };
       
+      case 'TRIGGER_ACHIEVEMENT':
+        return {
+          ...state,
+          achievements: {
+            ...state.achievements,
+            [action.payload.achievementKey]: {
+              ...state.achievements[action.payload.achievementKey],
+              triggered: true
+            }
+          }
+        };
+      
+      // ===== BOSSES =====
+      case 'INIT_BOSSES':
+        return {
+          ...state,
+          bosses: action.payload.bosses
+        };
+      
+      case 'UNLOCK_BOSS':
+        return {
+          ...state,
+          bosses: {
+            ...state.bosses,
+            [action.payload.bossKey]: {
+              ...state.bosses[action.payload.bossKey],
+              unlocked: true
+            }
+          }
+        };
+      
+      case 'START_BOSS_BATTLE':
+        return {
+          ...state,
+          currentBoss: action.payload.bossKey
+        };
+      
+      case 'DAMAGE_BOSS':
+        return {
+          ...state,
+          bosses: {
+            ...state.bosses,
+            [action.payload.bossKey]: {
+              ...state.bosses[action.payload.bossKey],
+              currentHP: action.payload.newHP,
+              attempts: (state.bosses[action.payload.bossKey].attempts || 0) + 1,
+              bestScore: Math.max(
+                state.bosses[action.payload.bossKey].bestScore || 0,
+                action.payload.score
+              )
+            }
+          }
+        };
+      
+      case 'DEFEAT_BOSS':
+        return {
+          ...state,
+          bosses: {
+            ...state.bosses,
+            [action.payload.bossKey]: {
+              ...state.bosses[action.payload.bossKey],
+              defeated: true,
+              currentHP: 0,
+              defeatedCount: (state.bosses[action.payload.bossKey].defeatedCount || 0) + 1,
+              firstDefeatAt: state.bosses[action.payload.bossKey].firstDefeatAt || Date.now()
+            }
+          },
+          currentBoss: null,
+          statistics: {
+            ...state.statistics,
+            bossesDefeated: state.statistics.bossesDefeated + 1
+          }
+        };
+      
+      case 'EXIT_BOSS_BATTLE':
+        return {
+          ...state,
+          currentBoss: null
+        };
+      
       // ===== REALMS =====
       case 'UNLOCK_REALM':
         return {
@@ -417,7 +524,7 @@ class StateManager {
           },
           resources: {
             ...state.resources,
-            crystals: state.resources.crystals - action.payload.cost
+            crystals: state.resources.crystals - (action.payload.cost || 0)
           }
         };
       
@@ -447,8 +554,12 @@ class StateManager {
             crystals: state.resources.crystals + action.payload.crystalsEarned
           },
           structures: {},
-          upgrades: {}
-          // Guardians, achievements, gems are kept!
+          upgrades: {},
+          upgradeQueue: {
+            queue: [],
+            slots: state.upgradeQueue?.slots || 1,
+            activeUpgrade: null
+          }
         };
       
       case 'UPDATE_LIFETIME_ENERGY':
@@ -460,13 +571,157 @@ class StateManager {
           }
         };
       
-      // ===== SETTINGS =====
-      case 'UPDATE_SETTING':
+      // ===== SHOP =====
+      case 'RECORD_PURCHASE':
         return {
           ...state,
-          settings: {
-            ...state.settings,
-            [action.payload.key]: action.payload.value
+          shop: {
+            ...state.shop,
+            purchaseHistory: [
+              ...state.shop.purchaseHistory,
+              action.payload
+            ]
+          }
+        };
+      
+      case 'ACTIVATE_VIP':
+        return {
+          ...state,
+          shop: {
+            ...state.shop,
+            vipActive: true,
+            vipExpiry: action.payload.expiryTime,
+            vipBenefits: action.payload.benefits
+          }
+        };
+      
+      case 'DEACTIVATE_VIP':
+        return {
+          ...state,
+          shop: {
+            ...state.shop,
+            vipActive: false,
+            vipExpiry: null,
+            vipBenefits: null
+          }
+        };
+      
+      case 'RESET_AD_COUNTER':
+        return {
+          ...state,
+          shop: {
+            ...state.shop,
+            adsWatchedToday: 0,
+            adWatchCount: {},
+            lastAdReset: Date.now()
+          }
+        };
+      
+      case 'INCREMENT_AD_WATCH':
+        const adType = action.payload.adType;
+        return {
+          ...state,
+          shop: {
+            ...state.shop,
+            adsWatchedToday: state.shop.adsWatchedToday + 1,
+            adWatchCount: {
+              ...state.shop.adWatchCount,
+              [adType]: (state.shop.adWatchCount?.[adType] || 0) + 1
+            }
+          }
+        };
+      
+      case 'APPLY_TEMP_MULTIPLIER':
+        return {
+          ...state,
+          tempMultiplier: {
+            active: true,
+            multiplier: action.payload.multiplier,
+            expiresAt: action.payload.expiresAt
+          }
+        };
+      
+      case 'REMOVE_TEMP_MULTIPLIER':
+        return {
+          ...state,
+          tempMultiplier: {
+            active: false,
+            multiplier: 1,
+            expiresAt: null
+          }
+        };
+      
+      case 'REFRESH_DAILY_DEAL':
+        return {
+          ...state,
+          shop: {
+            ...state.shop,
+            dailyDeal: {
+              ...action.payload.deal,
+              refreshedAt: action.payload.refreshedAt
+            }
+          }
+        };
+      
+      // ===== DAILY REWARDS =====
+      case 'CLAIM_DAILY_REWARD':
+        return {
+          ...state,
+          dailyRewards: {
+            ...state.dailyRewards,
+            streak: action.payload.streak,
+            lastClaim: action.payload.lastClaim,
+            claimed: [
+              ...(state.dailyRewards.claimed || []),
+              {
+                day: action.payload.day,
+                timestamp: action.payload.lastClaim
+              }
+            ]
+          }
+        };
+      
+      // ===== AUTOMATION =====
+      case 'UNLOCK_AUTOMATION':
+        return {
+          ...state,
+          automation: {
+            ...state.automation,
+            [action.payload.featureKey]: {
+              ...state.automation[action.payload.featureKey],
+              unlocked: true,
+              enabled: false
+            }
+          }
+        };
+      
+      case 'TOGGLE_AUTOMATION':
+        return {
+          ...state,
+          automation: {
+            ...state.automation,
+            [action.payload.featureKey]: {
+              ...state.automation[action.payload.featureKey],
+              enabled: action.payload.enabled
+            }
+          }
+        };
+      
+      case 'SET_AUTO_BUY_THRESHOLD':
+        return {
+          ...state,
+          automation: {
+            ...state.automation,
+            autoBuyThreshold: action.payload.threshold
+          }
+        };
+      
+      case 'SET_AUTO_SUMMON_THRESHOLD':
+        return {
+          ...state,
+          automation: {
+            ...state.automation,
+            autoSummonThreshold: action.payload.threshold
           }
         };
       
@@ -488,33 +743,143 @@ class StateManager {
             [action.payload.key]: (state.statistics[action.payload.key] || 0) + action.payload.amount
           }
         };
-
-        // Mini-games state handling
-case 'UPDATE_MINI_GAME':
-  return {
-    ...state,
-    miniGames: {
-      ...state.miniGames,
-      [action.payload.game]: {
-        ...(state.miniGames?.[action.payload.game] || {}),
-        ...action.payload.data
-      }
-    }
-  };
-
-case 'INCREMENT_MINI_GAME_STAT':
-  const game = action.payload.game;
-  const stat = action.payload.stat;
-  return {
-    ...state,
-    miniGames: {
-      ...state.miniGames,
-      [game]: {
-        ...(state.miniGames?.[game] || {}),
-        [stat]: ((state.miniGames?.[game]?.[stat] || 0) + 1)
-      }
-    }
-  };
+      
+      // ===== MINI-GAMES =====
+      case 'UPDATE_MINI_GAME':
+        return {
+          ...state,
+          miniGames: {
+            ...state.miniGames,
+            [action.payload.game]: {
+              ...(state.miniGames?.[action.payload.game] || {}),
+              ...action.payload.data
+            }
+          }
+        };
+      
+      case 'INCREMENT_MINI_GAME_STAT':
+        const game = action.payload.game;
+        const stat = action.payload.stat;
+        return {
+          ...state,
+          miniGames: {
+            ...state.miniGames,
+            [game]: {
+              ...(state.miniGames?.[game] || {}),
+              [stat]: ((state.miniGames?.[game]?.[stat] || 0) + 1)
+            }
+          }
+        };
+      
+      case 'ADD_PURCHASED_SPINS':
+        return {
+          ...state,
+          miniGames: {
+            ...state.miniGames,
+            dailySpin: {
+              ...(state.miniGames?.dailySpin || {}),
+              purchasedSpins: ((state.miniGames?.dailySpin?.purchasedSpins || 0) + action.payload.count)
+            }
+          }
+        };
+      
+      case 'DECREMENT_PURCHASED_SPINS':
+        return {
+          ...state,
+          miniGames: {
+            ...state.miniGames,
+            dailySpin: {
+              ...(state.miniGames?.dailySpin || {}),
+              purchasedSpins: Math.max(0, (state.miniGames?.dailySpin?.purchasedSpins || 0) - 1)
+            }
+          }
+        };
+      
+      case 'ACTIVATE_UNLIMITED_SPINS':
+        return {
+          ...state,
+          miniGames: {
+            ...state.miniGames,
+            dailySpin: {
+              ...(state.miniGames?.dailySpin || {}),
+              unlimitedUntil: action.payload.expiresAt
+            }
+          }
+        };
+      
+      // ===== UPGRADE QUEUE =====
+      case 'INIT_UPGRADE_QUEUE':
+        return {
+          ...state,
+          upgradeQueue: {
+            queue: [],
+            slots: 1,
+            activeUpgrade: null
+          }
+        };
+      
+      case 'ADD_TO_UPGRADE_QUEUE':
+        return {
+          ...state,
+          upgradeQueue: {
+            ...state.upgradeQueue,
+            queue: [...state.upgradeQueue.queue, action.payload.item]
+          },
+          resources: {
+            ...state.resources,
+            [action.payload.item.costResource]: 
+              state.resources[action.payload.item.costResource] - action.payload.item.cost
+          }
+        };
+      
+      case 'REMOVE_FROM_UPGRADE_QUEUE':
+        return {
+          ...state,
+          upgradeQueue: {
+            ...state.upgradeQueue,
+            queue: state.upgradeQueue.queue.filter(
+              item => item.upgradeKey !== action.payload.upgradeKey
+            )
+          }
+        };
+      
+      case 'START_UPGRADE':
+        return {
+          ...state,
+          upgradeQueue: {
+            ...state.upgradeQueue,
+            queue: state.upgradeQueue.queue.slice(1),
+            activeUpgrade: action.payload.upgrade
+          }
+        };
+      
+      case 'COMPLETE_UPGRADE':
+        return {
+          ...state,
+          upgradeQueue: {
+            ...state.upgradeQueue,
+            activeUpgrade: null
+          }
+        };
+      
+      case 'UPGRADE_QUEUE_SLOTS':
+        return {
+          ...state,
+          upgradeQueue: {
+            ...state.upgradeQueue,
+            slots: action.payload.slots
+          }
+        };
+      
+      // ===== SETTINGS =====
+      case 'UPDATE_SETTING':
+        return {
+          ...state,
+          settings: {
+            ...state.settings,
+            [action.payload.key]: action.payload.value
+          }
+        };
       
       // ===== TUTORIAL =====
       case 'COMPLETE_TUTORIAL':
@@ -522,7 +887,8 @@ case 'INCREMENT_MINI_GAME_STAT':
           ...state,
           tutorial: {
             ...state.tutorial,
-            completed: true
+            completed: true,
+            completedAt: Date.now()
           }
         };
       
@@ -532,436 +898,27 @@ case 'INCREMENT_MINI_GAME_STAT':
           tutorial: {
             ...state.tutorial,
             skipped: true,
-            completed: true
+            skippedAt: Date.now()
           }
         };
-
-        // În StateManager.reducer(), adaugă:
-
-case 'INIT_UPGRADE_QUEUE':
-  return {
-    ...state,
-    upgradeQueue: {
-      queue: [],
-      slots: 1,
-      activeUpgrade: null
-    }
-  };
-
-case 'ADD_TO_UPGRADE_QUEUE':
-  return {
-    ...state,
-    upgradeQueue: {
-      ...state.upgradeQueue,
-      queue: [...state.upgradeQueue.queue, action.payload.item]
-    },
-    resources: {
-      ...state.resources,
-      [action.payload.item.costResource]: 
-        state.resources[action.payload.item.costResource] - action.payload.item.cost
-    }
-  };
-
-case 'REMOVE_FROM_UPGRADE_QUEUE':
-  return {
-    ...state,
-    upgradeQueue: {
-      ...state.upgradeQueue,
-      queue: state.upgradeQueue.queue.filter(
-        item => item.upgradeKey !== action.payload.upgradeKey
-      )
-    }
-  };
-
-case 'START_UPGRADE':
-  return {
-    ...state,
-    upgradeQueue: {
-      ...state.upgradeQueue,
-      queue: state.upgradeQueue.queue.slice(1), // Remove first item
-      activeUpgrade: action.payload.upgrade
-    }
-  };
-
-case 'COMPLETE_UPGRADE':
-  return {
-    ...state,
-    upgradeQueue: {
-      ...state.upgradeQueue,
-      activeUpgrade: null
-    }
-  };
-
-case 'UPGRADE_QUEUE_SLOTS':
-  return {
-    ...state,
-    upgradeQueue: {
-      ...state.upgradeQueue,
-      slots: action.payload.slots
-    }
-  };
-
-
-  // În StateManager.reducer(), adaugă:
-
-case 'UNLOCK_ACHIEVEMENT':
-  return {
-    ...state,
-    achievements: {
-      ...state.achievements,
-      [action.payload.achievementKey]: {
-        unlocked: true,
-        unlockedAt: Date.now(),
-        claimed: false
-      }
-    }
-  };
-
-case 'CLAIM_ACHIEVEMENT':
-  return {
-    ...state,
-    achievements: {
-      ...state.achievements,
-      [action.payload.achievementKey]: {
-        ...state.achievements[action.payload.achievementKey],
-        claimed: true,
-        claimedAt: Date.now()
-      }
-    }
-  };
-
-case 'TRIGGER_ACHIEVEMENT':
-  // For special triggers (like patientUpgrader)
-  return {
-    ...state,
-    achievements: {
-      ...state.achievements,
-      [action.payload.achievementKey]: {
-        ...state.achievements[action.payload.achievementKey],
-        triggered: true
-      }
-    }
-  };
-
-case 'UNLOCK_REALM':
-  return {
-    ...state,
-    realms: {
-      ...state.realms,
-      unlocked: [...state.realms.unlocked, action.payload.realmId]
-    },
-    resources: {
-      ...state.resources,
-      crystals: state.resources.crystals - (action.payload.cost || 0)
-    }
-  };
-
-case 'SWITCH_REALM':
-  return {
-    ...state,
-    realms: {
-      ...state.realms,
-      current: action.payload.realmId
-    }
-  };
-
-case 'ASCEND':
-  return {
-    ...state,
-    ascension: {
-      level: state.ascension.level + 1,
-      lifetimeEnergy: state.ascension.lifetimeEnergy,
-      totalAscensions: state.ascension.totalAscensions + 1
-    },
-    resources: {
-      ...state.resources,
-      energy: CONFIG.BALANCING.STARTING_ENERGY,
-      mana: 0,
-      volcanicEnergy: 0,
-      crystals: state.resources.crystals + action.payload.crystalsEarned
-      // Gems are kept!
-    },
-    structures: {},
-    upgrades: {},
-    upgradeQueue: {
-      queue: [],
-      slots: state.upgradeQueue?.slots || 1,
-      activeUpgrade: null
-    }
-    // Guardians, achievements, realms are kept!
-  };
-
-
-  // În StateManager.reducer(), adaugă:
-
-// ===== BOSS ACTIONS =====
-case 'UNLOCK_BOSS':
-  return {
-    ...state,
-    bosses: {
-      ...state.bosses,
-      [action.payload.bossKey]: {
-        ...state.bosses[action.payload.bossKey],
-        unlocked: true
-      }
-    }
-  };
-
-  case 'INIT_BOSSES':
-  return {
-    ...state,
-    bosses: action.payload.bosses
-  };
-
-case 'START_BOSS_BATTLE':
-  return {
-    ...state,
-    currentBoss: action.payload.bossKey
-  };
-
-case 'DAMAGE_BOSS':
-  return {
-    ...state,
-    bosses: {
-      ...state.bosses,
-      [action.payload.bossKey]: {
-        ...state.bosses[action.payload.bossKey],
-        currentHP: action.payload.newHP,
-        attempts: (state.bosses[action.payload.bossKey].attempts || 0) + 1,
-        bestScore: Math.max(
-          state.bosses[action.payload.bossKey].bestScore || 0,
-          action.payload.score
-        )
-      }
-    }
-  };
-
-case 'DEFEAT_BOSS':
-  return {
-    ...state,
-    bosses: {
-      ...state.bosses,
-      [action.payload.bossKey]: {
-        ...state.bosses[action.payload.bossKey],
-        defeated: true,
-        currentHP: 0,
-        defeatedCount: (state.bosses[action.payload.bossKey].defeatedCount || 0) + 1,
-        firstDefeatAt: state.bosses[action.payload.bossKey].firstDefeatAt || Date.now()
-      }
-    },
-    currentBoss: null
-  };
-
-case 'EXIT_BOSS_BATTLE':
-  return {
-    ...state,
-    currentBoss: null
-  };
-
-// ===== SHOP ACTIONS =====
-case 'RECORD_PURCHASE':
-  return {
-    ...state,
-    shop: {
-      ...state.shop,
-      purchaseHistory: [
-        ...state.shop.purchaseHistory,
-        action.payload
-      ]
-    }
-  };
-
-case 'ACTIVATE_VIP':
-  return {
-    ...state,
-    shop: {
-      ...state.shop,
-      vipActive: true,
-      vipExpiry: action.payload.expiryTime,
-      vipBenefits: action.payload.benefits
-    }
-  };
-
-case 'DEACTIVATE_VIP':
-  return {
-    ...state,
-    shop: {
-      ...state.shop,
-      vipActive: false,
-      vipExpiry: null,
-      vipBenefits: null
-    }
-  };
-
-case 'RESET_AD_COUNTER':
-  return {
-    ...state,
-    shop: {
-      ...state.shop,
-      adsWatchedToday: 0,
-      adWatchCount: {},
-      lastAdReset: Date.now()
-    }
-  };
-
-case 'INCREMENT_AD_WATCH':
-  const adType = action.payload.adType;
-  return {
-    ...state,
-    shop: {
-      ...state.shop,
-      adsWatchedToday: state.shop.adsWatchedToday + 1,
-      adWatchCount: {
-        ...state.shop.adWatchCount,
-        [adType]: (state.shop.adWatchCount?.[adType] || 0) + 1
-      }
-    }
-  };
-
-case 'APPLY_TEMP_MULTIPLIER':
-  return {
-    ...state,
-    tempMultiplier: {
-      active: true,
-      multiplier: action.payload.multiplier,
-      expiresAt: action.payload.expiresAt
-    }
-  };
-
-case 'REMOVE_TEMP_MULTIPLIER':
-  return {
-    ...state,
-    tempMultiplier: {
-      active: false,
-      multiplier: 1,
-      expiresAt: null
-    }
-  };
-
-case 'REFRESH_DAILY_DEAL':
-  return {
-    ...state,
-    shop: {
-      ...state.shop,
-      dailyDeal: {
-        ...action.payload.deal,
-        refreshedAt: action.payload.refreshedAt
-      }
-    }
-  };
-
-// ===== DAILY REWARD ACTIONS =====
-case 'CLAIM_DAILY_REWARD':
-  return {
-    ...state,
-    dailyRewards: {
-      ...state.dailyRewards,
-      streak: action.payload.streak,
-      lastClaim: action.payload.lastClaim,
-      claimed: [
-        ...(state.dailyRewards.claimed || []),
-        {
-          day: action.payload.day,
-          timestamp: action.payload.lastClaim
-        }
-      ]
-    }
-  };
-
-// ===== GUARDIAN DIRECT ADD (for boss/shop rewards) =====
-case 'ADD_GUARDIAN_DIRECT':
-  return {
-    ...state,
-    guardians: [...state.guardians, action.payload.guardian]
-  };
-
-
-  // În StateManager.reducer(), adaugă:
-
-// ===== AUTOMATION ACTIONS =====
-case 'UNLOCK_AUTOMATION':
-  return {
-    ...state,
-    automation: {
-      ...state.automation,
-      [action.payload.featureKey]: {
-        ...state.automation[action.payload.featureKey],
-        unlocked: true,
-        enabled: false
-      }
-    }
-  };
-
-case 'TOGGLE_AUTOMATION':
-  return {
-    ...state,
-    automation: {
-      ...state.automation,
-      [action.payload.featureKey]: {
-        ...state.automation[action.payload.featureKey],
-        enabled: action.payload.enabled
-      }
-    }
-  };
-
-case 'SET_AUTO_BUY_THRESHOLD':
-  return {
-    ...state,
-    automation: {
-      ...state.automation,
-      autoBuyThreshold: action.payload.threshold
-    }
-  };
-
-case 'SET_AUTO_SUMMON_THRESHOLD':
-  return {
-    ...state,
-    automation: {
-      ...state.automation,
-      autoSummonThreshold: action.payload.threshold
-    }
-  };
-
-// ===== TUTORIAL ACTIONS =====
-case 'COMPLETE_TUTORIAL':
-  return {
-    ...state,
-    tutorial: {
-      ...state.tutorial,
-      completed: true,
-      completedAt: Date.now()
-    }
-  };
-
-case 'SKIP_TUTORIAL':
-  return {
-    ...state,
-    tutorial: {
-      ...state.tutorial,
-      skipped: true,
-      skippedAt: Date.now()
-    }
-  };
-
-case 'RESET_TUTORIAL':
-  return {
-    ...state,
-    tutorial: {
-      completed: false,
-      skipped: false,
-      currentStep: 0
-    }
-  };
-
-      // ===== SAVE GAME =====
-case 'SAVE_GAME':
-  return {
-    ...state,
-    lastSaved: Date.now()
-  };
-
       
-      // ===== FULL STATE =====
+      case 'RESET_TUTORIAL':
+        return {
+          ...state,
+          tutorial: {
+            completed: false,
+            skipped: false,
+            currentStep: 0
+          }
+        };
+      
+      // ===== SAVE/LOAD =====
+      case 'SAVE_GAME':
+        return {
+          ...state,
+          lastSaved: Date.now()
+        };
+      
       case 'LOAD_STATE':
         return action.payload.state;
       

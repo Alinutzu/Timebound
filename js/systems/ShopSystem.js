@@ -115,6 +115,98 @@ class ShopSystem {
     
     return true;
   }
+
+  // Adaugă după metoda completePurchase()
+
+/**
+ * Purchase spin package
+ */
+purchaseSpinPackage(packageId) {
+  const pkg = this.items.miniGamesPackages[packageId];
+  
+  if (!pkg) {
+    logger.error('ShopSystem', `Spin package ${packageId} not found`);
+    return false;
+  }
+  
+  // In real implementation, this would trigger IAP
+  logger.info('ShopSystem', `Initiating spin purchase: ${pkg.name} (${pkg.priceDisplay})`);
+  
+  eventBus.emit('shop:purchase-initiated', { packageId, pkg });
+  
+  // For demo, complete immediately
+  this.completeSpinPurchase(packageId);
+  
+  return true;
+}
+
+/**
+ * Complete spin purchase (called after payment)
+ */
+completeSpinPurchase(packageId) {
+  const pkg = this.items.miniGamesPackages[packageId];
+  
+  if (!pkg) {
+    logger.error('ShopSystem', `Spin package ${packageId} not found`);
+    return false;
+  }
+  
+  if (pkg.unlimited) {
+    // Grant unlimited spins for 24h
+    stateManager.dispatch({
+      type: 'ACTIVATE_UNLIMITED_SPINS',
+      payload: {
+        expiresAt: Date.now() + pkg.duration
+      }
+    });
+    
+    logger.info('ShopSystem', 'Unlimited spins activated for 24h');
+  } else {
+    // Add purchased spins
+    const DailySpinGame = require('../ui/games/DailySpinGame.js').default;
+    DailySpinGame.addPurchasedSpins(pkg.spins);
+  }
+  
+  // Give bonuses
+  if (pkg.bonus) {
+    for (let [resource, amount] of Object.entries(pkg.bonus)) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: { resource, amount }
+      });
+    }
+  }
+  
+  // Track purchase
+  stateManager.dispatch({
+    type: 'RECORD_PURCHASE',
+    payload: {
+      packageId,
+      price: pkg.price,
+      spins: pkg.spins || 'unlimited',
+      timestamp: Date.now()
+    }
+  });
+  
+  logger.info('ShopSystem', `Spin purchase completed: ${pkg.name}`);
+  
+  eventBus.emit('shop:purchase-completed', { packageId, pkg });
+  eventBus.emit('daily-spin:purchased-spins', { spins: pkg.spins });
+  
+  // Show success notification
+  const message = pkg.unlimited 
+    ? '∞ Unlimited spins for 24h!'
+    : `+${pkg.spins} 🎡 extra spins!`;
+  
+  eventBus.emit('notification:show', {
+    type: 'purchase',
+    title: 'Purchase Complete!',
+    message: message,
+    duration: 5000
+  });
+  
+  return true;
+}
   
   /**
    * Summon guaranteed legendary

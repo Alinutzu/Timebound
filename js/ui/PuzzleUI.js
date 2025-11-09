@@ -23,9 +23,11 @@ class PuzzleUI {
     this.match3Game = null;
     this.dailySpinGame = DailySpinGame;
     this.game2048 = Game2048;
+    this.countdownInterval = null;
     
     this.render();
     this.subscribe();
+    this.startCountdownUpdate();
     
     logger.info('PuzzleUI', 'Initialized');
   }
@@ -36,17 +38,43 @@ class PuzzleUI {
       this.startBossPuzzle(data);
     });
     
-    // Re-render când se deblochează jocuri
+    // Re-render când se deblochează jocuri sau se fac purchases
     eventBus.on('quest:claimed', () => this.render());
     eventBus.on('structure:purchased', () => this.render());
     eventBus.on('ascension:completed', () => this.render());
     eventBus.on('puzzle:won', () => this.render());
+    eventBus.on('daily-spin:purchased-spins', () => this.render());
+  }
+  
+  /**
+   * Start countdown update interval
+   */
+  startCountdownUpdate() {
+    // Update countdown every second
+    this.countdownInterval = setInterval(() => {
+      this.updateCountdown();
+    }, 1000);
+  }
+  
+  /**
+   * Update countdown display
+   */
+  updateCountdown() {
+    const countdownEl = document.getElementById('spin-countdown');
+    if (countdownEl) {
+      countdownEl.innerHTML = this.getCountdownText();
+    }
+    
+    const statusEl = document.getElementById('spin-status');
+    if (statusEl) {
+      statusEl.innerHTML = this.getSpinStatus();
+    }
   }
   
   render() {
-    // Check unlock conditions
-    const dailySpinUnlocked = this.checkDailySpinUnlock();
-    const game2048Unlocked = this.check2048Unlock();
+    // Mini-games sunt acum FREE TO PLAY!
+    const dailySpinUnlocked = true; // FREE
+    const game2048Unlocked = true;  // FREE
     
     this.container.innerHTML = `
       <div class="puzzle-games-grid">
@@ -77,7 +105,7 @@ class PuzzleUI {
         </div>
         
         <!-- 2048 Game Card -->
-        <div class="puzzle-game-card ${!game2048Unlocked ? 'locked' : ''}" id="game2048-card">
+        <div class="puzzle-game-card" id="game2048-card">
           <div class="puzzle-game-header">
             <div class="puzzle-game-icon">🎲</div>
             <h3>2048 Puzzle</h3>
@@ -86,80 +114,54 @@ class PuzzleUI {
             <p>Merge tiles to reach 2048!</p>
             <p class="puzzle-game-use">Rewards: Gems, Crystals, Energy</p>
           </div>
-          ${game2048Unlocked ? `
-            <div class="puzzle-game-stats">
-              <div class="stat">
-                <span class="label">High Score:</span>
-                <span class="value" id="2048-high-score">${this.game2048.getStats().highScore}</span>
-              </div>
-              <div class="stat">
-                <span class="label">Games Played:</span>
-                <span class="value" id="2048-games-played">${this.game2048.getStats().gamesPlayed}</span>
-              </div>
+          <div class="puzzle-game-stats">
+            <div class="stat">
+              <span class="label">High Score:</span>
+              <span class="value" id="2048-high-score">${this.game2048.getStats().highScore}</span>
             </div>
-            <button class="btn btn-primary btn-large" id="play-2048-btn">
-              🎮 Play 2048
-            </button>
-          ` : `
-            <div class="unlock-requirements">
-              <h4>🔒 Unlock Requirements:</h4>
-              <ul>
-                <li class="${this.hasAscended() ? 'completed' : ''}">
-                  Ascend at least once ${this.hasAscended() ? '✓' : ''}
-                </li>
-                <li class="${this.hasWonMatch3(3) ? 'completed' : ''}">
-                  Win 3 Match-3 games ${this.hasWonMatch3(3) ? '✓' : ''}
-                </li>
-              </ul>
+            <div class="stat">
+              <span class="label">Games Played:</span>
+              <span class="value" id="2048-games-played">${this.game2048.getStats().gamesPlayed}</span>
             </div>
-            <div class="locked-overlay">
-              <span>🔒 Complete requirements to unlock</span>
-            </div>
-          `}
+          </div>
+          <button class="btn btn-primary btn-large" id="play-2048-btn">
+            🎮 Play 2048
+          </button>
         </div>
         
         <!-- Daily Spin Card -->
-        <div class="puzzle-game-card ${!dailySpinUnlocked ? 'locked' : ''}" id="daily-spin-card">
+        <div class="puzzle-game-card" id="daily-spin-card">
           <div class="puzzle-game-header">
             <div class="puzzle-game-icon">🎡</div>
             <h3>Daily Spin</h3>
           </div>
           <div class="puzzle-game-description">
             <p>Spin the wheel for rewards!</p>
-            <p class="puzzle-game-use">Rewards: Gems, Energy, Crystals, Guardians</p>
+            <p class="puzzle-game-use">FREE daily at midnight! 🕛</p>
           </div>
-          ${dailySpinUnlocked ? `
-            <div class="puzzle-game-stats">
-              <div class="stat">
-                <span class="label">Total Spins:</span>
-                <span class="value" id="spin-total">${this.dailySpinGame.getStats().totalSpins || 0}</span>
-              </div>
-              <div class="stat">
-                <span class="label">Status:</span>
-                <span class="value" id="spin-status">
-                  ${this.dailySpinGame.canSpin().can ? '✅ Ready' : '⏰ Cooldown'}
-                </span>
-              </div>
+          <div class="puzzle-game-stats">
+            <div class="stat">
+              <span class="label">Free Spin:</span>
+              <span class="value" id="spin-status">
+                ${this.getSpinStatus()}
+              </span>
             </div>
-            <button class="btn btn-primary btn-large" id="play-spin-btn">
-              🎡 Spin the Wheel
-            </button>
-          ` : `
-            <div class="unlock-requirements">
-              <h4>🔒 Unlock Requirements:</h4>
-              <ul>
-                <li class="${this.hasCompletedQuests(5) ? 'completed' : ''}">
-                  Complete 5 quests ${this.hasCompletedQuests(5) ? '✓' : ''}
-                </li>
-                <li class="${this.hasStructureLevel(10) ? 'completed' : ''}">
-                  Reach level 10 in any structure ${this.hasStructureLevel(10) ? '✓' : ''}
-                </li>
-              </ul>
-            </div>
-            <div class="locked-overlay">
-              <span>🔒 Complete requirements to unlock</span>
-            </div>
-          `}
+            ${this.getPurchasedSpinsDisplay()}
+          </div>
+          <div class="spin-countdown" id="spin-countdown" style="
+            text-align: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+          ">
+            ${this.getCountdownText()}
+          </div>
+          <button class="btn btn-primary btn-large" id="play-spin-btn">
+            🎡 Spin the Wheel
+          </button>
         </div>
         
       </div>
@@ -203,36 +205,51 @@ class PuzzleUI {
     }
   }
   
-  // ===== UNLOCK CONDITIONS =====
+  // ===== DAILY SPIN HELPERS =====
   
-  checkDailySpinUnlock() {
-    return this.hasCompletedQuests(5) && this.hasStructureLevel(10);
+  getSpinStatus() {
+    const canSpinResult = this.dailySpinGame.canSpin();
+    
+    if (canSpinResult.type === 'free' && canSpinResult.can) {
+      return '✅ Available';
+    } else if (canSpinResult.type === 'purchased' && canSpinResult.can) {
+      return `🎟️ ${canSpinResult.spinsRemaining} Extra`;
+    } else if (canSpinResult.reason === 'already_spun_today') {
+      return '⏰ Tomorrow';
+    }
+    
+    return '🔒 Locked';
   }
   
-  check2048Unlock() {
-    return this.hasAscended() && this.hasWonMatch3(3);
+  getPurchasedSpinsDisplay() {
+    const stats = this.dailySpinGame.getStats();
+    const purchased = stats.purchasedSpins || 0;
+    
+    if (purchased > 0) {
+      return `
+        <div class="stat">
+          <span class="label">Extra Spins:</span>
+          <span class="value" style="color: var(--warning);">🎟️ ${purchased}</span>
+        </div>
+      `;
+    }
+    
+    return '';
   }
   
-  hasCompletedQuests(count) {
-    const state = stateManager.getState();
-    const completedQuests = state.quests?.completed?.length || 0;
-    return completedQuests >= count;
-  }
-  
-  hasStructureLevel(level) {
-    const state = stateManager.getState();
-    const structures = state.structures || {};
-    return Object.values(structures).some(s => s.level >= level);
-  }
-  
-  hasAscended() {
-    const state = stateManager.getState();
-    return (state.ascension?.level || 0) >= 1;
-  }
-  
-  hasWonMatch3(count) {
-    const state = stateManager.getState();
-    return (state.statistics?.puzzlesWon || 0) >= count;
+  getCountdownText() {
+    const canSpinResult = this.dailySpinGame.canSpin();
+    
+    if (canSpinResult.nextFreeIn > 0) {
+      const formatted = this.dailySpinGame.formatTimeRemaining(canSpinResult.nextFreeIn);
+      return `⏰ Next free spin in: <strong>${formatted}</strong>`;
+    }
+    
+    if (canSpinResult.type === 'free' && canSpinResult.can) {
+      return '🎉 <strong>Free spin available!</strong>';
+    }
+    
+    return '';
   }
   
   // ===== STATS UPDATE =====
@@ -251,7 +268,7 @@ class PuzzleUI {
     if (gamesPlayedEl) gamesPlayedEl.textContent = gamesPlayed;
   }
   
-  // ===== MATCH-3 GAME (keep existing) =====
+  // ===== MATCH-3 GAME =====
   
   startPracticeMatch3() {
     logger.info('PuzzleUI', 'Starting practice Match-3');
@@ -372,15 +389,6 @@ class PuzzleUI {
   // ===== 2048 GAME =====
   
   start2048Game() {
-    if (!this.check2048Unlock()) {
-      eventBus.emit('notification:show', {
-        message: '🔒 Complete requirements to unlock 2048!',
-        type: 'error',
-        duration: 3000
-      });
-      return;
-    }
-    
     logger.info('PuzzleUI', 'Starting 2048 game');
     
     const grid = this.container.querySelector('.puzzle-games-grid');
@@ -396,29 +404,29 @@ class PuzzleUI {
   }
   
   render2048UI(container, gameState) {
-  container.innerHTML = `
-    <div class="game-2048-container">
-      <div class="game-2048-header">
-        <div class="game-2048-score">
-          <div class="score-label">Score</div>
-          <div class="score-value" id="game2048-score">${gameState.score}</div>
+    container.innerHTML = `
+      <div class="game-2048-container">
+        <div class="game-2048-header">
+          <div class="game-2048-score">
+            <div class="score-label">Score</div>
+            <div class="score-value" id="game2048-score">${gameState.score}</div>
+          </div>
+          <button class="btn btn-secondary" id="game2048-new-game">New Game</button>
+          <button class="btn btn-secondary" id="game2048-exit">Exit</button>
         </div>
-        <button class="btn btn-secondary" id="game2048-new-game">New Game</button>
-        <button class="btn btn-secondary" id="game2048-exit">Exit</button>
+        
+        <div class="game-2048-grid" id="game2048-grid">
+          ${this.render2048Grid(gameState.grid)}
+        </div>
+        
+        <div class="game-2048-controls">
+          <p class="swipe-hint">Use arrow keys or swipe to move tiles</p>
+        </div>
       </div>
-      
-      <div class="game-2048-grid" id="game2048-grid">
-        ${this.render2048Grid(gameState.grid)}
-      </div>
-      
-      <div class="game-2048-controls">
-        <p class="swipe-hint">Use arrow keys or swipe to move tiles</p>
-      </div>
-    </div>
-  `;
-  
-  this.bind2048Controls(container);
-}
+    `;
+    
+    this.bind2048Controls(container);
+  }
   
   render2048Grid(grid) {
     let html = '';
@@ -432,94 +440,91 @@ class PuzzleUI {
   }
   
   bind2048Controls(container) {
-  const handleKeyPress = (e) => {
-    console.log('Key detected in 2048:', e.key); // DEBUG
-    
-    const keyMap = {
-      'ArrowUp': 'up',
-      'ArrowDown': 'down',
-      'ArrowLeft': 'left',
-      'ArrowRight': 'right',
-      'w': 'up',
-      'W': 'up',
-      's': 'down',
-      'S': 'down',
-      'a': 'left',
-      'A': 'left',
-      'd': 'right',
-      'D': 'right'
+    const handleKeyPress = (e) => {
+      const keyMap = {
+        'ArrowUp': 'up',
+        'ArrowDown': 'down',
+        'ArrowLeft': 'left',
+        'ArrowRight': 'right',
+        'w': 'up',
+        'W': 'up',
+        's': 'down',
+        'S': 'down',
+        'a': 'left',
+        'A': 'left',
+        'd': 'right',
+        'D': 'right'
+      };
+      
+      const direction = keyMap[e.key];
+      if (direction) {
+        e.preventDefault();
+        this.move2048(direction);
+      }
     };
     
-    const direction = keyMap[e.key];
-    if (direction) {
-      e.preventDefault();
-      console.log('Moving:', direction); // DEBUG
-      this.move2048(direction);
+    // Remove any old handlers first
+    if (container._keyHandler) {
+      document.removeEventListener('keydown', container._keyHandler);
     }
-  };
-  
-  // Remove any old handlers first
-  if (container._keyHandler) {
-    document.removeEventListener('keydown', container._keyHandler);
-  }
-  
-  document.addEventListener('keydown', handleKeyPress);
-  container._keyHandler = handleKeyPress;
-  
-  // Touch controls
-  let touchStartX = 0;
-  let touchStartY = 0;
-  
-  const gridEl = container.querySelector('#game2048-grid'); // SCHIMBAT
-  
-  if (gridEl) {
-    gridEl.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
+    
+    document.addEventListener('keydown', handleKeyPress);
+    container._keyHandler = handleKeyPress;
+    
+    // Touch controls
+    let touchStartX = 0;
+    let touchStartY = 0;
+    
+    const gridEl = container.querySelector('#game2048-grid');
+    
+    if (gridEl) {
+      gridEl.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      });
+      
+      gridEl.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+        
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+        
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+          this.move2048(diffX > 0 ? 'right' : 'left');
+        } else {
+          this.move2048(diffY > 0 ? 'down' : 'up');
+        }
+      });
+    }
+    
+    document.getElementById('game2048-new-game')?.addEventListener('click', () => {
+      const newState = this.game2048.newGame();
+      this.render2048UI(container, newState);
     });
     
-    gridEl.addEventListener('touchend', (e) => {
-      const touchEndX = e.changedTouches[0].clientX;
-      const touchEndY = e.changedTouches[0].clientY;
+    document.getElementById('game2048-exit')?.addEventListener('click', () => {
+      this.exit2048Game(container);
+    });
+  }
+  
+  move2048(direction) {
+    const result = this.game2048.move(direction);
+    
+    if (result) {
+      const scoreEl = document.getElementById('game2048-score');
+      if (scoreEl) scoreEl.textContent = result.score;
       
-      const diffX = touchEndX - touchStartX;
-      const diffY = touchEndY - touchStartY;
+      const gridEl = document.getElementById('game2048-grid');
+      if (gridEl) gridEl.innerHTML = this.render2048Grid(result.grid);
       
-      if (Math.abs(diffX) > Math.abs(diffY)) {
-        this.move2048(diffX > 0 ? 'right' : 'left');
-      } else {
-        this.move2048(diffY > 0 ? 'down' : 'up');
+      if (result.gameOver) {
+        setTimeout(() => {
+          this.show2048GameOver(result);
+        }, 500);
       }
-    });
-  }
-  
-  document.getElementById('game2048-new-game')?.addEventListener('click', () => {
-    const newState = this.game2048.newGame();
-    this.render2048UI(container, newState);
-  });
-  
-  document.getElementById('game2048-exit')?.addEventListener('click', () => {
-    this.exit2048Game(container);
-  });
-}
-
-move2048(direction) {
-  const result = this.game2048.move(direction);
-  
-  if (result) {
-    const scoreEl = document.getElementById('game2048-score'); // SCHIMBAT
-    if (scoreEl) scoreEl.textContent = result.score;
-    
-    const gridEl = document.getElementById('game2048-grid'); // SCHIMBAT
-    if (gridEl) gridEl.innerHTML = this.render2048Grid(result.grid);
-    
-    if (result.gameOver) {
-      setTimeout(() => {
-        this.show2048GameOver(result);
-      }, 500);
     }
   }
-}
   
   show2048GameOver(result) {
     const container = document.getElementById('puzzle-game-active');
@@ -563,21 +568,12 @@ move2048(direction) {
   // ===== DAILY SPIN =====
   
   startDailySpin() {
-    if (!this.checkDailySpinUnlock()) {
-      eventBus.emit('notification:show', {
-        message: '🔒 Complete requirements to unlock Daily Spin!',
-        type: 'error',
-        duration: 3000
-      });
-      return;
-    }
-    
     const canSpinResult = this.dailySpinGame.canSpin();
     
     if (!canSpinResult.can) {
-      const hoursLeft = Math.ceil(canSpinResult.nextFreeIn / 3600000);
+      const formatted = this.dailySpinGame.formatTimeRemaining(canSpinResult.nextFreeIn);
       eventBus.emit('notification:show', {
-        message: `⏰ Next free spin in ${hoursLeft}h`,
+        message: `⏰ Next free spin in ${formatted}`,
         type: 'info',
         duration: 3000
       });
@@ -653,10 +649,15 @@ move2048(direction) {
     const spinBtn = document.getElementById('spin-btn');
     if (spinBtn) spinBtn.disabled = true;
     
-    const spinResult = this.dailySpinGame.spin(false);
+    const spinResult = this.dailySpinGame.useSpin();
     
     if (!spinResult) {
       if (spinBtn) spinBtn.disabled = false;
+      eventBus.emit('notification:show', {
+        message: '❌ No spins available!',
+        type: 'error',
+        duration: 3000
+      });
       return;
     }
     
@@ -775,6 +776,15 @@ move2048(direction) {
     if (this.match3Game) {
       this.match3Game.destroy();
       this.match3Game = null;
+    }
+  }
+  
+  /**
+   * Cleanup on destroy
+   */
+  destroy() {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
     }
   }
 }

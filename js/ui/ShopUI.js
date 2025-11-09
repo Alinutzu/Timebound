@@ -22,11 +22,13 @@ class ShopUI {
   subscribe() {
     eventBus.on('shop:purchase-completed', () => this.render());
     eventBus.on('shop:vip-activated', () => this.render());
+    eventBus.on('daily-spin:purchased-spins', () => this.render());
   }
   
   render() {
     this.container.innerHTML = `
       ${this.renderVIPSection()}
+      ${this.renderMiniGamesPackages()}
       ${this.renderGemPackages()}
       ${this.renderRewardedAds()}
     `;
@@ -58,6 +60,66 @@ class ShopUI {
         `}
       </div>
     `;
+  }
+  
+  renderMiniGamesPackages() {
+    const packages = shopSystem.items.miniGamesPackages;
+    
+    if (!packages) {
+      console.warn('Mini-games packages not found in shop');
+      return '';
+    }
+    
+    let html = `
+      <div class="shop-section minigames-section">
+        <h3>🎡 Daily Spin - Extra Spins</h3>
+        <p>Get more chances to win amazing rewards!</p>
+        <div class="shop-grid">
+    `;
+    
+    for (let [id, pkg] of Object.entries(packages)) {
+      html += `
+        <div class="shop-item minigame-item ${pkg.popular ? 'popular' : ''} ${pkg.special ? 'special' : ''}">
+          ${pkg.popular ? '<div class="popular-badge">BEST VALUE</div>' : ''}
+          ${pkg.special ? '<div class="special-badge">⭐ SPECIAL</div>' : ''}
+          ${pkg.bonusPercentage ? `<div class="bonus-badge">+${pkg.bonusPercentage}% VALUE</div>` : ''}
+          
+          <div class="shop-item-icon">${pkg.emoji}</div>
+          <h4>${pkg.name}</h4>
+          <p class="shop-item-description">${pkg.description}</p>
+          
+          <div class="shop-item-content">
+            ${pkg.unlimited ? `
+              <div class="spin-amount unlimited">
+                <span class="infinity">∞</span>
+                <span>Unlimited Spins</span>
+                <small>for 24 hours</small>
+              </div>
+            ` : `
+              <div class="spin-amount">
+                <span class="spin-count">${pkg.spins}</span>
+                <span>Extra Spins</span>
+              </div>
+            `}
+            
+            ${pkg.bonus ? `
+              <div class="bonus-items">
+                ${pkg.bonus.gems ? `<div>+${Formatters.formatNumber(pkg.bonus.gems)} 💎</div>` : ''}
+                ${pkg.bonus.energy ? `<div>+${Formatters.formatNumber(pkg.bonus.energy)} ⚡</div>` : ''}
+              </div>
+            ` : ''}
+          </div>
+          
+          <div class="shop-item-price">${pkg.priceDisplay}</div>
+          <button class="btn btn-success" onclick="purchaseSpinPackage('${id}')">
+            Purchase
+          </button>
+        </div>
+      `;
+    }
+    
+    html += '</div></div>';
+    return html;
   }
   
   renderGemPackages() {
@@ -150,6 +212,10 @@ window.purchaseVIP = () => {
 
 window.purchasePackage = (packageId) => {
   shopSystem.purchasePackage(packageId);
+};
+
+window.purchaseSpinPackage = (packageId) => {
+  shopSystem.purchaseSpinPackage(packageId);
 };
 
 window.watchAd = (adType) => {

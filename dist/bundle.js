@@ -1225,14 +1225,35 @@ var StateManager = /*#__PURE__*/function () {
           sessionStartTime: Date.now(),
           structuresPurchased: 0,
           upgradesPurchased: 0,
-          guardiansSum: 0,
+          guardiansSummoned: 0,
           questsCompleted: 0,
           bossesDefeated: 0,
           puzzlesPlayed: 0,
+          puzzlesWon: 0,
           puzzleHighScore: 0,
           gemsSpent: 0,
           gemsEarned: 0,
           highestEnergyPerSecond: 0
+        },
+        // Mini-Games
+        miniGames: {
+          dailySpin: {
+            lastSpinDate: '',
+            lastSpin: 0,
+            totalSpins: 0,
+            purchasedSpins: 0,
+            unlimitedUntil: 0
+          },
+          game2048: {
+            highScore: 0,
+            gamesPlayed: 0
+          }
+        },
+        // Upgrade Queue
+        upgradeQueue: {
+          queue: [],
+          slots: 1,
+          activeUpgrade: null
         },
         // Settings
         settings: {
@@ -1300,7 +1321,7 @@ var StateManager = /*#__PURE__*/function () {
   }, {
     key: "reducer",
     value: function reducer(state, action) {
-      var _state$structures$str, _state$structures$str2, _state$upgrades$upgra, _state$miniGames, _state$miniGames2, _state$miniGames3, _state$upgradeQueue, _state$shop$adWatchCo;
+      var _state$structures$str, _state$structures$str2, _state$upgrades$upgra, _state$upgradeQueue, _state$shop$adWatchCo, _state$miniGames, _state$miniGames2, _state$miniGames3, _state$miniGames4, _state$miniGames5, _state$miniGames6, _state$miniGames7, _state$miniGames8;
       switch (action.type) {
         // ===== RESOURCES =====
         case 'ADD_RESOURCE':
@@ -1376,9 +1397,13 @@ var StateManager = /*#__PURE__*/function () {
               gems: state.resources.gems - _config["default"].BALANCING.GUARDIAN_SUMMON_COST
             }),
             statistics: _objectSpread(_objectSpread({}, state.statistics), {}, {
-              guardiansSummoned: state.statistics.guardiansSummoned + 1,
+              guardiansSummoned: (state.statistics.guardiansSummoned || 0) + 1,
               gemsSpent: state.statistics.gemsSpent + _config["default"].BALANCING.GUARDIAN_SUMMON_COST
             })
+          });
+        case 'ADD_GUARDIAN_DIRECT':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            guardians: [].concat(_toConsumableArray(state.guardians), [action.payload.guardian])
           });
         case 'REMOVE_GUARDIAN':
           return _objectSpread(_objectSpread({}, state), {}, {
@@ -1414,9 +1439,6 @@ var StateManager = /*#__PURE__*/function () {
             })
           });
         case 'COMPLETE_QUEST':
-          var completedQuest = state.quests.active.find(function (q) {
-            return q.id === action.payload.questId;
-          });
           return _objectSpread(_objectSpread({}, state), {}, {
             quests: _objectSpread(_objectSpread({}, state.quests), {}, {
               active: state.quests.active.filter(function (q) {
@@ -1446,6 +1468,53 @@ var StateManager = /*#__PURE__*/function () {
               claimedAt: Date.now()
             })))
           });
+        case 'TRIGGER_ACHIEVEMENT':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            achievements: _objectSpread(_objectSpread({}, state.achievements), {}, _defineProperty({}, action.payload.achievementKey, _objectSpread(_objectSpread({}, state.achievements[action.payload.achievementKey]), {}, {
+              triggered: true
+            })))
+          });
+
+        // ===== BOSSES =====
+        case 'INIT_BOSSES':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            bosses: action.payload.bosses
+          });
+        case 'UNLOCK_BOSS':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            bosses: _objectSpread(_objectSpread({}, state.bosses), {}, _defineProperty({}, action.payload.bossKey, _objectSpread(_objectSpread({}, state.bosses[action.payload.bossKey]), {}, {
+              unlocked: true
+            })))
+          });
+        case 'START_BOSS_BATTLE':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            currentBoss: action.payload.bossKey
+          });
+        case 'DAMAGE_BOSS':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            bosses: _objectSpread(_objectSpread({}, state.bosses), {}, _defineProperty({}, action.payload.bossKey, _objectSpread(_objectSpread({}, state.bosses[action.payload.bossKey]), {}, {
+              currentHP: action.payload.newHP,
+              attempts: (state.bosses[action.payload.bossKey].attempts || 0) + 1,
+              bestScore: Math.max(state.bosses[action.payload.bossKey].bestScore || 0, action.payload.score)
+            })))
+          });
+        case 'DEFEAT_BOSS':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            bosses: _objectSpread(_objectSpread({}, state.bosses), {}, _defineProperty({}, action.payload.bossKey, _objectSpread(_objectSpread({}, state.bosses[action.payload.bossKey]), {}, {
+              defeated: true,
+              currentHP: 0,
+              defeatedCount: (state.bosses[action.payload.bossKey].defeatedCount || 0) + 1,
+              firstDefeatAt: state.bosses[action.payload.bossKey].firstDefeatAt || Date.now()
+            }))),
+            currentBoss: null,
+            statistics: _objectSpread(_objectSpread({}, state.statistics), {}, {
+              bossesDefeated: state.statistics.bossesDefeated + 1
+            })
+          });
+        case 'EXIT_BOSS_BATTLE':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            currentBoss: null
+          });
 
         // ===== REALMS =====
         case 'UNLOCK_REALM':
@@ -1454,7 +1523,7 @@ var StateManager = /*#__PURE__*/function () {
               unlocked: [].concat(_toConsumableArray(state.realms.unlocked), [action.payload.realmId])
             }),
             resources: _objectSpread(_objectSpread({}, state.resources), {}, {
-              crystals: state.resources.crystals - action.payload.cost
+              crystals: state.resources.crystals - (action.payload.cost || 0)
             })
           });
         case 'SWITCH_REALM':
@@ -1479,8 +1548,12 @@ var StateManager = /*#__PURE__*/function () {
               crystals: state.resources.crystals + action.payload.crystalsEarned
             }),
             structures: {},
-            upgrades: {}
-            // Guardians, achievements, gems are kept!
+            upgrades: {},
+            upgradeQueue: {
+              queue: [],
+              slots: ((_state$upgradeQueue = state.upgradeQueue) === null || _state$upgradeQueue === void 0 ? void 0 : _state$upgradeQueue.slots) || 1,
+              activeUpgrade: null
+            }
           });
         case 'UPDATE_LIFETIME_ENERGY':
           return _objectSpread(_objectSpread({}, state), {}, {
@@ -1489,199 +1562,7 @@ var StateManager = /*#__PURE__*/function () {
             })
           });
 
-        // ===== SETTINGS =====
-        case 'UPDATE_SETTING':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            settings: _objectSpread(_objectSpread({}, state.settings), {}, _defineProperty({}, action.payload.key, action.payload.value))
-          });
-
-        // ===== STATISTICS =====
-        case 'UPDATE_STATISTIC':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            statistics: _objectSpread(_objectSpread({}, state.statistics), {}, _defineProperty({}, action.payload.key, action.payload.value))
-          });
-        case 'INCREMENT_STATISTIC':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            statistics: _objectSpread(_objectSpread({}, state.statistics), {}, _defineProperty({}, action.payload.key, (state.statistics[action.payload.key] || 0) + action.payload.amount))
-          });
-
-        // Mini-games state handling
-        case 'UPDATE_MINI_GAME':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, action.payload.game, _objectSpread(_objectSpread({}, ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames[action.payload.game]) || {}), action.payload.data)))
-          });
-        case 'INCREMENT_MINI_GAME_STAT':
-          var game = action.payload.game;
-          var stat = action.payload.stat;
-          return _objectSpread(_objectSpread({}, state), {}, {
-            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, game, _objectSpread(_objectSpread({}, ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2[game]) || {}), {}, _defineProperty({}, stat, (((_state$miniGames3 = state.miniGames) === null || _state$miniGames3 === void 0 || (_state$miniGames3 = _state$miniGames3[game]) === null || _state$miniGames3 === void 0 ? void 0 : _state$miniGames3[stat]) || 0) + 1))))
-          });
-
-        // ===== TUTORIAL =====
-        case 'COMPLETE_TUTORIAL':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            tutorial: _objectSpread(_objectSpread({}, state.tutorial), {}, {
-              completed: true
-            })
-          });
-        case 'SKIP_TUTORIAL':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            tutorial: _objectSpread(_objectSpread({}, state.tutorial), {}, {
-              skipped: true,
-              completed: true
-            })
-          });
-
-        // În StateManager.reducer(), adaugă:
-
-        case 'INIT_UPGRADE_QUEUE':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            upgradeQueue: {
-              queue: [],
-              slots: 1,
-              activeUpgrade: null
-            }
-          });
-        case 'ADD_TO_UPGRADE_QUEUE':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
-              queue: [].concat(_toConsumableArray(state.upgradeQueue.queue), [action.payload.item])
-            }),
-            resources: _objectSpread(_objectSpread({}, state.resources), {}, _defineProperty({}, action.payload.item.costResource, state.resources[action.payload.item.costResource] - action.payload.item.cost))
-          });
-        case 'REMOVE_FROM_UPGRADE_QUEUE':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
-              queue: state.upgradeQueue.queue.filter(function (item) {
-                return item.upgradeKey !== action.payload.upgradeKey;
-              })
-            })
-          });
-        case 'START_UPGRADE':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
-              queue: state.upgradeQueue.queue.slice(1),
-              // Remove first item
-              activeUpgrade: action.payload.upgrade
-            })
-          });
-        case 'COMPLETE_UPGRADE':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
-              activeUpgrade: null
-            })
-          });
-        case 'UPGRADE_QUEUE_SLOTS':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
-              slots: action.payload.slots
-            })
-          });
-
-        // În StateManager.reducer(), adaugă:
-
-        case 'UNLOCK_ACHIEVEMENT':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            achievements: _objectSpread(_objectSpread({}, state.achievements), {}, _defineProperty({}, action.payload.achievementKey, {
-              unlocked: true,
-              unlockedAt: Date.now(),
-              claimed: false
-            }))
-          });
-        case 'CLAIM_ACHIEVEMENT':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            achievements: _objectSpread(_objectSpread({}, state.achievements), {}, _defineProperty({}, action.payload.achievementKey, _objectSpread(_objectSpread({}, state.achievements[action.payload.achievementKey]), {}, {
-              claimed: true,
-              claimedAt: Date.now()
-            })))
-          });
-        case 'TRIGGER_ACHIEVEMENT':
-          // For special triggers (like patientUpgrader)
-          return _objectSpread(_objectSpread({}, state), {}, {
-            achievements: _objectSpread(_objectSpread({}, state.achievements), {}, _defineProperty({}, action.payload.achievementKey, _objectSpread(_objectSpread({}, state.achievements[action.payload.achievementKey]), {}, {
-              triggered: true
-            })))
-          });
-        case 'UNLOCK_REALM':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            realms: _objectSpread(_objectSpread({}, state.realms), {}, {
-              unlocked: [].concat(_toConsumableArray(state.realms.unlocked), [action.payload.realmId])
-            }),
-            resources: _objectSpread(_objectSpread({}, state.resources), {}, {
-              crystals: state.resources.crystals - (action.payload.cost || 0)
-            })
-          });
-        case 'SWITCH_REALM':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            realms: _objectSpread(_objectSpread({}, state.realms), {}, {
-              current: action.payload.realmId
-            })
-          });
-        case 'ASCEND':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            ascension: {
-              level: state.ascension.level + 1,
-              lifetimeEnergy: state.ascension.lifetimeEnergy,
-              totalAscensions: state.ascension.totalAscensions + 1
-            },
-            resources: _objectSpread(_objectSpread({}, state.resources), {}, {
-              energy: _config["default"].BALANCING.STARTING_ENERGY,
-              mana: 0,
-              volcanicEnergy: 0,
-              crystals: state.resources.crystals + action.payload.crystalsEarned
-              // Gems are kept!
-            }),
-            structures: {},
-            upgrades: {},
-            upgradeQueue: {
-              queue: [],
-              slots: ((_state$upgradeQueue = state.upgradeQueue) === null || _state$upgradeQueue === void 0 ? void 0 : _state$upgradeQueue.slots) || 1,
-              activeUpgrade: null
-            }
-            // Guardians, achievements, realms are kept!
-          });
-
-        // În StateManager.reducer(), adaugă:
-
-        // ===== BOSS ACTIONS =====
-        case 'UNLOCK_BOSS':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            bosses: _objectSpread(_objectSpread({}, state.bosses), {}, _defineProperty({}, action.payload.bossKey, _objectSpread(_objectSpread({}, state.bosses[action.payload.bossKey]), {}, {
-              unlocked: true
-            })))
-          });
-        case 'INIT_BOSSES':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            bosses: action.payload.bosses
-          });
-        case 'START_BOSS_BATTLE':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            currentBoss: action.payload.bossKey
-          });
-        case 'DAMAGE_BOSS':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            bosses: _objectSpread(_objectSpread({}, state.bosses), {}, _defineProperty({}, action.payload.bossKey, _objectSpread(_objectSpread({}, state.bosses[action.payload.bossKey]), {}, {
-              currentHP: action.payload.newHP,
-              attempts: (state.bosses[action.payload.bossKey].attempts || 0) + 1,
-              bestScore: Math.max(state.bosses[action.payload.bossKey].bestScore || 0, action.payload.score)
-            })))
-          });
-        case 'DEFEAT_BOSS':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            bosses: _objectSpread(_objectSpread({}, state.bosses), {}, _defineProperty({}, action.payload.bossKey, _objectSpread(_objectSpread({}, state.bosses[action.payload.bossKey]), {}, {
-              defeated: true,
-              currentHP: 0,
-              defeatedCount: (state.bosses[action.payload.bossKey].defeatedCount || 0) + 1,
-              firstDefeatAt: state.bosses[action.payload.bossKey].firstDefeatAt || Date.now()
-            }))),
-            currentBoss: null
-          });
-        case 'EXIT_BOSS_BATTLE':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            currentBoss: null
-          });
-
-        // ===== SHOP ACTIONS =====
+        // ===== SHOP =====
         case 'RECORD_PURCHASE':
           return _objectSpread(_objectSpread({}, state), {}, {
             shop: _objectSpread(_objectSpread({}, state.shop), {}, {
@@ -1745,7 +1626,7 @@ var StateManager = /*#__PURE__*/function () {
             })
           });
 
-        // ===== DAILY REWARD ACTIONS =====
+        // ===== DAILY REWARDS =====
         case 'CLAIM_DAILY_REWARD':
           return _objectSpread(_objectSpread({}, state), {}, {
             dailyRewards: _objectSpread(_objectSpread({}, state.dailyRewards), {}, {
@@ -1758,15 +1639,7 @@ var StateManager = /*#__PURE__*/function () {
             })
           });
 
-        // ===== GUARDIAN DIRECT ADD (for boss/shop rewards) =====
-        case 'ADD_GUARDIAN_DIRECT':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            guardians: [].concat(_toConsumableArray(state.guardians), [action.payload.guardian])
-          });
-
-        // În StateManager.reducer(), adaugă:
-
-        // ===== AUTOMATION ACTIONS =====
+        // ===== AUTOMATION =====
         case 'UNLOCK_AUTOMATION':
           return _objectSpread(_objectSpread({}, state), {}, {
             automation: _objectSpread(_objectSpread({}, state.automation), {}, _defineProperty({}, action.payload.featureKey, _objectSpread(_objectSpread({}, state.automation[action.payload.featureKey]), {}, {
@@ -1793,7 +1666,103 @@ var StateManager = /*#__PURE__*/function () {
             })
           });
 
-        // ===== TUTORIAL ACTIONS =====
+        // ===== STATISTICS =====
+        case 'UPDATE_STATISTIC':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            statistics: _objectSpread(_objectSpread({}, state.statistics), {}, _defineProperty({}, action.payload.key, action.payload.value))
+          });
+        case 'INCREMENT_STATISTIC':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            statistics: _objectSpread(_objectSpread({}, state.statistics), {}, _defineProperty({}, action.payload.key, (state.statistics[action.payload.key] || 0) + action.payload.amount))
+          });
+
+        // ===== MINI-GAMES =====
+        case 'UPDATE_MINI_GAME':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, action.payload.game, _objectSpread(_objectSpread({}, ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames[action.payload.game]) || {}), action.payload.data)))
+          });
+        case 'INCREMENT_MINI_GAME_STAT':
+          var game = action.payload.game;
+          var stat = action.payload.stat;
+          return _objectSpread(_objectSpread({}, state), {}, {
+            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, _defineProperty({}, game, _objectSpread(_objectSpread({}, ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2[game]) || {}), {}, _defineProperty({}, stat, (((_state$miniGames3 = state.miniGames) === null || _state$miniGames3 === void 0 || (_state$miniGames3 = _state$miniGames3[game]) === null || _state$miniGames3 === void 0 ? void 0 : _state$miniGames3[stat]) || 0) + 1))))
+          });
+        case 'ADD_PURCHASED_SPINS':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, {
+              dailySpin: _objectSpread(_objectSpread({}, ((_state$miniGames4 = state.miniGames) === null || _state$miniGames4 === void 0 ? void 0 : _state$miniGames4.dailySpin) || {}), {}, {
+                purchasedSpins: (((_state$miniGames5 = state.miniGames) === null || _state$miniGames5 === void 0 || (_state$miniGames5 = _state$miniGames5.dailySpin) === null || _state$miniGames5 === void 0 ? void 0 : _state$miniGames5.purchasedSpins) || 0) + action.payload.count
+              })
+            })
+          });
+        case 'DECREMENT_PURCHASED_SPINS':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, {
+              dailySpin: _objectSpread(_objectSpread({}, ((_state$miniGames6 = state.miniGames) === null || _state$miniGames6 === void 0 ? void 0 : _state$miniGames6.dailySpin) || {}), {}, {
+                purchasedSpins: Math.max(0, (((_state$miniGames7 = state.miniGames) === null || _state$miniGames7 === void 0 || (_state$miniGames7 = _state$miniGames7.dailySpin) === null || _state$miniGames7 === void 0 ? void 0 : _state$miniGames7.purchasedSpins) || 0) - 1)
+              })
+            })
+          });
+        case 'ACTIVATE_UNLIMITED_SPINS':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            miniGames: _objectSpread(_objectSpread({}, state.miniGames), {}, {
+              dailySpin: _objectSpread(_objectSpread({}, ((_state$miniGames8 = state.miniGames) === null || _state$miniGames8 === void 0 ? void 0 : _state$miniGames8.dailySpin) || {}), {}, {
+                unlimitedUntil: action.payload.expiresAt
+              })
+            })
+          });
+
+        // ===== UPGRADE QUEUE =====
+        case 'INIT_UPGRADE_QUEUE':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            upgradeQueue: {
+              queue: [],
+              slots: 1,
+              activeUpgrade: null
+            }
+          });
+        case 'ADD_TO_UPGRADE_QUEUE':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
+              queue: [].concat(_toConsumableArray(state.upgradeQueue.queue), [action.payload.item])
+            }),
+            resources: _objectSpread(_objectSpread({}, state.resources), {}, _defineProperty({}, action.payload.item.costResource, state.resources[action.payload.item.costResource] - action.payload.item.cost))
+          });
+        case 'REMOVE_FROM_UPGRADE_QUEUE':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
+              queue: state.upgradeQueue.queue.filter(function (item) {
+                return item.upgradeKey !== action.payload.upgradeKey;
+              })
+            })
+          });
+        case 'START_UPGRADE':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
+              queue: state.upgradeQueue.queue.slice(1),
+              activeUpgrade: action.payload.upgrade
+            })
+          });
+        case 'COMPLETE_UPGRADE':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
+              activeUpgrade: null
+            })
+          });
+        case 'UPGRADE_QUEUE_SLOTS':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
+              slots: action.payload.slots
+            })
+          });
+
+        // ===== SETTINGS =====
+        case 'UPDATE_SETTING':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            settings: _objectSpread(_objectSpread({}, state.settings), {}, _defineProperty({}, action.payload.key, action.payload.value))
+          });
+
+        // ===== TUTORIAL =====
         case 'COMPLETE_TUTORIAL':
           return _objectSpread(_objectSpread({}, state), {}, {
             tutorial: _objectSpread(_objectSpread({}, state.tutorial), {}, {
@@ -1817,13 +1786,11 @@ var StateManager = /*#__PURE__*/function () {
             }
           });
 
-        // ===== SAVE GAME =====
+        // ===== SAVE/LOAD =====
         case 'SAVE_GAME':
           return _objectSpread(_objectSpread({}, state), {}, {
             lastSaved: Date.now()
           });
-
-        // ===== FULL STATE =====
         case 'LOAD_STATE':
           return action.payload.state;
         case 'RESET_STATE':
@@ -4309,7 +4276,7 @@ var SHOP_ITEMS = {
       priceDisplay: '$1.99',
       emoji: '💎',
       popular: true,
-      bonusPercentage: 20 // +20% gems
+      bonusPercentage: 20
     },
     large: {
       id: 'large',
@@ -4320,13 +4287,13 @@ var SHOP_ITEMS = {
         energy: 100000,
         mana: 1000,
         crystals: 15,
-        guardian: 1 // Free guardian summon
+        guardian: 1
       },
       price: 4.99,
       priceDisplay: '$4.99',
       emoji: '💎',
       popular: false,
-      bonusPercentage: 50 // +50% gems
+      bonusPercentage: 50
     },
     mega: {
       id: 'mega',
@@ -4343,7 +4310,7 @@ var SHOP_ITEMS = {
       priceDisplay: '$9.99',
       emoji: '💎',
       popular: false,
-      bonusPercentage: 100 // +100% gems (double)
+      bonusPercentage: 100
     },
     ultimate: {
       id: 'ultimate',
@@ -4362,7 +4329,6 @@ var SHOP_ITEMS = {
       emoji: '💎',
       popular: false,
       bonusPercentage: 150,
-      // +150% gems
       special: true
     }
   },
@@ -4374,18 +4340,13 @@ var SHOP_ITEMS = {
     price: 4.99,
     priceDisplay: '$4.99/month',
     duration: 2592000000,
-    // 30 days in ms
     emoji: '👑',
     benefits: {
       offlineProduction: 1.0,
-      // 100% offline production
       dailyGems: 50,
       questSlots: 5,
-      // +2 quest slots
       upgradeQueueSlots: 5,
-      // +2 upgrade slots
       guardianDiscount: 0.5,
-      // 50% off guardian summons
       noAds: true,
       exclusiveCosmetics: true
     },
@@ -4406,13 +4367,12 @@ var SHOP_ITEMS = {
     priceDisplay: '$2.99',
     emoji: '🎁',
     duration: 86400000,
-    // 24 hours
     condition: {
       playTime: {
         max: 3600000
-      } // First hour only
+      }
     },
-    discount: 70 // 70% off
+    discount: 70
   }, {
     id: 'ascension_boost',
     name: 'Ascension Boost',
@@ -4421,13 +4381,12 @@ var SHOP_ITEMS = {
     bonus: {
       energy: 500000,
       crystals: 50,
-      quickStart: true // Triggers quick start bonus
+      quickStart: true
     },
     price: 3.99,
     priceDisplay: '$3.99',
     emoji: '✨',
     duration: 1800000,
-    // 30 minutes after ascension
     condition: {
       justAscended: true
     },
@@ -4443,7 +4402,6 @@ var SHOP_ITEMS = {
         energy: 5000
       },
       cooldown: 300000,
-      // 5 minutes
       dailyLimit: 10,
       emoji: '⚡'
     },
@@ -4455,7 +4413,6 @@ var SHOP_ITEMS = {
         gems: 25
       },
       cooldown: 600000,
-      // 10 minutes
       dailyLimit: 5,
       emoji: '💎'
     },
@@ -4465,10 +4422,9 @@ var SHOP_ITEMS = {
       description: '2x all production for 10 minutes',
       reward: {
         multiplier: 2,
-        duration: 600000 // 10 minutes
+        duration: 600000
       },
       cooldown: 1800000,
-      // 30 minutes
       dailyLimit: 3,
       emoji: '✨'
     }
@@ -4476,7 +4432,6 @@ var SHOP_ITEMS = {
   // ===== DAILY DEAL =====
   dailyDeal: {
     refreshTime: 86400000,
-    // 24 hours
     deals: [{
       id: 'energy_sale',
       name: 'Energy Sale',
@@ -4505,7 +4460,54 @@ var SHOP_ITEMS = {
       price: 2.99,
       discount: 40
     }]
-  }
+  },
+  // ← VIRGULĂ AICI! ÎNCHIDE dailyDeal
+
+  // ===== MINI-GAMES PACKAGES ===== ← AICI LA ACELAȘI NIVEL CU dailyDeal!
+  miniGamesPackages: {
+    extraSpins3: {
+      id: 'extra_spins_3',
+      name: '3 Extra Spins',
+      description: 'Get 3 additional spins for the Daily Wheel!',
+      spins: 3,
+      bonus: {
+        gems: 100
+      },
+      price: 0.99,
+      priceDisplay: '$0.99',
+      emoji: '🎡',
+      popular: false
+    },
+    extraSpins10: {
+      id: 'extra_spins_10',
+      name: '10 Extra Spins',
+      description: 'Best value! 10 spins + bonus gems',
+      spins: 10,
+      bonus: {
+        gems: 500,
+        energy: 10000
+      },
+      price: 2.99,
+      priceDisplay: '$2.99',
+      emoji: '🎡',
+      popular: true,
+      bonusPercentage: 30
+    },
+    unlimitedSpins24h: {
+      id: 'unlimited_spins_24h',
+      name: 'Unlimited Spins - 24h',
+      description: 'Spin as much as you want for 24 hours!',
+      unlimited: true,
+      duration: 86400000,
+      bonus: {
+        gems: 1000
+      },
+      price: 4.99,
+      priceDisplay: '$4.99',
+      emoji: '🎡✨',
+      special: true
+    }
+  } // ← FĂRĂ VIRGULĂ (ultimul element)
 };
 var _default = exports["default"] = SHOP_ITEMS;
 
@@ -9811,6 +9813,104 @@ var ShopSystem = /*#__PURE__*/function () {
       return true;
     }
 
+    // Adaugă după metoda completePurchase()
+
+    /**
+     * Purchase spin package
+     */
+  }, {
+    key: "purchaseSpinPackage",
+    value: function purchaseSpinPackage(packageId) {
+      var pkg = this.items.miniGamesPackages[packageId];
+      if (!pkg) {
+        _Logger["default"].error('ShopSystem', "Spin package ".concat(packageId, " not found"));
+        return false;
+      }
+
+      // In real implementation, this would trigger IAP
+      _Logger["default"].info('ShopSystem', "Initiating spin purchase: ".concat(pkg.name, " (").concat(pkg.priceDisplay, ")"));
+      _EventBus["default"].emit('shop:purchase-initiated', {
+        packageId: packageId,
+        pkg: pkg
+      });
+
+      // For demo, complete immediately
+      this.completeSpinPurchase(packageId);
+      return true;
+    }
+
+    /**
+     * Complete spin purchase (called after payment)
+     */
+  }, {
+    key: "completeSpinPurchase",
+    value: function completeSpinPurchase(packageId) {
+      var pkg = this.items.miniGamesPackages[packageId];
+      if (!pkg) {
+        _Logger["default"].error('ShopSystem', "Spin package ".concat(packageId, " not found"));
+        return false;
+      }
+      if (pkg.unlimited) {
+        // Grant unlimited spins for 24h
+        _StateManager["default"].dispatch({
+          type: 'ACTIVATE_UNLIMITED_SPINS',
+          payload: {
+            expiresAt: Date.now() + pkg.duration
+          }
+        });
+        _Logger["default"].info('ShopSystem', 'Unlimited spins activated for 24h');
+      } else {
+        // Add purchased spins
+        var DailySpinGame = require('../ui/games/DailySpinGame.js')["default"];
+        DailySpinGame.addPurchasedSpins(pkg.spins);
+      }
+
+      // Give bonuses
+      if (pkg.bonus) {
+        for (var _i2 = 0, _Object$entries2 = Object.entries(pkg.bonus); _i2 < _Object$entries2.length; _i2++) {
+          var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+            resource = _Object$entries2$_i[0],
+            amount = _Object$entries2$_i[1];
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: resource,
+              amount: amount
+            }
+          });
+        }
+      }
+
+      // Track purchase
+      _StateManager["default"].dispatch({
+        type: 'RECORD_PURCHASE',
+        payload: {
+          packageId: packageId,
+          price: pkg.price,
+          spins: pkg.spins || 'unlimited',
+          timestamp: Date.now()
+        }
+      });
+      _Logger["default"].info('ShopSystem', "Spin purchase completed: ".concat(pkg.name));
+      _EventBus["default"].emit('shop:purchase-completed', {
+        packageId: packageId,
+        pkg: pkg
+      });
+      _EventBus["default"].emit('daily-spin:purchased-spins', {
+        spins: pkg.spins
+      });
+
+      // Show success notification
+      var message = pkg.unlimited ? '∞ Unlimited spins for 24h!' : "+".concat(pkg.spins, " \uD83C\uDFA1 extra spins!");
+      _EventBus["default"].emit('notification:show', {
+        type: 'purchase',
+        title: 'Purchase Complete!',
+        message: message,
+        duration: 5000
+      });
+      return true;
+    }
+
     /**
      * Summon guaranteed legendary
      */
@@ -10028,10 +10128,10 @@ var ShopSystem = /*#__PURE__*/function () {
     key: "completeAd",
     value: function completeAd(adType, ad) {
       // Give reward
-      for (var _i2 = 0, _Object$entries2 = Object.entries(ad.reward); _i2 < _Object$entries2.length; _i2++) {
-        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-          resource = _Object$entries2$_i[0],
-          amount = _Object$entries2$_i[1];
+      for (var _i3 = 0, _Object$entries3 = Object.entries(ad.reward); _i3 < _Object$entries3.length; _i3++) {
+        var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
+          resource = _Object$entries3$_i[0],
+          amount = _Object$entries3$_i[1];
         if (resource === 'multiplier') {
           // Apply temporary multiplier
           this.applyTemporaryMultiplier(amount, ad.reward.duration);
@@ -10103,10 +10203,10 @@ var ShopSystem = /*#__PURE__*/function () {
     key: "formatAdReward",
     value: function formatAdReward(reward) {
       var parts = [];
-      for (var _i3 = 0, _Object$entries3 = Object.entries(reward); _i3 < _Object$entries3.length; _i3++) {
-        var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
-          resource = _Object$entries3$_i[0],
-          amount = _Object$entries3$_i[1];
+      for (var _i4 = 0, _Object$entries4 = Object.entries(reward); _i4 < _Object$entries4.length; _i4++) {
+        var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
+          resource = _Object$entries4$_i[0],
+          amount = _Object$entries4$_i[1];
         if (resource === 'multiplier') {
           parts.push("".concat(amount, "x production boost"));
         } else {
@@ -10179,7 +10279,7 @@ var ShopSystem = /*#__PURE__*/function () {
 var shopSystem = new ShopSystem();
 var _default = exports["default"] = shopSystem;
 
-},{"../core/StateManager.js":5,"../data/guardians.js":9,"../data/shop.js":12,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./GuardianSystem.js":21}],25:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/guardians.js":9,"../data/shop.js":12,"../ui/games/DailySpinGame.js":47,"../utils/EventBus.js":50,"../utils/Logger.js":52,"./GuardianSystem.js":21}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13876,8 +13976,10 @@ var PuzzleUI = /*#__PURE__*/function () {
     this.match3Game = null;
     this.dailySpinGame = _DailySpinGame["default"];
     this.game2048 = _Game["default"];
+    this.countdownInterval = null;
     this.render();
     this.subscribe();
+    this.startCountdownUpdate();
     _Logger["default"].info('PuzzleUI', 'Initialized');
   }
   return _createClass(PuzzleUI, [{
@@ -13889,7 +13991,7 @@ var PuzzleUI = /*#__PURE__*/function () {
         _this.startBossPuzzle(data);
       });
 
-      // Re-render când se deblochează jocuri
+      // Re-render când se deblochează jocuri sau se fac purchases
       _EventBus["default"].on('quest:claimed', function () {
         return _this.render();
       });
@@ -13902,14 +14004,47 @@ var PuzzleUI = /*#__PURE__*/function () {
       _EventBus["default"].on('puzzle:won', function () {
         return _this.render();
       });
+      _EventBus["default"].on('daily-spin:purchased-spins', function () {
+        return _this.render();
+      });
+    }
+
+    /**
+     * Start countdown update interval
+     */
+  }, {
+    key: "startCountdownUpdate",
+    value: function startCountdownUpdate() {
+      var _this2 = this;
+      // Update countdown every second
+      this.countdownInterval = setInterval(function () {
+        _this2.updateCountdown();
+      }, 1000);
+    }
+
+    /**
+     * Update countdown display
+     */
+  }, {
+    key: "updateCountdown",
+    value: function updateCountdown() {
+      var countdownEl = document.getElementById('spin-countdown');
+      if (countdownEl) {
+        countdownEl.innerHTML = this.getCountdownText();
+      }
+      var statusEl = document.getElementById('spin-status');
+      if (statusEl) {
+        statusEl.innerHTML = this.getSpinStatus();
+      }
     }
   }, {
     key: "render",
     value: function render() {
-      // Check unlock conditions
-      var dailySpinUnlocked = this.checkDailySpinUnlock();
-      var game2048Unlocked = this.check2048Unlock();
-      this.container.innerHTML = "\n      <div class=\"puzzle-games-grid\">\n        \n        <!-- Match-3 Game Card -->\n        <div class=\"puzzle-game-card\" id=\"match3-card\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83E\uDDE9</div>\n            <h3>Match-3 Puzzle</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Match 3 or more gems to score points</p>\n            <p class=\"puzzle-game-use\">Used for: Boss Battles</p>\n          </div>\n          <div class=\"puzzle-game-stats\">\n            <div class=\"stat\">\n              <span class=\"label\">Best Score:</span>\n              <span class=\"value\" id=\"match3-best-score\">0</span>\n            </div>\n            <div class=\"stat\">\n              <span class=\"label\">Games Played:</span>\n              <span class=\"value\" id=\"match3-games-played\">0</span>\n            </div>\n          </div>\n          <button class=\"btn btn-primary btn-large\" id=\"play-match3-btn\">\n            \uD83C\uDFAE Play Practice Game\n          </button>\n        </div>\n        \n        <!-- 2048 Game Card -->\n        <div class=\"puzzle-game-card ".concat(!game2048Unlocked ? 'locked' : '', "\" id=\"game2048-card\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83C\uDFB2</div>\n            <h3>2048 Puzzle</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Merge tiles to reach 2048!</p>\n            <p class=\"puzzle-game-use\">Rewards: Gems, Crystals, Energy</p>\n          </div>\n          ").concat(game2048Unlocked ? "\n            <div class=\"puzzle-game-stats\">\n              <div class=\"stat\">\n                <span class=\"label\">High Score:</span>\n                <span class=\"value\" id=\"2048-high-score\">".concat(this.game2048.getStats().highScore, "</span>\n              </div>\n              <div class=\"stat\">\n                <span class=\"label\">Games Played:</span>\n                <span class=\"value\" id=\"2048-games-played\">").concat(this.game2048.getStats().gamesPlayed, "</span>\n              </div>\n            </div>\n            <button class=\"btn btn-primary btn-large\" id=\"play-2048-btn\">\n              \uD83C\uDFAE Play 2048\n            </button>\n          ") : "\n            <div class=\"unlock-requirements\">\n              <h4>\uD83D\uDD12 Unlock Requirements:</h4>\n              <ul>\n                <li class=\"".concat(this.hasAscended() ? 'completed' : '', "\">\n                  Ascend at least once ").concat(this.hasAscended() ? '✓' : '', "\n                </li>\n                <li class=\"").concat(this.hasWonMatch3(3) ? 'completed' : '', "\">\n                  Win 3 Match-3 games ").concat(this.hasWonMatch3(3) ? '✓' : '', "\n                </li>\n              </ul>\n            </div>\n            <div class=\"locked-overlay\">\n              <span>\uD83D\uDD12 Complete requirements to unlock</span>\n            </div>\n          "), "\n        </div>\n        \n        <!-- Daily Spin Card -->\n        <div class=\"puzzle-game-card ").concat(!dailySpinUnlocked ? 'locked' : '', "\" id=\"daily-spin-card\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83C\uDFA1</div>\n            <h3>Daily Spin</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Spin the wheel for rewards!</p>\n            <p class=\"puzzle-game-use\">Rewards: Gems, Energy, Crystals, Guardians</p>\n          </div>\n          ").concat(dailySpinUnlocked ? "\n            <div class=\"puzzle-game-stats\">\n              <div class=\"stat\">\n                <span class=\"label\">Total Spins:</span>\n                <span class=\"value\" id=\"spin-total\">".concat(this.dailySpinGame.getStats().totalSpins || 0, "</span>\n              </div>\n              <div class=\"stat\">\n                <span class=\"label\">Status:</span>\n                <span class=\"value\" id=\"spin-status\">\n                  ").concat(this.dailySpinGame.canSpin().can ? '✅ Ready' : '⏰ Cooldown', "\n                </span>\n              </div>\n            </div>\n            <button class=\"btn btn-primary btn-large\" id=\"play-spin-btn\">\n              \uD83C\uDFA1 Spin the Wheel\n            </button>\n          ") : "\n            <div class=\"unlock-requirements\">\n              <h4>\uD83D\uDD12 Unlock Requirements:</h4>\n              <ul>\n                <li class=\"".concat(this.hasCompletedQuests(5) ? 'completed' : '', "\">\n                  Complete 5 quests ").concat(this.hasCompletedQuests(5) ? '✓' : '', "\n                </li>\n                <li class=\"").concat(this.hasStructureLevel(10) ? 'completed' : '', "\">\n                  Reach level 10 in any structure ").concat(this.hasStructureLevel(10) ? '✓' : '', "\n                </li>\n              </ul>\n            </div>\n            <div class=\"locked-overlay\">\n              <span>\uD83D\uDD12 Complete requirements to unlock</span>\n            </div>\n          "), "\n        </div>\n        \n      </div>\n      \n      <!-- Puzzle Game Container (hidden by default) -->\n      <div id=\"puzzle-game-active\" style=\"display: none;\">\n        <!-- Game will render here -->\n      </div>\n    ");
+      // Mini-games sunt acum FREE TO PLAY!
+      var dailySpinUnlocked = true; // FREE
+      var game2048Unlocked = true; // FREE
+
+      this.container.innerHTML = "\n      <div class=\"puzzle-games-grid\">\n        \n        <!-- Match-3 Game Card -->\n        <div class=\"puzzle-game-card\" id=\"match3-card\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83E\uDDE9</div>\n            <h3>Match-3 Puzzle</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Match 3 or more gems to score points</p>\n            <p class=\"puzzle-game-use\">Used for: Boss Battles</p>\n          </div>\n          <div class=\"puzzle-game-stats\">\n            <div class=\"stat\">\n              <span class=\"label\">Best Score:</span>\n              <span class=\"value\" id=\"match3-best-score\">0</span>\n            </div>\n            <div class=\"stat\">\n              <span class=\"label\">Games Played:</span>\n              <span class=\"value\" id=\"match3-games-played\">0</span>\n            </div>\n          </div>\n          <button class=\"btn btn-primary btn-large\" id=\"play-match3-btn\">\n            \uD83C\uDFAE Play Practice Game\n          </button>\n        </div>\n        \n        <!-- 2048 Game Card -->\n        <div class=\"puzzle-game-card\" id=\"game2048-card\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83C\uDFB2</div>\n            <h3>2048 Puzzle</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Merge tiles to reach 2048!</p>\n            <p class=\"puzzle-game-use\">Rewards: Gems, Crystals, Energy</p>\n          </div>\n          <div class=\"puzzle-game-stats\">\n            <div class=\"stat\">\n              <span class=\"label\">High Score:</span>\n              <span class=\"value\" id=\"2048-high-score\">".concat(this.game2048.getStats().highScore, "</span>\n            </div>\n            <div class=\"stat\">\n              <span class=\"label\">Games Played:</span>\n              <span class=\"value\" id=\"2048-games-played\">").concat(this.game2048.getStats().gamesPlayed, "</span>\n            </div>\n          </div>\n          <button class=\"btn btn-primary btn-large\" id=\"play-2048-btn\">\n            \uD83C\uDFAE Play 2048\n          </button>\n        </div>\n        \n        <!-- Daily Spin Card -->\n        <div class=\"puzzle-game-card\" id=\"daily-spin-card\">\n          <div class=\"puzzle-game-header\">\n            <div class=\"puzzle-game-icon\">\uD83C\uDFA1</div>\n            <h3>Daily Spin</h3>\n          </div>\n          <div class=\"puzzle-game-description\">\n            <p>Spin the wheel for rewards!</p>\n            <p class=\"puzzle-game-use\">FREE daily at midnight! \uD83D\uDD5B</p>\n          </div>\n          <div class=\"puzzle-game-stats\">\n            <div class=\"stat\">\n              <span class=\"label\">Free Spin:</span>\n              <span class=\"value\" id=\"spin-status\">\n                ").concat(this.getSpinStatus(), "\n              </span>\n            </div>\n            ").concat(this.getPurchasedSpinsDisplay(), "\n          </div>\n          <div class=\"spin-countdown\" id=\"spin-countdown\" style=\"\n            text-align: center;\n            margin: 10px 0;\n            padding: 8px;\n            background: var(--bg-tertiary);\n            border-radius: var(--radius-md);\n            font-size: 0.875rem;\n            color: var(--text-secondary);\n          \">\n            ").concat(this.getCountdownText(), "\n          </div>\n          <button class=\"btn btn-primary btn-large\" id=\"play-spin-btn\">\n            \uD83C\uDFA1 Spin the Wheel\n          </button>\n        </div>\n        \n      </div>\n      \n      <!-- Puzzle Game Container (hidden by default) -->\n      <div id=\"puzzle-game-active\" style=\"display: none;\">\n        <!-- Game will render here -->\n      </div>\n    ");
 
       // Bind events
       this.bindEvents();
@@ -13920,12 +14055,12 @@ var PuzzleUI = /*#__PURE__*/function () {
   }, {
     key: "bindEvents",
     value: function bindEvents() {
-      var _this2 = this;
+      var _this3 = this;
       // Match-3 button
       var playMatch3Btn = document.getElementById('play-match3-btn');
       if (playMatch3Btn) {
         playMatch3Btn.addEventListener('click', function () {
-          _this2.startPracticeMatch3();
+          _this3.startPracticeMatch3();
         });
       }
 
@@ -13933,7 +14068,7 @@ var PuzzleUI = /*#__PURE__*/function () {
       var play2048Btn = document.getElementById('play-2048-btn');
       if (play2048Btn) {
         play2048Btn.addEventListener('click', function () {
-          _this2.start2048Game();
+          _this3.start2048Game();
         });
       }
 
@@ -13941,52 +14076,47 @@ var PuzzleUI = /*#__PURE__*/function () {
       var playSpinBtn = document.getElementById('play-spin-btn');
       if (playSpinBtn) {
         playSpinBtn.addEventListener('click', function () {
-          _this2.startDailySpin();
+          _this3.startDailySpin();
         });
       }
     }
 
-    // ===== UNLOCK CONDITIONS =====
+    // ===== DAILY SPIN HELPERS =====
   }, {
-    key: "checkDailySpinUnlock",
-    value: function checkDailySpinUnlock() {
-      return this.hasCompletedQuests(5) && this.hasStructureLevel(10);
+    key: "getSpinStatus",
+    value: function getSpinStatus() {
+      var canSpinResult = this.dailySpinGame.canSpin();
+      if (canSpinResult.type === 'free' && canSpinResult.can) {
+        return '✅ Available';
+      } else if (canSpinResult.type === 'purchased' && canSpinResult.can) {
+        return "\uD83C\uDF9F\uFE0F ".concat(canSpinResult.spinsRemaining, " Extra");
+      } else if (canSpinResult.reason === 'already_spun_today') {
+        return '⏰ Tomorrow';
+      }
+      return '🔒 Locked';
     }
   }, {
-    key: "check2048Unlock",
-    value: function check2048Unlock() {
-      return this.hasAscended() && this.hasWonMatch3(3);
+    key: "getPurchasedSpinsDisplay",
+    value: function getPurchasedSpinsDisplay() {
+      var stats = this.dailySpinGame.getStats();
+      var purchased = stats.purchasedSpins || 0;
+      if (purchased > 0) {
+        return "\n        <div class=\"stat\">\n          <span class=\"label\">Extra Spins:</span>\n          <span class=\"value\" style=\"color: var(--warning);\">\uD83C\uDF9F\uFE0F ".concat(purchased, "</span>\n        </div>\n      ");
+      }
+      return '';
     }
   }, {
-    key: "hasCompletedQuests",
-    value: function hasCompletedQuests(count) {
-      var _state$quests;
-      var state = _StateManager["default"].getState();
-      var completedQuests = ((_state$quests = state.quests) === null || _state$quests === void 0 || (_state$quests = _state$quests.completed) === null || _state$quests === void 0 ? void 0 : _state$quests.length) || 0;
-      return completedQuests >= count;
-    }
-  }, {
-    key: "hasStructureLevel",
-    value: function hasStructureLevel(level) {
-      var state = _StateManager["default"].getState();
-      var structures = state.structures || {};
-      return Object.values(structures).some(function (s) {
-        return s.level >= level;
-      });
-    }
-  }, {
-    key: "hasAscended",
-    value: function hasAscended() {
-      var _state$ascension;
-      var state = _StateManager["default"].getState();
-      return (((_state$ascension = state.ascension) === null || _state$ascension === void 0 ? void 0 : _state$ascension.level) || 0) >= 1;
-    }
-  }, {
-    key: "hasWonMatch3",
-    value: function hasWonMatch3(count) {
-      var _state$statistics;
-      var state = _StateManager["default"].getState();
-      return (((_state$statistics = state.statistics) === null || _state$statistics === void 0 ? void 0 : _state$statistics.puzzlesWon) || 0) >= count;
+    key: "getCountdownText",
+    value: function getCountdownText() {
+      var canSpinResult = this.dailySpinGame.canSpin();
+      if (canSpinResult.nextFreeIn > 0) {
+        var formatted = this.dailySpinGame.formatTimeRemaining(canSpinResult.nextFreeIn);
+        return "\u23F0 Next free spin in: <strong>".concat(formatted, "</strong>");
+      }
+      if (canSpinResult.type === 'free' && canSpinResult.can) {
+        return '🎉 <strong>Free spin available!</strong>';
+      }
+      return '';
     }
 
     // ===== STATS UPDATE =====
@@ -14003,11 +14133,11 @@ var PuzzleUI = /*#__PURE__*/function () {
       if (gamesPlayedEl) gamesPlayedEl.textContent = gamesPlayed;
     }
 
-    // ===== MATCH-3 GAME (keep existing) =====
+    // ===== MATCH-3 GAME =====
   }, {
     key: "startPracticeMatch3",
     value: function startPracticeMatch3() {
-      var _this3 = this;
+      var _this4 = this;
       _Logger["default"].info('PuzzleUI', 'Starting practice Match-3');
       var grid = this.container.querySelector('.puzzle-games-grid');
       if (grid) grid.style.display = 'none';
@@ -14019,10 +14149,10 @@ var PuzzleUI = /*#__PURE__*/function () {
           maxMoves: 20,
           targetScore: 500,
           onComplete: function onComplete(result) {
-            _this3.onPuzzleComplete(result);
+            _this4.onPuzzleComplete(result);
           },
           onExit: function onExit() {
-            _this3.exitPuzzle();
+            _this4.exitPuzzle();
           }
         });
       }
@@ -14030,7 +14160,7 @@ var PuzzleUI = /*#__PURE__*/function () {
   }, {
     key: "startBossPuzzle",
     value: function startBossPuzzle(bossData) {
-      var _this4 = this;
+      var _this5 = this;
       var boss = bossData.boss,
         bossKey = bossData.bossKey;
       _Logger["default"].info('PuzzleUI', "Starting boss puzzle for ".concat(boss.name));
@@ -14054,10 +14184,10 @@ var PuzzleUI = /*#__PURE__*/function () {
         targetScore: puzzleReq.targetScore,
         difficulty: puzzleReq.difficulty,
         onComplete: function onComplete(result) {
-          _this4.onBossPuzzleComplete(result, bossKey);
+          _this5.onBossPuzzleComplete(result, bossKey);
         },
         onExit: function onExit() {
-          _this4.exitBossPuzzle();
+          _this5.exitBossPuzzle();
         }
       });
     }
@@ -14121,14 +14251,6 @@ var PuzzleUI = /*#__PURE__*/function () {
   }, {
     key: "start2048Game",
     value: function start2048Game() {
-      if (!this.check2048Unlock()) {
-        _EventBus["default"].emit('notification:show', {
-          message: '🔒 Complete requirements to unlock 2048!',
-          type: 'error',
-          duration: 3000
-        });
-        return;
-      }
       _Logger["default"].info('PuzzleUI', 'Starting 2048 game');
       var grid = this.container.querySelector('.puzzle-games-grid');
       if (grid) grid.style.display = 'none';
@@ -14142,7 +14264,7 @@ var PuzzleUI = /*#__PURE__*/function () {
   }, {
     key: "render2048UI",
     value: function render2048UI(container, gameState) {
-      container.innerHTML = "\n    <div class=\"game-2048-container\">\n      <div class=\"game-2048-header\">\n        <div class=\"game-2048-score\">\n          <div class=\"score-label\">Score</div>\n          <div class=\"score-value\" id=\"game2048-score\">".concat(gameState.score, "</div>\n        </div>\n        <button class=\"btn btn-secondary\" id=\"game2048-new-game\">New Game</button>\n        <button class=\"btn btn-secondary\" id=\"game2048-exit\">Exit</button>\n      </div>\n      \n      <div class=\"game-2048-grid\" id=\"game2048-grid\">\n        ").concat(this.render2048Grid(gameState.grid), "\n      </div>\n      \n      <div class=\"game-2048-controls\">\n        <p class=\"swipe-hint\">Use arrow keys or swipe to move tiles</p>\n      </div>\n    </div>\n  ");
+      container.innerHTML = "\n      <div class=\"game-2048-container\">\n        <div class=\"game-2048-header\">\n          <div class=\"game-2048-score\">\n            <div class=\"score-label\">Score</div>\n            <div class=\"score-value\" id=\"game2048-score\">".concat(gameState.score, "</div>\n          </div>\n          <button class=\"btn btn-secondary\" id=\"game2048-new-game\">New Game</button>\n          <button class=\"btn btn-secondary\" id=\"game2048-exit\">Exit</button>\n        </div>\n        \n        <div class=\"game-2048-grid\" id=\"game2048-grid\">\n          ").concat(this.render2048Grid(gameState.grid), "\n        </div>\n        \n        <div class=\"game-2048-controls\">\n          <p class=\"swipe-hint\">Use arrow keys or swipe to move tiles</p>\n        </div>\n      </div>\n    ");
       this.bind2048Controls(container);
     }
   }, {
@@ -14178,12 +14300,10 @@ var PuzzleUI = /*#__PURE__*/function () {
   }, {
     key: "bind2048Controls",
     value: function bind2048Controls(container) {
-      var _this5 = this,
+      var _this6 = this,
         _document$getElementB,
         _document$getElementB2;
       var handleKeyPress = function handleKeyPress(e) {
-        console.log('Key detected in 2048:', e.key); // DEBUG
-
         var keyMap = {
           'ArrowUp': 'up',
           'ArrowDown': 'down',
@@ -14201,8 +14321,7 @@ var PuzzleUI = /*#__PURE__*/function () {
         var direction = keyMap[e.key];
         if (direction) {
           e.preventDefault();
-          console.log('Moving:', direction); // DEBUG
-          _this5.move2048(direction);
+          _this6.move2048(direction);
         }
       };
 
@@ -14216,8 +14335,7 @@ var PuzzleUI = /*#__PURE__*/function () {
       // Touch controls
       var touchStartX = 0;
       var touchStartY = 0;
-      var gridEl = container.querySelector('#game2048-grid'); // SCHIMBAT
-
+      var gridEl = container.querySelector('#game2048-grid');
       if (gridEl) {
         gridEl.addEventListener('touchstart', function (e) {
           touchStartX = e.touches[0].clientX;
@@ -14229,33 +14347,33 @@ var PuzzleUI = /*#__PURE__*/function () {
           var diffX = touchEndX - touchStartX;
           var diffY = touchEndY - touchStartY;
           if (Math.abs(diffX) > Math.abs(diffY)) {
-            _this5.move2048(diffX > 0 ? 'right' : 'left');
+            _this6.move2048(diffX > 0 ? 'right' : 'left');
           } else {
-            _this5.move2048(diffY > 0 ? 'down' : 'up');
+            _this6.move2048(diffY > 0 ? 'down' : 'up');
           }
         });
       }
       (_document$getElementB = document.getElementById('game2048-new-game')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
-        var newState = _this5.game2048.newGame();
-        _this5.render2048UI(container, newState);
+        var newState = _this6.game2048.newGame();
+        _this6.render2048UI(container, newState);
       });
       (_document$getElementB2 = document.getElementById('game2048-exit')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', function () {
-        _this5.exit2048Game(container);
+        _this6.exit2048Game(container);
       });
     }
   }, {
     key: "move2048",
     value: function move2048(direction) {
-      var _this6 = this;
+      var _this7 = this;
       var result = this.game2048.move(direction);
       if (result) {
-        var scoreEl = document.getElementById('game2048-score'); // SCHIMBAT
+        var scoreEl = document.getElementById('game2048-score');
         if (scoreEl) scoreEl.textContent = result.score;
-        var gridEl = document.getElementById('game2048-grid'); // SCHIMBAT
+        var gridEl = document.getElementById('game2048-grid');
         if (gridEl) gridEl.innerHTML = this.render2048Grid(result.grid);
         if (result.gameOver) {
           setTimeout(function () {
-            _this6.show2048GameOver(result);
+            _this7.show2048GameOver(result);
           }, 500);
         }
       }
@@ -14264,17 +14382,17 @@ var PuzzleUI = /*#__PURE__*/function () {
     key: "show2048GameOver",
     value: function show2048GameOver(result) {
       var _document$getElementB3,
-        _this7 = this,
+        _this8 = this,
         _document$getElementB4;
       var container = document.getElementById('puzzle-game-active');
       if (!container) return;
       var isHighScore = result.score > (this.game2048.getStats().highScore || 0);
       container.innerHTML = "\n      <div class=\"puzzle-results\">\n        <h2>".concat(result.won ? '🎉 You Won!' : '😔 Game Over', "</h2>\n        <div class=\"puzzle-results-stats\">\n          <div class=\"result-stat\">\n            <span class=\"label\">Final Score:</span>\n            <span class=\"value\">").concat(result.score, "</span>\n          </div>\n          ").concat(isHighScore ? '<p class="high-score-badge">🏆 New High Score!</p>' : '', "\n        </div>\n        <div class=\"result-actions\">\n          <button class=\"btn btn-primary\" id=\"2048-play-again\">Play Again</button>\n          <button class=\"btn btn-secondary\" id=\"2048-results-exit\">Exit</button>\n        </div>\n      </div>\n    ");
       (_document$getElementB3 = document.getElementById('2048-play-again')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', function () {
-        _this7.start2048Game();
+        _this8.start2048Game();
       });
       (_document$getElementB4 = document.getElementById('2048-results-exit')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', function () {
-        _this7.exitPuzzle();
+        _this8.exitPuzzle();
       });
     }
   }, {
@@ -14290,19 +14408,11 @@ var PuzzleUI = /*#__PURE__*/function () {
   }, {
     key: "startDailySpin",
     value: function startDailySpin() {
-      if (!this.checkDailySpinUnlock()) {
-        _EventBus["default"].emit('notification:show', {
-          message: '🔒 Complete requirements to unlock Daily Spin!',
-          type: 'error',
-          duration: 3000
-        });
-        return;
-      }
       var canSpinResult = this.dailySpinGame.canSpin();
       if (!canSpinResult.can) {
-        var hoursLeft = Math.ceil(canSpinResult.nextFreeIn / 3600000);
+        var formatted = this.dailySpinGame.formatTimeRemaining(canSpinResult.nextFreeIn);
         _EventBus["default"].emit('notification:show', {
-          message: "\u23F0 Next free spin in ".concat(hoursLeft, "h"),
+          message: "\u23F0 Next free spin in ".concat(formatted),
           type: 'info',
           duration: 3000
         });
@@ -14321,14 +14431,14 @@ var PuzzleUI = /*#__PURE__*/function () {
     key: "renderDailySpinUI",
     value: function renderDailySpinUI(container) {
       var _document$getElementB5,
-        _this8 = this,
+        _this9 = this,
         _document$getElementB6;
       container.innerHTML = "\n      <div class=\"daily-spin-container\">\n        <h2>\uD83C\uDFA1 Daily Spin</h2>\n        <div class=\"spin-info\">\n          <p>Spin the wheel for amazing rewards!</p>\n        </div>\n        \n        <div class=\"wheel-container\">\n          <div class=\"wheel-pointer\"></div>\n          <div class=\"wheel\" id=\"spin-wheel\">\n            ".concat(this.renderWheelSegments(), "\n            <div class=\"wheel-center\">\uD83C\uDFA1</div>\n          </div>\n        </div>\n        \n        <div class=\"spin-controls\">\n          <button class=\"btn btn-primary btn-large\" id=\"spin-btn\">\n            \uD83C\uDFA1 SPIN!\n          </button>\n          <button class=\"btn btn-secondary\" id=\"spin-exit\">Exit</button>\n        </div>\n      </div>\n    ");
       (_document$getElementB5 = document.getElementById('spin-btn')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', function () {
-        _this8.executeSpin();
+        _this9.executeSpin();
       });
       (_document$getElementB6 = document.getElementById('spin-exit')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', function () {
-        _this8.exitPuzzle();
+        _this9.exitPuzzle();
       });
     }
   }, {
@@ -14345,12 +14455,17 @@ var PuzzleUI = /*#__PURE__*/function () {
   }, {
     key: "executeSpin",
     value: function executeSpin() {
-      var _this9 = this;
+      var _this0 = this;
       var spinBtn = document.getElementById('spin-btn');
       if (spinBtn) spinBtn.disabled = true;
-      var spinResult = this.dailySpinGame.spin(false);
+      var spinResult = this.dailySpinGame.useSpin();
       if (!spinResult) {
         if (spinBtn) spinBtn.disabled = false;
+        _EventBus["default"].emit('notification:show', {
+          message: '❌ No spins available!',
+          type: 'error',
+          duration: 3000
+        });
         return;
       }
       var wheel = document.getElementById('spin-wheel');
@@ -14358,8 +14473,8 @@ var PuzzleUI = /*#__PURE__*/function () {
         wheel.style.transition = "transform ".concat(spinResult.duration, "ms cubic-bezier(0.17, 0.67, 0.12, 0.99)");
         wheel.style.transform = "rotate(".concat(spinResult.rotation, "deg)");
         setTimeout(function () {
-          _this9.dailySpinGame.grantReward(spinResult.segment);
-          _this9.showSpinResult(spinResult.segment);
+          _this0.dailySpinGame.grantReward(spinResult.segment);
+          _this0.showSpinResult(spinResult.segment);
         }, spinResult.duration);
       }
     }
@@ -14367,12 +14482,12 @@ var PuzzleUI = /*#__PURE__*/function () {
     key: "showSpinResult",
     value: function showSpinResult(segment) {
       var _document$getElementB7,
-        _this0 = this;
+        _this1 = this;
       var container = document.getElementById('puzzle-game-active');
       if (!container) return;
       container.innerHTML = "\n      <div class=\"puzzle-results\">\n        <h2>\uD83C\uDF89 You Won!</h2>\n        <div class=\"spin-result-icon\">".concat(segment.label, "</div>\n        <div class=\"puzzle-results-stats\">\n          <p>Congratulations! You received:</p>\n          <div class=\"reward-display\">\n            ").concat(this.formatSpinReward(segment.reward), "\n          </div>\n        </div>\n        <button class=\"btn btn-primary btn-large\" id=\"spin-result-close\">\n          Collect\n        </button>\n      </div>\n    ");
       (_document$getElementB7 = document.getElementById('spin-result-close')) === null || _document$getElementB7 === void 0 || _document$getElementB7.addEventListener('click', function () {
-        _this0.exitPuzzle();
+        _this1.exitPuzzle();
       });
     }
   }, {
@@ -14403,12 +14518,12 @@ var PuzzleUI = /*#__PURE__*/function () {
     key: "showPuzzleResults",
     value: function showPuzzleResults(result) {
       var _document$getElementB8,
-        _this1 = this;
+        _this10 = this;
       var gameContainer = document.getElementById('puzzle-game-active');
       if (!gameContainer) return;
       gameContainer.innerHTML = "\n      <div class=\"puzzle-results\">\n        <h2>\uD83C\uDF89 Game Complete!</h2>\n        <div class=\"puzzle-results-stats\">\n          <div class=\"result-stat\">\n            <span class=\"label\">Score:</span>\n            <span class=\"value\">".concat(result.score, "</span>\n          </div>\n          <div class=\"result-stat\">\n            <span class=\"label\">Moves Used:</span>\n            <span class=\"value\">").concat(result.movesUsed, " / ").concat(result.maxMoves, "</span>\n          </div>\n          <div class=\"result-stat\">\n            <span class=\"label\">Best Combo:</span>\n            <span class=\"value\">").concat(result.bestCombo, "x</span>\n          </div>\n        </div>\n        <button class=\"btn btn-primary btn-large\" id=\"puzzle-results-close\">\n          Continue\n        </button>\n      </div>\n    ");
       (_document$getElementB8 = document.getElementById('puzzle-results-close')) === null || _document$getElementB8 === void 0 || _document$getElementB8.addEventListener('click', function () {
-        _this1.exitPuzzle();
+        _this10.exitPuzzle();
       });
     }
   }, {
@@ -14436,6 +14551,17 @@ var PuzzleUI = /*#__PURE__*/function () {
       if (this.match3Game) {
         this.match3Game.destroy();
         this.match3Game = null;
+      }
+    }
+
+    /**
+     * Cleanup on destroy
+     */
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval);
       }
     }
   }]);
@@ -14650,11 +14776,14 @@ var ShopUI = /*#__PURE__*/function () {
       _EventBus["default"].on('shop:vip-activated', function () {
         return _this.render();
       });
+      _EventBus["default"].on('daily-spin:purchased-spins', function () {
+        return _this.render();
+      });
     }
   }, {
     key: "render",
     value: function render() {
-      this.container.innerHTML = "\n      ".concat(this.renderVIPSection(), "\n      ").concat(this.renderGemPackages(), "\n      ").concat(this.renderRewardedAds(), "\n    ");
+      this.container.innerHTML = "\n      ".concat(this.renderVIPSection(), "\n      ").concat(this.renderMiniGamesPackages(), "\n      ").concat(this.renderGemPackages(), "\n      ").concat(this.renderRewardedAds(), "\n    ");
     }
   }, {
     key: "renderVIPSection",
@@ -14666,14 +14795,32 @@ var ShopUI = /*#__PURE__*/function () {
       }).join(''), "\n            </ul>\n            <button class=\"btn btn-primary btn-large\" onclick=\"purchaseVIP()\">\n              Buy VIP - ").concat(vip.priceDisplay, "\n            </button>\n          </div>\n        "), "\n      </div>\n    ");
     }
   }, {
-    key: "renderGemPackages",
-    value: function renderGemPackages() {
-      var packages = _ShopSystem["default"].items.gemPackages;
-      var html = '<div class="shop-section"><h3>💎 Gem Packages</h3><div class="shop-grid">';
+    key: "renderMiniGamesPackages",
+    value: function renderMiniGamesPackages() {
+      var packages = _ShopSystem["default"].items.miniGamesPackages;
+      if (!packages) {
+        console.warn('Mini-games packages not found in shop');
+        return '';
+      }
+      var html = "\n      <div class=\"shop-section minigames-section\">\n        <h3>\uD83C\uDFA1 Daily Spin - Extra Spins</h3>\n        <p>Get more chances to win amazing rewards!</p>\n        <div class=\"shop-grid\">\n    ";
       for (var _i = 0, _Object$entries = Object.entries(packages); _i < _Object$entries.length; _i++) {
         var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
           id = _Object$entries$_i[0],
           pkg = _Object$entries$_i[1];
+        html += "\n        <div class=\"shop-item minigame-item ".concat(pkg.popular ? 'popular' : '', " ").concat(pkg.special ? 'special' : '', "\">\n          ").concat(pkg.popular ? '<div class="popular-badge">BEST VALUE</div>' : '', "\n          ").concat(pkg.special ? '<div class="special-badge">⭐ SPECIAL</div>' : '', "\n          ").concat(pkg.bonusPercentage ? "<div class=\"bonus-badge\">+".concat(pkg.bonusPercentage, "% VALUE</div>") : '', "\n          \n          <div class=\"shop-item-icon\">").concat(pkg.emoji, "</div>\n          <h4>").concat(pkg.name, "</h4>\n          <p class=\"shop-item-description\">").concat(pkg.description, "</p>\n          \n          <div class=\"shop-item-content\">\n            ").concat(pkg.unlimited ? "\n              <div class=\"spin-amount unlimited\">\n                <span class=\"infinity\">\u221E</span>\n                <span>Unlimited Spins</span>\n                <small>for 24 hours</small>\n              </div>\n            " : "\n              <div class=\"spin-amount\">\n                <span class=\"spin-count\">".concat(pkg.spins, "</span>\n                <span>Extra Spins</span>\n              </div>\n            "), "\n            \n            ").concat(pkg.bonus ? "\n              <div class=\"bonus-items\">\n                ".concat(pkg.bonus.gems ? "<div>+".concat(_Formatters["default"].formatNumber(pkg.bonus.gems), " \uD83D\uDC8E</div>") : '', "\n                ").concat(pkg.bonus.energy ? "<div>+".concat(_Formatters["default"].formatNumber(pkg.bonus.energy), " \u26A1</div>") : '', "\n              </div>\n            ") : '', "\n          </div>\n          \n          <div class=\"shop-item-price\">").concat(pkg.priceDisplay, "</div>\n          <button class=\"btn btn-success\" onclick=\"purchaseSpinPackage('").concat(id, "')\">\n            Purchase\n          </button>\n        </div>\n      ");
+      }
+      html += '</div></div>';
+      return html;
+    }
+  }, {
+    key: "renderGemPackages",
+    value: function renderGemPackages() {
+      var packages = _ShopSystem["default"].items.gemPackages;
+      var html = '<div class="shop-section"><h3>💎 Gem Packages</h3><div class="shop-grid">';
+      for (var _i2 = 0, _Object$entries2 = Object.entries(packages); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+          id = _Object$entries2$_i[0],
+          pkg = _Object$entries2$_i[1];
         html += "\n        <div class=\"shop-item ".concat(pkg.popular ? 'popular' : '', "\">\n          ").concat(pkg.popular ? '<div class="popular-badge">POPULAR</div>' : '', "\n          ").concat(pkg.bonusPercentage ? "<div class=\"bonus-badge\">+".concat(pkg.bonusPercentage, "% BONUS</div>") : '', "\n          \n          <div class=\"shop-item-icon\">").concat(pkg.emoji, "</div>\n          <h4>").concat(pkg.name, "</h4>\n          <p class=\"shop-item-description\">").concat(pkg.description, "</p>\n          \n          <div class=\"shop-item-content\">\n            <div class=\"gem-amount\">").concat(pkg.gems, " \uD83D\uDC8E</div>\n            \n            ").concat(pkg.bonus ? "\n              <div class=\"bonus-items\">\n                ".concat(pkg.bonus.energy ? "<div>+".concat(_Formatters["default"].formatNumber(pkg.bonus.energy), " \u26A1</div>") : '', "\n                ").concat(pkg.bonus.mana ? "<div>+".concat(_Formatters["default"].formatNumber(pkg.bonus.mana), " \u2728</div>") : '', "\n                ").concat(pkg.bonus.crystals ? "<div>+".concat(pkg.bonus.crystals, " \uD83D\uDCA0</div>") : '', "\n                ").concat(pkg.bonus.guardian ? "<div>+".concat(pkg.bonus.guardian, " Guardian").concat(pkg.bonus.guardian > 1 ? 's' : '', "</div>") : '', "\n              </div>\n            ") : '', "\n          </div>\n          \n          <div class=\"shop-item-price\">").concat(pkg.priceDisplay, "</div>\n          <button class=\"btn btn-success\" onclick=\"purchasePackage('").concat(id, "')\">\n            Purchase\n          </button>\n        </div>\n      ");
       }
       html += '</div></div>';
@@ -14685,10 +14832,10 @@ var ShopUI = /*#__PURE__*/function () {
       var ads = _ShopSystem["default"].items.rewardedAds;
       var stats = _ShopSystem["default"].getStats();
       var html = "\n      <div class=\"shop-section\">\n        <h3>\uD83D\uDCFA Rewarded Ads</h3>\n        <p>Watch ads to earn free rewards! (".concat(stats.adsWatchedToday, "/").concat(_ShopSystem["default"].maxAdsPerDay, " today)</p>\n        <div class=\"shop-grid\">\n    ");
-      for (var _i2 = 0, _Object$entries2 = Object.entries(ads); _i2 < _Object$entries2.length; _i2++) {
-        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-          id = _Object$entries2$_i[0],
-          ad = _Object$entries2$_i[1];
+      for (var _i3 = 0, _Object$entries3 = Object.entries(ads); _i3 < _Object$entries3.length; _i3++) {
+        var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
+          id = _Object$entries3$_i[0],
+          ad = _Object$entries3$_i[1];
         var canWatch = stats.adsRemaining > 0;
         var rewardText = '';
         if (ad.reward.energy) rewardText = "".concat(_Formatters["default"].formatNumber(ad.reward.energy), " \u26A1");
@@ -14706,6 +14853,9 @@ window.purchaseVIP = function () {
 };
 window.purchasePackage = function (packageId) {
   _ShopSystem["default"].purchasePackage(packageId);
+};
+window.purchaseSpinPackage = function (packageId) {
+  _ShopSystem["default"].purchaseSpinPackage(packageId);
 };
 window.watchAd = function (adType) {
   _ShopSystem["default"].watchAd(adType);
@@ -15900,6 +16050,7 @@ function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), 
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
  * DailySpinGame - Wheel of Fortune mini-game
+ * Resets daily at midnight (00:00)
  */
 var DailySpinGame = /*#__PURE__*/function () {
   function DailySpinGame() {
@@ -15961,7 +16112,7 @@ var DailySpinGame = /*#__PURE__*/function () {
       reward: {
         guardian: 1
       },
-      label: 'Guardian',
+      label: '🛡️Guardian',
       color: '#F59E0B',
       weight: 5
     }, {
@@ -15974,73 +16125,123 @@ var DailySpinGame = /*#__PURE__*/function () {
       weight: 3
     }];
     this.segmentAngle = 360 / this.segments.length;
-    this.cooldown = 86400000; // 24 hours
-    this.gemSpinCost = 50;
   }
+
+  /**
+   * Get time until midnight reset
+   */
   return _createClass(DailySpinGame, [{
+    key: "getTimeUntilMidnight",
+    value: function getTimeUntilMidnight() {
+      var now = new Date();
+      var midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0); // Next midnight
+
+      return midnight.getTime() - now.getTime();
+    }
+
+    /**
+     * Get today's date string for comparison
+     */
+  }, {
+    key: "getTodayDateString",
+    value: function getTodayDateString() {
+      return new Date().toDateString(); // "Sat Nov 09 2025"
+    }
+
+    /**
+     * Check if player can spin (FREE - resets at midnight)
+     */
+  }, {
     key: "canSpin",
     value: function canSpin() {
-      var _state$miniGames;
+      var _state$miniGames, _state$miniGames2;
       var state = _StateManager["default"].getState();
-      var lastSpin = ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 || (_state$miniGames = _state$miniGames.dailySpin) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames.lastSpin) || 0;
-      var now = Date.now();
-      var timeSinceLastSpin = now - lastSpin;
-      if (timeSinceLastSpin >= this.cooldown) {
+      var lastSpinDate = ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 || (_state$miniGames = _state$miniGames.dailySpin) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames.lastSpinDate) || '';
+      var today = this.getTodayDateString();
+
+      // Check if already spun today (FREE spin)
+      var hasSpunToday = lastSpinDate === today;
+
+      // Check purchased spins
+      var purchasedSpins = ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 || (_state$miniGames2 = _state$miniGames2.dailySpin) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2.purchasedSpins) || 0;
+      if (!hasSpunToday) {
+        // Free spin available
         return {
           can: true,
-          type: 'free'
+          type: 'free',
+          nextFreeIn: 0,
+          purchasedSpins: purchasedSpins
         };
       }
-      if (state.resources.gems >= this.gemSpinCost) {
+      if (purchasedSpins > 0) {
+        // Has purchased spins
         return {
           can: true,
-          type: 'paid',
-          cost: this.gemSpinCost,
-          nextFreeIn: this.cooldown - timeSinceLastSpin
+          type: 'purchased',
+          spinsRemaining: purchasedSpins,
+          nextFreeIn: this.getTimeUntilMidnight()
         };
       }
+
+      // No spins available
       return {
         can: false,
-        nextFreeIn: this.cooldown - timeSinceLastSpin
+        type: 'none',
+        nextFreeIn: this.getTimeUntilMidnight(),
+        reason: 'already_spun_today'
       };
     }
+
+    /**
+     * Use a spin (free or purchased)
+     */
   }, {
-    key: "spin",
-    value: function spin() {
-      var isPaid = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    key: "useSpin",
+    value: function useSpin() {
       var canSpinResult = this.canSpin();
       if (!canSpinResult.can) {
-        _EventBus["default"].emit('notification:show', {
-          type: 'error',
-          message: 'Cannot spin yet!',
-          duration: 2000
-        });
         return null;
       }
-      if (isPaid) {
-        _StateManager["default"].dispatch({
-          type: 'SPEND_RESOURCE',
-          payload: {
-            resource: 'gems',
-            amount: this.gemSpinCost
-          }
-        });
-        _Logger["default"].info('DailySpinGame', 'Paid spin used', {
-          cost: this.gemSpinCost
-        });
-      } else {
+      if (canSpinResult.type === 'free') {
+        // Mark today as spun
         _StateManager["default"].dispatch({
           type: 'UPDATE_MINI_GAME',
           payload: {
             game: 'dailySpin',
             data: {
+              lastSpinDate: this.getTodayDateString(),
               lastSpin: Date.now()
             }
           }
         });
+        _Logger["default"].info('DailySpinGame', 'Used FREE spin');
+      } else if (canSpinResult.type === 'purchased') {
+        // Consume purchased spin
+        _StateManager["default"].dispatch({
+          type: 'DECREMENT_PURCHASED_SPINS',
+          payload: {
+            game: 'dailySpin'
+          }
+        });
+        _Logger["default"].info('DailySpinGame', 'Used PURCHASED spin', {
+          remaining: canSpinResult.spinsRemaining - 1
+        });
       }
+      return this.spin();
+    }
+
+    /**
+     * Spin the wheel (internal logic)
+     */
+  }, {
+    key: "spin",
+    value: function spin() {
+      // Select random reward based on weights
       var selectedSegment = this.selectRandomSegment();
-      var spins = 5;
+
+      // Calculate final rotation
+      var spins = 5; // Full rotations
       var targetAngle = this.segmentAngle * (selectedSegment.id - 1) + this.segmentAngle / 2;
       var finalRotation = 360 * spins + targetAngle + Math.random() * 20 - 10;
       _Logger["default"].info('DailySpinGame', 'Spinning wheel', {
@@ -16051,9 +16252,13 @@ var DailySpinGame = /*#__PURE__*/function () {
       return {
         segment: selectedSegment,
         rotation: finalRotation,
-        duration: 4000
+        duration: 4000 // 4 seconds animation
       };
     }
+
+    /**
+     * Select random segment based on weights
+     */
   }, {
     key: "selectRandomSegment",
     value: function selectRandomSegment() {
@@ -16076,17 +16281,24 @@ var DailySpinGame = /*#__PURE__*/function () {
       } finally {
         _iterator.f();
       }
-      return this.segments[0];
+      return this.segments[0]; // Fallback
     }
+
+    /**
+     * Grant reward after spin completes
+     */
   }, {
     key: "grantReward",
     value: function grantReward(segment) {
       var reward = segment.reward;
+
+      // Add rewards
       for (var _i = 0, _Object$entries = Object.entries(reward); _i < _Object$entries.length; _i++) {
         var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
           resource = _Object$entries$_i[0],
           amount = _Object$entries$_i[1];
         if (resource === 'guardian') {
+          // Trigger guardian summon
           _EventBus["default"].emit('guardian:summon', {
             amount: amount,
             source: 'daily-spin',
@@ -16102,6 +16314,8 @@ var DailySpinGame = /*#__PURE__*/function () {
           });
         }
       }
+
+      // Track stats
       _StateManager["default"].dispatch({
         type: 'INCREMENT_MINI_GAME_STAT',
         payload: {
@@ -16114,9 +16328,15 @@ var DailySpinGame = /*#__PURE__*/function () {
         reward: reward,
         segment: segment
       });
+
+      // Show notification
       this.showRewardNotification(reward);
       return reward;
     }
+
+    /**
+     * Show reward notification
+     */
   }, {
     key: "showRewardNotification",
     value: function showRewardNotification(reward) {
@@ -16144,17 +16364,63 @@ var DailySpinGame = /*#__PURE__*/function () {
         duration: 5000
       });
     }
+
+    /**
+     * Add purchased spins (called from shop)
+     */
+  }, {
+    key: "addPurchasedSpins",
+    value: function addPurchasedSpins(count) {
+      _StateManager["default"].dispatch({
+        type: 'ADD_PURCHASED_SPINS',
+        payload: {
+          game: 'dailySpin',
+          count: count
+        }
+      });
+      _Logger["default"].info('DailySpinGame', "Added ".concat(count, " purchased spins"));
+      _EventBus["default"].emit('notification:show', {
+        type: 'purchase',
+        title: 'Spins Added!',
+        message: "+".concat(count, " Extra Spins! \uD83C\uDFA1"),
+        duration: 3000
+      });
+    }
+
+    /**
+     * Get stats
+     */
   }, {
     key: "getStats",
     value: function getStats() {
-      var _state$miniGames2;
+      var _state$miniGames3;
       var state = _StateManager["default"].getState();
-      var spinData = ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2.dailySpin) || {};
+      var spinData = ((_state$miniGames3 = state.miniGames) === null || _state$miniGames3 === void 0 ? void 0 : _state$miniGames3.dailySpin) || {};
       return {
+        lastSpinDate: spinData.lastSpinDate || '',
         lastSpin: spinData.lastSpin || 0,
         totalSpins: spinData.totalSpins || 0,
+        purchasedSpins: spinData.purchasedSpins || 0,
         canSpin: this.canSpin()
       };
+    }
+
+    /**
+     * Format time remaining (for display)
+     */
+  }, {
+    key: "formatTimeRemaining",
+    value: function formatTimeRemaining(milliseconds) {
+      var hours = Math.floor(milliseconds / 3600000);
+      var minutes = Math.floor(milliseconds % 3600000 / 60000);
+      var seconds = Math.floor(milliseconds % 60000 / 1000);
+      if (hours > 0) {
+        return "".concat(hours, "h ").concat(minutes, "m");
+      } else if (minutes > 0) {
+        return "".concat(minutes, "m ").concat(seconds, "s");
+      } else {
+        return "".concat(seconds, "s");
+      }
     }
   }]);
 }();

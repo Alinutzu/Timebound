@@ -1,5 +1,6 @@
 /**
  * DailySpinGame - Wheel of Fortune mini-game
+ * Resets daily at midnight (00:00)
  */
 
 import stateManager from '../../core/StateManager.js';
@@ -19,72 +20,120 @@ class DailySpinGame {
       { id: 4, reward: { crystals: 5 }, label: '5💠', color: '#10B981', weight: 10 },
       { id: 5, reward: { gems: 200 }, label: '200💎', color: '#8B5CF6', weight: 10 },
       { id: 6, reward: { energy: 10000 }, label: '10K⚡', color: '#3B82F6', weight: 12 },
-      { id: 7, reward: { guardian: 1 }, label: 'Guardian', color: '#F59E0B', weight: 5 },
+      { id: 7, reward: { guardian: 1 }, label: '🛡️Guardian', color: '#F59E0B', weight: 5 },
       { id: 8, reward: { gems: 500 }, label: '500💎', color: '#8B5CF6', weight: 3 }
     ];
     
     this.segmentAngle = 360 / this.segments.length;
-    this.cooldown = 86400000; // 24 hours
-    this.gemSpinCost = 50;
   }
   
+  /**
+   * Get time until midnight reset
+   */
+  getTimeUntilMidnight() {
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0); // Next midnight
+    
+    return midnight.getTime() - now.getTime();
+  }
+  
+  /**
+   * Get today's date string for comparison
+   */
+  getTodayDateString() {
+    return new Date().toDateString(); // "Sat Nov 09 2025"
+  }
+  
+  /**
+   * Check if player can spin (FREE - resets at midnight)
+   */
   canSpin() {
     const state = stateManager.getState();
-    const lastSpin = state.miniGames?.dailySpin?.lastSpin || 0;
-    const now = Date.now();
-    const timeSinceLastSpin = now - lastSpin;
+    const lastSpinDate = state.miniGames?.dailySpin?.lastSpinDate || '';
+    const today = this.getTodayDateString();
     
-    if (timeSinceLastSpin >= this.cooldown) {
-      return { can: true, type: 'free' };
-    }
+    // Check if already spun today (FREE spin)
+    const hasSpunToday = lastSpinDate === today;
     
-    if (state.resources.gems >= this.gemSpinCost) {
+    // Check purchased spins
+    const purchasedSpins = state.miniGames?.dailySpin?.purchasedSpins || 0;
+    
+    if (!hasSpunToday) {
+      // Free spin available
       return { 
         can: true, 
-        type: 'paid', 
-        cost: this.gemSpinCost,
-        nextFreeIn: this.cooldown - timeSinceLastSpin
+        type: 'free',
+        nextFreeIn: 0,
+        purchasedSpins: purchasedSpins
       };
     }
     
+    if (purchasedSpins > 0) {
+      // Has purchased spins
+      return {
+        can: true,
+        type: 'purchased',
+        spinsRemaining: purchasedSpins,
+        nextFreeIn: this.getTimeUntilMidnight()
+      };
+    }
+    
+    // No spins available
     return { 
       can: false, 
-      nextFreeIn: this.cooldown - timeSinceLastSpin
+      type: 'none',
+      nextFreeIn: this.getTimeUntilMidnight(),
+      reason: 'already_spun_today'
     };
   }
   
-  spin(isPaid = false) {
+  /**
+   * Use a spin (free or purchased)
+   */
+  useSpin() {
     const canSpinResult = this.canSpin();
     
     if (!canSpinResult.can) {
-      eventBus.emit('notification:show', {
-        type: 'error',
-        message: 'Cannot spin yet!',
-        duration: 2000
-      });
       return null;
     }
     
-    if (isPaid) {
-      stateManager.dispatch({
-        type: 'SPEND_RESOURCE',
-        payload: { resource: 'gems', amount: this.gemSpinCost }
-      });
-      
-      logger.info('DailySpinGame', 'Paid spin used', { cost: this.gemSpinCost });
-    } else {
+    if (canSpinResult.type === 'free') {
+      // Mark today as spun
       stateManager.dispatch({
         type: 'UPDATE_MINI_GAME',
         payload: {
           game: 'dailySpin',
-          data: { lastSpin: Date.now() }
+          data: { 
+            lastSpinDate: this.getTodayDateString(),
+            lastSpin: Date.now()
+          }
         }
       });
+      
+      logger.info('DailySpinGame', 'Used FREE spin');
+    } else if (canSpinResult.type === 'purchased') {
+      // Consume purchased spin
+      stateManager.dispatch({
+        type: 'DECREMENT_PURCHASED_SPINS',
+        payload: { game: 'dailySpin' }
+      });
+      
+      logger.info('DailySpinGame', 'Used PURCHASED spin', { remaining: canSpinResult.spinsRemaining - 1 });
     }
     
+    return this.spin();
+  }
+  
+  /**
+   * Spin the wheel (internal logic)
+   */
+  spin() {
+    // Select random reward based on weights
     const selectedSegment = this.selectRandomSegment();
     
-    const spins = 5;
+    // Calculate final rotation
+    const spins = 5; // Full rotations
     const targetAngle = this.segmentAngle * (selectedSegment.id - 1) + (this.segmentAngle / 2);
     const finalRotation = 360 * spins + targetAngle + Math.random() * 20 - 10;
     
@@ -97,10 +146,13 @@ class DailySpinGame {
     return {
       segment: selectedSegment,
       rotation: finalRotation,
-      duration: 4000
+      duration: 4000 // 4 seconds animation
     };
   }
   
+  /**
+   * Select random segment based on weights
+   */
   selectRandomSegment() {
     const totalWeight = this.segments.reduce((sum, seg) => sum + seg.weight, 0);
     let random = Math.random() * totalWeight;
@@ -112,14 +164,19 @@ class DailySpinGame {
       }
     }
     
-    return this.segments[0];
+    return this.segments[0]; // Fallback
   }
   
+  /**
+   * Grant reward after spin completes
+   */
   grantReward(segment) {
     const reward = segment.reward;
     
+    // Add rewards
     for (let [resource, amount] of Object.entries(reward)) {
       if (resource === 'guardian') {
+        // Trigger guardian summon
         eventBus.emit('guardian:summon', { 
           amount,
           source: 'daily-spin',
@@ -133,6 +190,7 @@ class DailySpinGame {
       }
     }
     
+    // Track stats
     stateManager.dispatch({
       type: 'INCREMENT_MINI_GAME_STAT',
       payload: {
@@ -145,11 +203,15 @@ class DailySpinGame {
     
     eventBus.emit('daily-spin:reward-granted', { reward, segment });
     
+    // Show notification
     this.showRewardNotification(reward);
     
     return reward;
   }
   
+  /**
+   * Show reward notification
+   */
   showRewardNotification(reward) {
     const parts = [];
     
@@ -176,15 +238,59 @@ class DailySpinGame {
     });
   }
   
+  /**
+   * Add purchased spins (called from shop)
+   */
+  addPurchasedSpins(count) {
+    stateManager.dispatch({
+      type: 'ADD_PURCHASED_SPINS',
+      payload: { 
+        game: 'dailySpin',
+        count: count
+      }
+    });
+    
+    logger.info('DailySpinGame', `Added ${count} purchased spins`);
+    
+    eventBus.emit('notification:show', {
+      type: 'purchase',
+      title: 'Spins Added!',
+      message: `+${count} Extra Spins! 🎡`,
+      duration: 3000
+    });
+  }
+  
+  /**
+   * Get stats
+   */
   getStats() {
     const state = stateManager.getState();
     const spinData = state.miniGames?.dailySpin || {};
     
     return {
+      lastSpinDate: spinData.lastSpinDate || '',
       lastSpin: spinData.lastSpin || 0,
       totalSpins: spinData.totalSpins || 0,
+      purchasedSpins: spinData.purchasedSpins || 0,
       canSpin: this.canSpin()
     };
+  }
+  
+  /**
+   * Format time remaining (for display)
+   */
+  formatTimeRemaining(milliseconds) {
+    const hours = Math.floor(milliseconds / 3600000);
+    const minutes = Math.floor((milliseconds % 3600000) / 60000);
+    const seconds = Math.floor((milliseconds % 60000) / 1000);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    } else {
+      return `${seconds}s`;
+    }
   }
 }
 

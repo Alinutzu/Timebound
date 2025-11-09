@@ -15553,6 +15553,24 @@ var Match3Game = /*#__PURE__*/function () {
       onComplete: options.onComplete || function () {},
       onExit: options.onExit || function () {}
     };
+    this.specialGems = {
+      bomb: '💣',
+      // Match 4 in line
+      lightning: '⚡',
+      // Match 5 in line
+      star: '🌟',
+      // L or T shape
+      rainbow: '🌈' // Match 5+ or special combos
+    };
+
+    // Drag & Drop state
+    this.dragState = {
+      isDragging: false,
+      startCell: null,
+      currentCell: null
+    };
+    this.specialGemTypes = new Map(); // Track special gem positions
+
     this.gridSize = 8;
     this.gems = ['🔴', '🔵', '🟢', '🟡', '🟣', '🟠'];
     this.grid = [];
@@ -15636,6 +15654,166 @@ var Match3Game = /*#__PURE__*/function () {
       }
       return render;
     }()
+    /**
+    * Check for special gem patterns
+    */
+  }, {
+    key: "checkForSpecialPattern",
+    value: function checkForSpecialPattern(matches) {
+      if (matches.length >= 5) {
+        return {
+          type: 'rainbow',
+          emoji: this.specialGems.rainbow
+        };
+      }
+      if (matches.length === 4) {
+        // Check if it's a line (all same row or column)
+        var sameRow = matches.every(function (m) {
+          return m.row === matches[0].row;
+        });
+        var sameCol = matches.every(function (m) {
+          return m.col === matches[0].col;
+        });
+        if (sameRow || sameCol) {
+          return {
+            type: 'lightning',
+            emoji: this.specialGems.lightning
+          };
+        }
+      }
+
+      // Check for L or T shape (3 horizontal + 3 vertical intersecting)
+      var rowCount = new Map();
+      var colCount = new Map();
+      matches.forEach(function (m) {
+        rowCount.set(m.row, (rowCount.get(m.row) || 0) + 1);
+        colCount.set(m.col, (colCount.get(m.col) || 0) + 1);
+      });
+      var hasIntersection = Array.from(rowCount.values()).some(function (c) {
+        return c >= 3;
+      }) && Array.from(colCount.values()).some(function (c) {
+        return c >= 3;
+      });
+      if (hasIntersection && matches.length >= 5) {
+        return {
+          type: 'star',
+          emoji: this.specialGems.star
+        };
+      }
+      if (matches.length >= 4) {
+        return {
+          type: 'bomb',
+          emoji: this.specialGems.bomb
+        };
+      }
+      return null;
+    }
+
+    /**
+     * Create special gem at position
+     */
+  }, {
+    key: "createSpecialGem",
+    value: function createSpecialGem(row, col, type) {
+      var key = "".concat(row, ",").concat(col);
+      this.specialGemTypes.set(key, type);
+      this.grid[row][col] = this.specialGems[type];
+      console.log("\u2728 Created ".concat(type, " special gem at ").concat(row, ",").concat(col));
+    }
+
+    /**
+     * Activate special gem effects
+     */
+  }, {
+    key: "activateSpecialGem",
+    value: function activateSpecialGem(row, col) {
+      var key = "".concat(row, ",").concat(col);
+      var type = this.specialGemTypes.get(key);
+      if (!type) return [];
+      console.log("\uD83D\uDCA5 Activating ".concat(type, " at ").concat(row, ",").concat(col));
+      var toRemove = [];
+      switch (type) {
+        case 'bomb':
+          // 3x3 explosion
+          for (var r = Math.max(0, row - 1); r <= Math.min(this.gridSize - 1, row + 1); r++) {
+            for (var c = Math.max(0, col - 1); c <= Math.min(this.gridSize - 1, col + 1); c++) {
+              toRemove.push({
+                row: r,
+                col: c
+              });
+            }
+          }
+          break;
+        case 'lightning':
+          // Clear entire row and column
+          for (var _c = 0; _c < this.gridSize; _c++) {
+            toRemove.push({
+              row: row,
+              col: _c
+            });
+          }
+          for (var _r = 0; _r < this.gridSize; _r++) {
+            toRemove.push({
+              row: _r,
+              col: col
+            });
+          }
+          break;
+        case 'star':
+          // 5x5 explosion
+          for (var _r2 = Math.max(0, row - 2); _r2 <= Math.min(this.gridSize - 1, row + 2); _r2++) {
+            for (var _c2 = Math.max(0, col - 2); _c2 <= Math.min(this.gridSize - 1, col + 2); _c2++) {
+              toRemove.push({
+                row: _r2,
+                col: _c2
+              });
+            }
+          }
+          break;
+        case 'rainbow':
+          // Clear all gems of one random color
+          var targetGem = this.gems[Math.floor(Math.random() * this.gems.length)];
+          for (var _r3 = 0; _r3 < this.gridSize; _r3++) {
+            for (var _c3 = 0; _c3 < this.gridSize; _c3++) {
+              if (this.grid[_r3][_c3] === targetGem) {
+                toRemove.push({
+                  row: _r3,
+                  col: _c3
+                });
+              }
+            }
+          }
+          break;
+      }
+      this.specialGemTypes["delete"](key);
+
+      // Show floating text
+      this.showFloatingText(row, col, "".concat(type.toUpperCase(), "!"), 'special');
+      return toRemove;
+    }
+
+    /**
+     * Show floating text animation
+     */
+  }, {
+    key: "showFloatingText",
+    value: function showFloatingText(row, col, text) {
+      var type = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'score';
+      var gridEl = document.getElementById('m3-grid');
+      if (!gridEl) return;
+      var cell = gridEl.querySelector("[data-row=\"".concat(row, "\"][data-col=\"").concat(col, "\"]"));
+      if (!cell) return;
+      var rect = cell.getBoundingClientRect();
+      var floatingText = document.createElement('div');
+      floatingText.className = "floating-text ".concat(type);
+      floatingText.textContent = text;
+      floatingText.style.left = rect.left + rect.width / 2 + 'px';
+      floatingText.style.top = rect.top + 'px';
+      document.body.appendChild(floatingText);
+      setTimeout(function () {
+        return floatingText.remove();
+      }, 1500);
+    }
   }, {
     key: "renderGrid",
     value: function renderGrid() {
@@ -15646,8 +15824,6 @@ var Match3Game = /*#__PURE__*/function () {
       gridEl.style.display = 'grid';
       gridEl.style.gridTemplateColumns = "repeat(".concat(this.gridSize, ", 1fr)");
       gridEl.style.gap = '4px';
-
-      // ✅ Disable grid if game over
       if (this.gameOverTriggered) {
         gridEl.style.pointerEvents = 'none';
         gridEl.style.opacity = '0.5';
@@ -15659,11 +15835,42 @@ var Match3Game = /*#__PURE__*/function () {
           cell.textContent = _this2.grid[row][col];
           cell.dataset.row = row;
           cell.dataset.col = col;
-
-          // ✅ Don't add click listeners if game over
+          var key = "".concat(row, ",").concat(col);
+          if (_this2.specialGemTypes.has(key)) {
+            cell.classList.add('special-gem');
+            cell.classList.add(_this2.specialGemTypes.get(key));
+          }
           if (!_this2.gameOverTriggered) {
-            cell.addEventListener('click', function () {
-              return _this2.handleCellClick(row, col);
+            // Drag & Drop events
+            cell.addEventListener('mousedown', function (e) {
+              return _this2.handleDragStart(e, row, col);
+            });
+            cell.addEventListener('mousemove', function (e) {
+              return _this2.handleDragMove(e, row, col);
+            });
+            cell.addEventListener('mouseup', function (e) {
+              return _this2.handleDragEnd(e, row, col);
+            });
+            cell.addEventListener('mouseleave', function (e) {
+              return _this2.handleDragLeave(e, row, col);
+            });
+
+            // Touch events for mobile
+            cell.addEventListener('touchstart', function (e) {
+              return _this2.handleDragStart(e, row, col);
+            });
+            cell.addEventListener('touchmove', function (e) {
+              return _this2.handleTouchMove(e);
+            });
+            cell.addEventListener('touchend', function (e) {
+              return _this2.handleDragEnd(e, row, col);
+            });
+
+            // Fallback: keep click for special gems
+            cell.addEventListener('click', function (e) {
+              if (!_this2.dragState.isDragging && _this2.specialGemTypes.has(key)) {
+                _this2.handleCellClick(row, col);
+              }
             });
           }
           gridEl.appendChild(cell);
@@ -15674,6 +15881,100 @@ var Match3Game = /*#__PURE__*/function () {
       };
       for (var row = 0; row < this.gridSize; row++) {
         _loop(row);
+      }
+    }
+
+    /**
+     * Drag & Drop handlers
+     */
+  }, {
+    key: "handleDragStart",
+    value: function handleDragStart(e, row, col) {
+      if (this.isProcessing || this.gameOverTriggered) return;
+      e.preventDefault();
+      this.dragState.isDragging = true;
+      this.dragState.startCell = {
+        row: row,
+        col: col
+      };
+      var cell = e.target.closest('.match3-cell');
+      if (cell) {
+        cell.classList.add('selected');
+      }
+      console.log('🎯 Drag started:', row, col);
+    }
+  }, {
+    key: "handleDragMove",
+    value: function handleDragMove(e, row, col) {
+      if (!this.dragState.isDragging) return;
+      var startCell = this.dragState.startCell;
+      if (!startCell) return;
+
+      // Check if moved to adjacent cell
+      var isAdjacent = Math.abs(row - startCell.row) === 1 && col === startCell.col || Math.abs(col - startCell.col) === 1 && row === startCell.row;
+      if (isAdjacent) {
+        this.dragState.currentCell = {
+          row: row,
+          col: col
+        };
+
+        // Highlight target
+        var targetCell = document.querySelector("[data-row=\"".concat(row, "\"][data-col=\"").concat(col, "\"]"));
+        if (targetCell && !targetCell.classList.contains('drag-target')) {
+          document.querySelectorAll('.drag-target').forEach(function (c) {
+            return c.classList.remove('drag-target');
+          });
+          targetCell.classList.add('drag-target');
+        }
+      }
+    }
+  }, {
+    key: "handleDragLeave",
+    value: function handleDragLeave(e, row, col) {
+      if (!this.dragState.isDragging) return;
+      var cell = e.target.closest('.match3-cell');
+      if (cell) {
+        cell.classList.remove('drag-target');
+      }
+    }
+  }, {
+    key: "handleDragEnd",
+    value: function handleDragEnd(e, row, col) {
+      if (!this.dragState.isDragging) return;
+      e.preventDefault();
+      var _this$dragState = this.dragState,
+        startCell = _this$dragState.startCell,
+        currentCell = _this$dragState.currentCell;
+
+      // Clear highlights
+      document.querySelectorAll('.match3-cell').forEach(function (c) {
+        c.classList.remove('selected', 'drag-target');
+      });
+      if (startCell && currentCell) {
+        var isAdjacent = Math.abs(currentCell.row - startCell.row) === 1 && currentCell.col === startCell.col || Math.abs(currentCell.col - startCell.col) === 1 && currentCell.row === startCell.row;
+        if (isAdjacent) {
+          console.log('🔄 Swapping via drag:', startCell, '←→', currentCell);
+          this.swap(startCell.row, startCell.col, currentCell.row, currentCell.col);
+        }
+      }
+
+      // Reset drag state
+      this.dragState.isDragging = false;
+      this.dragState.startCell = null;
+      this.dragState.currentCell = null;
+    }
+  }, {
+    key: "handleTouchMove",
+    value: function handleTouchMove(e) {
+      if (!this.dragState.isDragging) return;
+      e.preventDefault();
+      var touch = e.touches[0];
+      var element = document.elementFromPoint(touch.clientX, touch.clientY);
+      var cell = element === null || element === void 0 ? void 0 : element.closest('.match3-cell');
+      if (cell) {
+        var row = parseInt(cell.dataset.row);
+        var col = parseInt(cell.dataset.col);
+        this.handleDragMove(e, row, col);
       }
     }
   }, {
@@ -15690,59 +15991,51 @@ var Match3Game = /*#__PURE__*/function () {
   }, {
     key: "handleCellClick",
     value: function handleCellClick(row, col) {
-      console.log('🎯 Cell clicked:', row, col, "Moves: ".concat(this.moves, "/").concat(this.options.maxMoves));
-
-      // ✅ CRITICAL: Check game over BEFORE processing
+      console.log('🎯 Cell clicked:', row, col);
       if (this.moves >= this.options.maxMoves) {
-        console.log('🛑 Max moves reached - ignoring click');
-
-        // Trigger game over if not already triggered
         if (!this.gameOverTriggered) {
           this.gameOverTriggered = true;
           this.gameOver();
         }
         return;
       }
-      if (this.isProcessing) {
-        console.log('⏳ Processing - ignoring click');
+      if (this.isProcessing) return;
+      var cell = document.querySelector("[data-row=\"".concat(row, "\"][data-col=\"").concat(col, "\"]"));
+      var key = "".concat(row, ",").concat(col);
+
+      // Check if clicking a special gem
+      if (this.specialGemTypes.has(key)) {
+        console.log('⚡ Activating special gem!');
+        this.moves++;
+        this.isProcessing = true;
+        var specialMatches = this.activateSpecialGem(row, col);
+        this.processMatches(specialMatches, this.moves >= this.options.maxMoves);
+        this.selectedCell = null;
         return;
       }
-      var cell = document.querySelector("[data-row=\"".concat(row, "\"][data-col=\"").concat(col, "\"]"));
       if (!this.selectedCell) {
-        // First selection
         this.selectedCell = {
           row: row,
           col: col,
           el: cell
         };
         cell.classList.add('selected');
-        console.log('✅ First gem selected');
         return;
       }
-
-      // Second selection
       var _this$selectedCell = this.selectedCell,
         r1 = _this$selectedCell.row,
         c1 = _this$selectedCell.col,
         el1 = _this$selectedCell.el;
-      console.log('✅ Second gem selected');
-
-      // Deselect if same cell
       if (row === r1 && col === c1) {
         el1.classList.remove('selected');
         this.selectedCell = null;
         return;
       }
-
-      // Check adjacent
       var isAdjacent = Math.abs(row - r1) === 1 && col === c1 || Math.abs(col - c1) === 1 && row === r1;
-      console.log('Adjacent:', isAdjacent);
       el1.classList.remove('selected');
       if (isAdjacent) {
-        console.log('🔄 Performing swap...');
         this.swap(r1, c1, row, col);
       } else {
-        // Select new gem
         this.selectedCell = {
           row: row,
           col: col,
@@ -15853,14 +16146,40 @@ var Match3Game = /*#__PURE__*/function () {
       var _this5 = this;
       var isLastMove = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       console.log('💥 Processing', matches.length, 'matches', isLastMove ? '(LAST MOVE)' : '');
+      var specialPattern = this.checkForSpecialPattern(matches);
       var points = matches.length * 10;
       this.combo++;
       this.score += points * this.combo;
       this.bestCombo = Math.max(this.bestCombo, this.combo);
 
+      // ✨ ADAUGĂ ASTA - Floating text pentru punctaj
+      if (matches.length > 0) {
+        var centerMatch = matches[Math.floor(matches.length / 2)];
+        var totalPoints = points * this.combo;
+        this.showFloatingText(centerMatch.row, centerMatch.col, "+".concat(totalPoints), 'score');
+
+        // Extra feedback pentru combo mare
+        if (this.combo >= 5) {
+          setTimeout(function () {
+            _this5.showFloatingText(centerMatch.row, centerMatch.col, "".concat(_this5.combo, "x COMBO!"), 'special');
+          }, 200);
+        }
+      }
+
+      // Create special gem if pattern found
+      if (specialPattern && matches.length >= 4) {
+        var _centerMatch = matches[Math.floor(matches.length / 2)];
+        this.createSpecialGem(_centerMatch.row, _centerMatch.col, specialPattern.type);
+
+        // Show notification - deja exista
+        this.showFloatingText(_centerMatch.row, _centerMatch.col, "".concat(specialPattern.type.toUpperCase(), "!"), 'special');
+      }
+
       // Remove matches
       matches.forEach(function (m) {
         _this5.grid[m.row][m.col] = null;
+        var key = "".concat(m.row, ",").concat(m.col);
+        _this5.specialGemTypes["delete"](key);
       });
       this.renderGrid();
       this.updateStats();
@@ -15871,15 +16190,11 @@ var Match3Game = /*#__PURE__*/function () {
         setTimeout(function () {
           var newMatches = _this5.findMatches();
           if (newMatches.length > 0) {
-            // Continue cascade
             _this5.processMatches(newMatches, isLastMove);
           } else {
-            // Cascade ended
             _this5.combo = 0;
             _this5.isProcessing = false;
             _this5.updateStats();
-
-            // ✅ Trigger game over if this was the last move
             if (isLastMove && !_this5.gameOverTriggered) {
               console.log('🏁 Last move cascade complete - triggering game over');
               _this5.gameOverTriggered = true;

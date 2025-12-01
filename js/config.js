@@ -28,7 +28,7 @@ const CONFIG = {
   // Balancing
   BALANCING: {
     // Starting resources
-    STARTING_ENERGY: 10,
+    STARTING_ENERGY: 50,
     STARTING_MANA: 0,
     STARTING_GEMS: 100, // Tutorial bonus
     STARTING_CRYSTALS: 0,
@@ -86,3 +86,4 @@ Object.freeze(CONFIG.FEATURES);
 
 
 export default CONFIG;
+

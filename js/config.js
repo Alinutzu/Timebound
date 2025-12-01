@@ -34,7 +34,7 @@ const CONFIG = {
     STARTING_CRYSTALS: 0,
     
     // Caps
-    BASE_ENERGY_CAP: 1000,
+    BASE_ENERGY_CAP: 5000,
     BASE_MANA_CAP: 100,
     BASE_VOLCANIC_ENERGY_CAP: 5000,
     
@@ -83,5 +83,6 @@ const CONFIG = {
 Object.freeze(CONFIG);
 Object.freeze(CONFIG.BALANCING);
 Object.freeze(CONFIG.FEATURES);
+
 
 export default CONFIG;

@@ -90,8 +90,8 @@ const UPGRADES = {
     category: 'capacity',
     
     maxLevel: 30,
-    baseCost: 200,
-    costMultiplier: 1.4,
+    baseCost: 100,
+    costMultiplier: 1.3,
     costResource: 'energy',
     
     effect: (level) => {
@@ -591,5 +591,6 @@ const UPGRADES = {
     }
   }
 };
+
 
 export default UPGRADES;

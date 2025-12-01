@@ -24,7 +24,7 @@ class DailyRewardSystem {
         day: 1,
         rewards: {
           gems: 25,
-          energy: 5000
+          energy: 1000
         },
         emoji: '🎁'
       },
@@ -32,7 +32,7 @@ class DailyRewardSystem {
         day: 2,
         rewards: {
           gems: 50,
-          energy: 10000,
+          energy: 2500,
           mana: 50
         },
         emoji: '🎁'
@@ -41,7 +41,7 @@ class DailyRewardSystem {
         day: 3,
         rewards: {
           gems: 75,
-          energy: 25000,
+          energy: 5000,
           mana: 100
         },
         emoji: '🎁'
@@ -50,7 +50,7 @@ class DailyRewardSystem {
         day: 4,
         rewards: {
           gems: 100,
-          energy: 50000,
+          energy: 10000,
           mana: 200,
           crystals: 1
         },
@@ -60,7 +60,7 @@ class DailyRewardSystem {
         day: 5,
         rewards: {
           gems: 150,
-          energy: 100000,
+          energy: 20000,
           mana: 500,
           crystals: 3
         },
@@ -70,7 +70,7 @@ class DailyRewardSystem {
         day: 6,
         rewards: {
           gems: 200,
-          energy: 250000,
+          energy: 50000,
           mana: 1000,
           crystals: 5
         },
@@ -80,7 +80,7 @@ class DailyRewardSystem {
         day: 7,
         rewards: {
           gems: 500,
-          energy: 1000000,
+          energy: 100000,
           mana: 5000,
           crystals: 20,
           guardian: 1 // Random guardian
@@ -315,5 +315,6 @@ class DailyRewardSystem {
 
 // Singleton
 const dailyRewardSystem = new DailyRewardSystem();
+
 
 export default dailyRewardSystem;

@@ -20,7 +20,7 @@ const ACHIEVEMENTS = {
       const state = StateManager.getState();
       return state.statistics.totalClicks >= 1;
     },
-    reward: { gems: 10 },
+    reward: { gems: 5 },
     hidden: false
   },
   
@@ -33,13 +33,13 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = require('../core/StateManager.js'). default.getState();
       return state.statistics.structuresPurchased >= 1;
     },
     
     reward: {
-      gems: 20,
-      energy: 100
+      gems: 10,
+      energy: 50
     },
     
     hidden: false
@@ -54,12 +54,12 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = require('../core/StateManager.js'). default.getState();
       return state.statistics.upgradesPurchased >= 1;
     },
     
     reward: {
-      gems: 30
+      gems: 15
     },
     
     hidden: false
@@ -74,30 +74,8 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = require('../core/StateManager.js'). default.getState();
       return state.guardians.length >= 1;
-    },
-    
-    reward: {
-      gems: 50,
-      energy: 1000
-    },
-    
-    hidden: false
-  },
-  
-  // ===== ENERGY PRODUCTION =====
-  energyCollector: {
-    id: 'energyCollector',
-    name: 'Energy Collector',
-    description: 'Produce 10,000 total energy',
-    emoji: '⚡',
-    category: 'production',
-    tier: 'bronze',
-    
-    condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.ascension.lifetimeEnergy >= 10000;
     },
     
     reward: {
@@ -108,21 +86,43 @@ const ACHIEVEMENTS = {
     hidden: false
   },
   
+  // ===== ENERGY PRODUCTION =====
+  energyCollector: {
+    id: 'energyCollector',
+    name: 'Energy Collector',
+    description: 'Produce 5,000 total energy',
+    emoji: '⚡',
+    category: 'production',
+    tier: 'bronze',
+    
+    condition: () => {
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.ascension.lifetimeEnergy >= 5000;
+    },
+    
+    reward: {
+      gems: 15,
+      energy: 250
+    },
+    
+    hidden: false
+  },
+  
   energyHoarder: {
     id: 'energyHoarder',
     name: 'Energy Hoarder',
-    description: 'Produce 100,000 total energy',
+    description: 'Produce 50,000 total energy',
     emoji: '⚡',
     category: 'production',
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.ascension.lifetimeEnergy >= 100000;
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.ascension.lifetimeEnergy >= 50000;
     },
     
     reward: {
-      gems: 50,
+      gems: 30,
       crystals: 1
     },
     
@@ -132,19 +132,19 @@ const ACHIEVEMENTS = {
   energyTycoon: {
     id: 'energyTycoon',
     name: 'Energy Tycoon',
-    description: 'Produce 1,000,000 total energy',
+    description: 'Produce 500,000 total energy',
     emoji: '⚡',
     category: 'production',
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.ascension.lifetimeEnergy >= 1000000;
+      const state = require('../core/StateManager.js').default. getState();
+      return state. ascension.lifetimeEnergy >= 500000;
     },
     
     reward: {
-      gems: 100,
-      crystals: 5
+      gems: 60,
+      crystals: 3
     },
     
     hidden: false
@@ -153,19 +153,19 @@ const ACHIEVEMENTS = {
   energyGod: {
     id: 'energyGod',
     name: 'Energy God',
-    description: 'Produce 100,000,000 total energy',
+    description: 'Produce 10,000,000 total energy',
     emoji: '⚡',
     category: 'production',
     tier: 'platinum',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.ascension.lifetimeEnergy >= 100000000;
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.ascension.lifetimeEnergy >= 10000000;
     },
     
     reward: {
-      gems: 500,
-      crystals: 25
+      gems: 250,
+      crystals: 15
     },
     
     hidden: false
@@ -175,19 +175,19 @@ const ACHIEVEMENTS = {
   productionNovice: {
     id: 'productionNovice',
     name: 'Production Novice',
-    description: 'Reach 100 energy/second',
+    description: 'Reach 50 energy/second',
     emoji: '📈',
     category: 'milestone',
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.production.energy >= 100;
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.production.energy >= 50;
     },
     
     reward: {
-      gems: 30,
-      energy: 2000
+      gems: 20,
+      energy: 1000
     },
     
     hidden: false
@@ -196,18 +196,18 @@ const ACHIEVEMENTS = {
   productionExpert: {
     id: 'productionExpert',
     name: 'Production Expert',
-    description: 'Reach 1,000 energy/second',
+    description: 'Reach 500 energy/second',
     emoji: '📈',
     category: 'milestone',
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.production.energy >= 1000;
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.production.energy >= 500;
     },
     
     reward: {
-      gems: 75,
+      gems: 40,
       crystals: 2
     },
     
@@ -217,19 +217,19 @@ const ACHIEVEMENTS = {
   productionMaster: {
     id: 'productionMaster',
     name: 'Production Master',
-    description: 'Reach 10,000 energy/second',
+    description: 'Reach 5,000 energy/second',
     emoji: '📈',
     category: 'milestone',
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.production.energy >= 10000;
+      const state = require('../core/StateManager.js').default. getState();
+      return state. production.energy >= 5000;
     },
     
     reward: {
-      gems: 200,
-      crystals: 10
+      gems: 100,
+      crystals: 8
     },
     
     hidden: false
@@ -245,13 +245,13 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const structureSystem = require('../systems/StructureSystem.js').default;
+      const structureSystem = require('../systems/StructureSystem.js'). default;
       return structureSystem.getStats().totalLevels >= 10;
     },
     
     reward: {
-      gems: 40,
-      energy: 5000
+      gems: 20,
+      energy: 2000
     },
     
     hidden: false
@@ -260,19 +260,19 @@ const ACHIEVEMENTS = {
   structureArchitect: {
     id: 'structureArchitect',
     name: 'Structure Architect',
-    description: 'Own 50 total structure levels',
+    description: 'Own 30 total structure levels',
     emoji: '🏗️',
     category: 'structures',
     tier: 'silver',
     
     condition: () => {
       const structureSystem = require('../systems/StructureSystem.js').default;
-      return structureSystem.getStats().totalLevels >= 50;
+      return structureSystem.getStats(). totalLevels >= 30;
     },
     
     reward: {
-      gems: 100,
-      crystals: 3
+      gems: 50,
+      crystals: 2
     },
     
     hidden: false
@@ -281,19 +281,19 @@ const ACHIEVEMENTS = {
   structureMagnate: {
     id: 'structureMagnate',
     name: 'Structure Magnate',
-    description: 'Own 200 total structure levels',
+    description: 'Own 100 total structure levels',
     emoji: '🏗️',
     category: 'structures',
     tier: 'gold',
     
     condition: () => {
       const structureSystem = require('../systems/StructureSystem.js').default;
-      return structureSystem.getStats().totalLevels >= 200;
+      return structureSystem.getStats().totalLevels >= 100;
     },
     
     reward: {
-      gems: 250,
-      crystals: 15
+      gems: 150,
+      crystals: 10
     },
     
     hidden: false
@@ -302,19 +302,19 @@ const ACHIEVEMENTS = {
   maxedOut: {
     id: 'maxedOut',
     name: 'Maxed Out',
-    description: 'Get any structure to level 100',
+    description: 'Get any structure to level 50',
     emoji: '💯',
     category: 'structures',
     tier: 'platinum',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return Object.values(state.structures).some(s => s.level >= 100);
+      return Object.values(state.structures).some(s => s.level >= 50);
     },
     
     reward: {
-      gems: 500,
-      crystals: 20
+      gems: 300,
+      crystals: 15
     },
     
     hidden: false
@@ -324,18 +324,18 @@ const ACHIEVEMENTS = {
   upgradeEnthusiast: {
     id: 'upgradeEnthusiast',
     name: 'Upgrade Enthusiast',
-    description: 'Purchase 10 upgrades',
+    description: 'Purchase 5 upgrades',
     emoji: '⬆️',
     category: 'upgrades',
     tier: 'bronze',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.upgradesPurchased >= 10;
+      return state.statistics.upgradesPurchased >= 5;
     },
     
     reward: {
-      gems: 50
+      gems: 25
     },
     
     hidden: false
@@ -344,19 +344,19 @@ const ACHIEVEMENTS = {
   upgradeAddict: {
     id: 'upgradeAddict',
     name: 'Upgrade Addict',
-    description: 'Purchase 50 upgrades',
+    description: 'Purchase 25 upgrades',
     emoji: '⬆️',
     category: 'upgrades',
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.upgradesPurchased >= 50;
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.statistics.upgradesPurchased >= 25;
     },
     
     reward: {
-      gems: 150,
-      crystals: 5
+      gems: 80,
+      crystals: 3
     },
     
     hidden: false
@@ -373,12 +373,12 @@ const ACHIEVEMENTS = {
     condition: () => {
       // This will be tracked via event
       const state = require('../core/StateManager.js').default.getState();
-      return state.achievements.patientUpgrader?.triggered || false;
+      return state.achievements.patientUpgrader?. triggered || false;
     },
     
     reward: {
-      gems: 200,
-      crystals: 10
+      gems: 120,
+      crystals: 8
     },
     
     hidden: false
@@ -388,18 +388,18 @@ const ACHIEVEMENTS = {
   guardianCollector: {
     id: 'guardianCollector',
     name: 'Guardian Collector',
-    description: 'Own 5 guardians',
+    description: 'Own 3 guardians',
     emoji: '🐉',
     category: 'guardians',
     tier: 'bronze',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return state.guardians.length >= 5;
+      return state.guardians.length >= 3;
     },
     
     reward: {
-      gems: 75
+      gems: 40
     },
     
     hidden: false
@@ -408,19 +408,19 @@ const ACHIEVEMENTS = {
   guardianHoarder: {
     id: 'guardianHoarder',
     name: 'Guardian Hoarder',
-    description: 'Own 20 guardians',
+    description: 'Own 10 guardians',
     emoji: '🐉',
     category: 'guardians',
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.guardians.length >= 20;
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.guardians.length >= 10;
     },
     
     reward: {
-      gems: 200,
-      crystals: 5
+      gems: 100,
+      crystals: 4
     },
     
     hidden: false
@@ -429,19 +429,19 @@ const ACHIEVEMENTS = {
   guardianArmy: {
     id: 'guardianArmy',
     name: 'Guardian Army',
-    description: 'Own 50 guardians',
+    description: 'Own 25 guardians',
     emoji: '🐉',
     category: 'guardians',
     tier: 'gold',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return state.guardians.length >= 50;
+      return state.guardians.length >= 25;
     },
     
     reward: {
-      gems: 500,
-      crystals: 20
+      gems: 250,
+      crystals: 15
     },
     
     hidden: false
@@ -456,12 +456,12 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = require('../core/StateManager.js'). default.getState();
       return state.guardians.some(g => g.rarity === 'rare');
     },
     
     reward: {
-      gems: 50
+      gems: 30
     },
     
     hidden: false
@@ -481,7 +481,7 @@ const ACHIEVEMENTS = {
     },
     
     reward: {
-      gems: 150,
+      gems: 80,
       crystals: 3
     },
     
@@ -497,13 +497,13 @@ const ACHIEVEMENTS = {
     tier: 'platinum',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = require('../core/StateManager.js'). default.getState();
       return state.guardians.some(g => g.rarity === 'legendary');
     },
     
     reward: {
-      gems: 500,
-      crystals: 25
+      gems: 300,
+      crystals: 20
     },
     
     hidden: false
@@ -513,18 +513,18 @@ const ACHIEVEMENTS = {
   questCompleter: {
     id: 'questCompleter',
     name: 'Quest Completer',
-    description: 'Complete 10 quests',
+    description: 'Complete 5 quests',
     emoji: '📜',
     category: 'quests',
     tier: 'bronze',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.questsCompleted >= 10;
+      return state.statistics.questsCompleted >= 5;
     },
     
     reward: {
-      gems: 50
+      gems: 25
     },
     
     hidden: false
@@ -533,19 +533,19 @@ const ACHIEVEMENTS = {
   questMaster: {
     id: 'questMaster',
     name: 'Quest Master',
-    description: 'Complete 50 quests',
+    description: 'Complete 25 quests',
     emoji: '📜',
     category: 'quests',
     tier: 'silver',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.questsCompleted >= 50;
+      return state.statistics. questsCompleted >= 25;
     },
     
     reward: {
-      gems: 150,
-      crystals: 5
+      gems: 80,
+      crystals: 4
     },
     
     hidden: false
@@ -554,19 +554,19 @@ const ACHIEVEMENTS = {
   questLegend: {
     id: 'questLegend',
     name: 'Quest Legend',
-    description: 'Complete 200 quests',
+    description: 'Complete 100 quests',
     emoji: '📜',
     category: 'quests',
     tier: 'gold',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.questsCompleted >= 200;
+      return state.statistics. questsCompleted >= 100;
     },
     
     reward: {
-      gems: 400,
-      crystals: 20
+      gems: 200,
+      crystals: 15
     },
     
     hidden: false
@@ -582,12 +582,12 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = require('../core/StateManager.js'). default.getState();
       return state.statistics.puzzlesWon >= 1;
     },
     
     reward: {
-      gems: 30
+      gems: 15
     },
     
     hidden: false
@@ -596,19 +596,19 @@ const ACHIEVEMENTS = {
   puzzleExpert: {
     id: 'puzzleExpert',
     name: 'Puzzle Expert',
-    description: 'Win 20 puzzle games',
+    description: 'Win 10 puzzle games',
     emoji: '🧩',
     category: 'puzzle',
     tier: 'silver',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.puzzlesWon >= 20;
+      return state.statistics. puzzlesWon >= 10;
     },
     
     reward: {
-      gems: 100,
-      crystals: 3
+      gems: 50,
+      crystals: 2
     },
     
     hidden: false
@@ -617,19 +617,19 @@ const ACHIEVEMENTS = {
   highScorer: {
     id: 'highScorer',
     name: 'High Scorer',
-    description: 'Score 2000+ in a puzzle game',
+    description: 'Score 1500+ in a puzzle game',
     emoji: '🎯',
     category: 'puzzle',
     tier: 'gold',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.puzzleHighScore >= 2000;
+      return state.statistics.puzzleHighScore >= 1500;
     },
     
     reward: {
-      gems: 200,
-      crystals: 10
+      gems: 100,
+      crystals: 8
     },
     
     hidden: false
@@ -645,13 +645,13 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = require('../core/StateManager.js'). default.getState();
       return state.ascension.level >= 1;
     },
     
     reward: {
-      gems: 300,
-      crystals: 15
+      gems: 150,
+      crystals: 10
     },
     
     hidden: false
@@ -660,19 +660,19 @@ const ACHIEVEMENTS = {
   serialAscender: {
     id: 'serialAscender',
     name: 'Serial Ascender',
-    description: 'Reach ascension level 5',
+    description: 'Reach ascension level 3',
     emoji: '✨',
     category: 'ascension',
     tier: 'platinum',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return state.ascension.level >= 5;
+      return state.ascension.level >= 3;
     },
     
     reward: {
-      gems: 750,
-      crystals: 50
+      gems: 400,
+      crystals: 30
     },
     
     hidden: false
@@ -681,19 +681,19 @@ const ACHIEVEMENTS = {
   transcendent: {
     id: 'transcendent',
     name: 'Transcendent',
-    description: 'Reach ascension level 10',
+    description: 'Reach ascension level 5',
     emoji: '🌟',
     category: 'ascension',
     tier: 'diamond',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.ascension.level >= 10;
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.ascension.level >= 5;
     },
     
     reward: {
-      gems: 2000,
-      crystals: 100
+      gems: 1000,
+      crystals: 60
     },
     
     hidden: false
@@ -709,13 +709,13 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.realms.unlocked.includes('volcano');
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.realms.unlocked. includes('volcano');
     },
     
     reward: {
-      gems: 250,
-      crystals: 10
+      gems: 120,
+      crystals: 8
     },
     
     hidden: false
@@ -731,13 +731,13 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = require('../core/StateManager.js'). default.getState();
       return state.statistics.bossesDefeated >= 1;
     },
     
     reward: {
-      gems: 150,
-      crystals: 5
+      gems: 80,
+      crystals: 4
     },
     
     hidden: false
@@ -746,25 +746,25 @@ const ACHIEVEMENTS = {
   bossSlayer: {
     id: 'bossSlayer',
     name: 'Boss Slayer',
-    description: 'Defeat 5 bosses',
+    description: 'Defeat 3 bosses',
     emoji: '⚔️',
     category: 'bosses',
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.bossesDefeated >= 5;
+      const state = require('../core/StateManager.js').default. getState();
+      return state. statistics.bossesDefeated >= 3;
     },
     
     reward: {
-      gems: 400,
-      crystals: 20
+      gems: 200,
+      crystals: 15
     },
     
     hidden: false
   },
 
-    // ===== OCEAN REALM ACHIEVEMENTS =====
+  // ===== OCEAN REALM ACHIEVEMENTS =====
   firstDive: {
     id: 'firstDive',
     name: 'First Dive',
@@ -776,7 +776,10 @@ const ACHIEVEMENTS = {
       const state = require('../core/StateManager.js').default.getState();
       return state.realms.unlocked.includes('ocean');
     },
-    reward: { crystals: 7 },
+    reward: { 
+      gems: 100,
+      crystals: 5 
+    },
     hidden: false,
     lore: 'You plunged into the deep — this marks a new adventure!'
   },
@@ -784,15 +787,18 @@ const ACHIEVEMENTS = {
   tideTycoon: {
     id: 'tideTycoon',
     name: 'Tide Tycoon',
-    description: 'Reach 2,000 tidal energy/sec in Ocean Realm.',
+    description: 'Reach 1,000 tidal energy/sec in Ocean Realm.',
     emoji: '🌊',
     category: 'milestone',
     tier: 'gold',
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.production.tidalEnergy >= 2000 && state.realms.current === 'ocean';
+      const state = require('../core/StateManager.js').default. getState();
+      return state. production.tidalEnergy >= 1000 && state.realms.current === 'ocean';
     },
-    reward: { gems: 35, pearls: 10 },
+    reward: { 
+      gems: 80, 
+      pearls: 8 
+    },
     hidden: false,
     lore: 'Industrial mastery under the waves!'
   },
@@ -800,31 +806,38 @@ const ACHIEVEMENTS = {
   kelpOverlord: {
     id: 'kelpOverlord',
     name: 'Kelp Overlord',
-    description: 'Own at least 50 Kelp Farms in Ocean Realm.',
+    description: 'Own at least 25 Kelp Farms in Ocean Realm.',
     emoji: '🪸',
     category: 'structures',
     tier: 'platinum',
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.structures.kelpFarm?.level >= 50;
+      const state = require('../core/StateManager.js').default. getState();
+      return state. structures.kelpFarm?. level >= 25;
     },
-    reward: { tidalEnergy: 35000, pearls: 20 },
+    reward: { 
+      tidalEnergy: 15000, 
+      gems: 120,
+      pearls: 10 
+    },
     hidden: false,
-    lore: 'You’re the ruler of aquatic farming!'
+    lore: 'You\'re the ruler of aquatic farming!'
   },
 
   pearlMagnate: {
     id: 'pearlMagnate',
     name: 'Pearl Magnate',
-    description: 'Collect 200 pearls in Ocean Realm.',
+    description: 'Collect 100 pearls in Ocean Realm.',
     emoji: '🏝️',
     category: 'resources',
     tier: 'platinum',
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.resources.pearls >= 200;
+      const state = require('../core/StateManager.js').default. getState();
+      return state. resources.pearls >= 100;
     },
-    reward: { gems: 80, crystals: 15 },
+    reward: { 
+      gems: 150, 
+      crystals: 12 
+    },
     hidden: false,
     lore: 'Every pearl is a testament to your deep-sea skill.'
   },
@@ -837,12 +850,13 @@ const ACHIEVEMENTS = {
     category: 'bosses',
     tier: 'diamond',
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.bossesDefeatedIds?.includes('oceanLeviathan');
+      const state = require('../core/StateManager.js').default. getState();
+      return state. statistics.bossesDefeatedIds?. includes('oceanLeviathan');
     },
     reward: {
-      legendaryGuardian: { type: 'water', rarity: 'legendary' },
-      title: 'Abyss Vanquisher'
+      gems: 300,
+      crystals: 25,
+      legendaryGuardian: { type: 'water', rarity: 'legendary' }
     },
     hidden: false,
     lore: 'Deep abyss now bows to your power.'
@@ -852,20 +866,20 @@ const ACHIEVEMENTS = {
   speedrunner: {
     id: 'speedrunner',
     name: 'Speedrunner',
-    description: 'Reach 1M energy in under 1 hour',
+    description: 'Reach 500K energy in under 1 hour',
     emoji: '⚡',
     category: 'special',
     tier: 'platinum',
     
     condition: () => {
       const state = require('../core/StateManager.js').default.getState();
-      return state.ascension.lifetimeEnergy >= 1000000 && 
+      return state.ascension.lifetimeEnergy >= 500000 && 
              state.statistics.totalPlayTime < 3600000;
     },
     
     reward: {
-      gems: 1000,
-      crystals: 50
+      gems: 500,
+      crystals: 30
     },
     
     hidden: true
@@ -874,18 +888,18 @@ const ACHIEVEMENTS = {
   gemHoarder: {
     id: 'gemHoarder',
     name: 'Gem Hoarder',
-    description: 'Accumulate 5,000 gems',
+    description: 'Accumulate 2,500 gems',
     emoji: '💎',
     category: 'special',
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.resources.gems >= 5000;
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.resources.gems >= 2500;
     },
     
     reward: {
-      gems: 500
+      gems: 250
     },
     
     hidden: true
@@ -894,19 +908,19 @@ const ACHIEVEMENTS = {
   dedicatedPlayer: {
     id: 'dedicatedPlayer',
     name: 'Dedicated Player',
-    description: 'Play for 10 hours total',
+    description: 'Play for 5 hours total',
     emoji: '⏱️',
     category: 'special',
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.totalPlayTime >= 36000000; // 10 hours in ms
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.statistics.totalPlayTime >= 18000000; // 5 hours in ms
     },
     
     reward: {
-      gems: 300,
-      crystals: 15
+      gems: 150,
+      crystals: 10
     },
     
     hidden: true
@@ -915,19 +929,19 @@ const ACHIEVEMENTS = {
   noLifeGamer: {
     id: 'noLifeGamer',
     name: 'No Life Gamer',
-    description: 'Play for 100 hours total',
+    description: 'Play for 50 hours total',
     emoji: '🎮',
     category: 'special',
     tier: 'platinum',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
-      return state.statistics.totalPlayTime >= 360000000; // 100 hours in ms
+      const state = require('../core/StateManager.js'). default.getState();
+      return state.statistics.totalPlayTime >= 180000000; // 50 hours in ms
     },
     
     reward: {
-      gems: 2000,
-      crystals: 100
+      gems: 1000,
+      crystals: 60
     },
     
     hidden: true

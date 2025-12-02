@@ -12,8 +12,8 @@ const UPGRADES = {
     category: 'production',
     
     maxLevel: 50,
-    baseCost: 100,
-    costMultiplier: 1.5,
+    baseCost: 500,
+    costMultiplier: 1.8,
     costResource: 'energy',
     
     effect: (level) => {
@@ -22,7 +22,7 @@ const UPGRADES = {
     },
     
     getDescription: (level) => {
-      const bonus = ((Math.pow(1.1, level) - 1) * 100).toFixed(1);
+      const bonus = ((Math.pow(1.1, level) - 1) * 100). toFixed(1);
       return `+${bonus}% energy production`;
     },
     
@@ -37,8 +37,8 @@ const UPGRADES = {
     category: 'production',
     
     maxLevel: 20,
-    baseCost: 50,
-    costMultiplier: 2.0,
+    baseCost: 200,
+    costMultiplier: 2.5,
     costResource: 'mana',
     
     effect: (level) => {
@@ -51,7 +51,7 @@ const UPGRADES = {
     },
     
     unlockCondition: {
-      resources: { mana: 10 }
+      resources: { mana: 50 }
     }
   },
   
@@ -63,8 +63,8 @@ const UPGRADES = {
     category: 'production',
     
     maxLevel: 30,
-    baseCost: 200,
-    costMultiplier: 1.6,
+    baseCost: 1000,
+    costMultiplier: 1.8,
     costResource: 'volcanicEnergy',
     
     effect: (level) => {
@@ -72,7 +72,7 @@ const UPGRADES = {
     },
     
     getDescription: (level) => {
-      const bonus = ((Math.pow(1.12, level) - 1) * 100).toFixed(1);
+      const bonus = ((Math. pow(1.12, level) - 1) * 100). toFixed(1);
       return `+${bonus}% volcanic energy production`;
     },
     
@@ -90,22 +90,22 @@ const UPGRADES = {
     category: 'capacity',
     
     maxLevel: 30,
-    baseCost: 100,
-    costMultiplier: 1.3,
+    baseCost: 500,
+    costMultiplier: 1.4,
     costResource: 'energy',
     
     effect: (level) => {
-      // Base 1000 + 50% per level
-      return 1000 * Math.pow(1.5, level);
+      // Base 5000 + 50% per level
+      return 5000 * Math.pow(1.5, level);
     },
     
     getDescription: (level) => {
-      const cap = Math.floor(1000 * Math.pow(1.5, level));
-      return `Energy cap: ${cap.toLocaleString()}`;
+      const cap = Math.floor(5000 * Math.pow(1.5, level));
+      return `Energy cap: ${cap. toLocaleString()}`;
     },
     
     unlockCondition: {
-      resources: { energy: 500 }
+      resources: { energy: 2500 }
     }
   },
   
@@ -117,8 +117,8 @@ const UPGRADES = {
     category: 'capacity',
     
     maxLevel: 20,
-    baseCost: 100,
-    costMultiplier: 1.5,
+    baseCost: 500,
+    costMultiplier: 1.6,
     costResource: 'mana',
     
     effect: (level) => {
@@ -126,12 +126,12 @@ const UPGRADES = {
     },
     
     getDescription: (level) => {
-      const cap = Math.floor(100 * Math.pow(1.5, level));
+      const cap = Math.floor(100 * Math. pow(1.5, level));
       return `Mana cap: ${cap.toLocaleString()}`;
     },
     
     unlockCondition: {
-      resources: { mana: 20 }
+      resources: { mana: 100 }
     }
   },
   
@@ -143,8 +143,8 @@ const UPGRADES = {
     category: 'capacity',
     
     maxLevel: 25,
-    baseCost: 500,
-    costMultiplier: 1.45,
+    baseCost: 2500,
+    costMultiplier: 1.5,
     costResource: 'volcanicEnergy',
     
     effect: (level) => {
@@ -170,8 +170,8 @@ const UPGRADES = {
     category: 'synergy',
     
     maxLevel: 5,
-    baseCost: 1000,
-    costMultiplier: 3.0,
+    baseCost: 5000,
+    costMultiplier: 3.5,
     costResource: 'energy',
     
     targetStructure: 'solarPanel',
@@ -198,8 +198,8 @@ const UPGRADES = {
     category: 'synergy',
     
     maxLevel: 5,
-    baseCost: 2000,
-    costMultiplier: 3.0,
+    baseCost: 10000,
+    costMultiplier: 3.5,
     costResource: 'energy',
     
     targetStructure: 'windTurbine',
@@ -226,8 +226,8 @@ const UPGRADES = {
     category: 'synergy',
     
     maxLevel: 5,
-    baseCost: 5000,
-    costMultiplier: 3.0,
+    baseCost: 25000,
+    costMultiplier: 3.5,
     costResource: 'energy',
     
     targetStructure: 'hydroPlant',
@@ -335,7 +335,7 @@ const UPGRADES = {
     category: 'unlock',
     
     maxLevel: 1,
-    baseCost: 10000,
+    baseCost: 100000,
     costMultiplier: 1.0,
     costResource: 'energy',
     
@@ -348,7 +348,7 @@ const UPGRADES = {
     },
     
     unlockCondition: {
-      resources: { energy: 50000 },
+      resources: { energy: 250000 },
       structures: { geoThermal: 5 }
     }
   },
@@ -361,7 +361,7 @@ const UPGRADES = {
     category: 'unlock',
     
     maxLevel: 1,
-    baseCost: 100,
+    baseCost: 500,
     costMultiplier: 1.0,
     costResource: 'mana',
     
@@ -374,7 +374,7 @@ const UPGRADES = {
     },
     
     unlockCondition: {
-      resources: { mana: 100 },
+      resources: { mana: 500 },
       structures: { manaExtractor: 10 }
     }
   },
@@ -459,7 +459,7 @@ const UPGRADES = {
     }
   },
 
-    // ===== OCEAN REALM UPGRADES =====
+  // ===== OCEAN REALM UPGRADES =====
   tidalSynergy: {
     id: 'tidalSynergy',
     name: 'Tidal Synergy',
@@ -468,8 +468,8 @@ const UPGRADES = {
     category: 'synergy',
 
     maxLevel: 5,
-    baseCost: 1500,
-    costMultiplier: 3.0,
+    baseCost: 8000,
+    costMultiplier: 3.5,
     costResource: 'tidalEnergy',
     targetStructure: 'tidalGenerator',
 
@@ -495,8 +495,8 @@ const UPGRADES = {
     category: 'synergy',
 
     maxLevel: 5,
-    baseCost: 3000,
-    costMultiplier: 3.0,
+    baseCost: 15000,
+    costMultiplier: 3.5,
     costResource: 'tidalEnergy',
     targetStructure: 'kelpFarm',
 
@@ -522,8 +522,8 @@ const UPGRADES = {
     category: 'synergy',
 
     maxLevel: 5,
-    baseCost: 7000,
-    costMultiplier: 3.2,
+    baseCost: 35000,
+    costMultiplier: 3.8,
     costResource: 'tidalEnergy',
     targetStructure: 'coralBattery',
 
@@ -549,7 +549,7 @@ const UPGRADES = {
     category: 'unlock',
 
     maxLevel: 1,
-    baseCost: 30000,
+    baseCost: 200000,
     costMultiplier: 1.0,
     costResource: 'tidalEnergy',
 
@@ -591,6 +591,5 @@ const UPGRADES = {
     }
   }
 };
-
 
 export default UPGRADES;

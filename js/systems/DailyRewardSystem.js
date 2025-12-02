@@ -246,18 +246,45 @@ class DailyRewardSystem {
   }
   
   /**
-   * Check daily reward on game start
-   */
-  checkDailyReward() {
-    const canClaimResult = this.canClaim();
-    
-    if (canClaimResult.can) {
-      // Show daily reward modal
-      setTimeout(() => {
-        eventBus.emit('daily-reward:available');
-      }, 2000); // Delay to let game load
-    }
+ * Check daily reward on game start
+ */
+checkDailyReward() {
+  const state = stateManager.getState();
+  const canClaimResult = this.canClaim();
+  const now = Date.now();
+
+  // ✅ PRIORITATE 1: Dacă ai claimed deja azi, STOP!
+  if (canClaimResult.reason === 'already-claimed') {
+    logger.info('DailyRewardSystem', 'Reward already claimed today, no modal');
+    return;
   }
+
+  // ✅ PRIORITATE 2: Verifică dacă modalul a fost deja arătat azi
+  const lastModalShown = state.dailyRewards.lastModalShown || 0;
+  const timeSinceModal = now - lastModalShown;
+  const oneDay = 86400000; // 24h in ms
+
+  // Dacă ai văzut modalul în ultimele 24h (chiar dacă n-ai claimed), nu-l mai arăta
+  if (timeSinceModal < oneDay) {
+    logger. info('DailyRewardSystem', `Modal already shown ${Math.floor(timeSinceModal/1000/60)} minutes ago - not showing again`);
+    return;
+  }
+
+  // ✅ PRIORITATE 3: Poți revendica și modalul n-a fost arătat azi = SHOW MODAL!
+  if (canClaimResult.can) {
+    // Marchează că ai arătat modalul ACUM
+    stateManager.dispatch({
+      type: 'DAILY_REWARD_MODAL_SHOWN',
+      payload: { timestamp: now }
+    });
+
+    logger.info('DailyRewardSystem', 'Showing daily reward modal');
+
+    setTimeout(() => {
+      eventBus.emit('daily-reward:available');
+    }, 2000); // Delay to let game load
+  }
+}
   
   /**
    * Get current streak

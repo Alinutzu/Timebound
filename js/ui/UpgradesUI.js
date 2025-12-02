@@ -145,15 +145,43 @@ class UpgradesUI {
   }
   
   update() {
-    // Re-render all cards
-    const cards = this.container.querySelectorAll('.upgrade-card');
+  // Update only button states and costs, don't re-render entire cards
+  const cards = this. container.querySelectorAll('.upgrade-card');
+  
+  cards.forEach(card => {
+    const upgradeKey = card.dataset.key;
+    const upgrade = upgradeSystem.getUpgrade(upgradeKey);
+    const isUnlocked = upgradeSystem. isUnlocked(upgradeKey);
+    const canAfford = upgradeSystem.canAfford(upgradeKey);
+    const isMaxed = upgradeSystem.isMaxed(upgradeKey);
+    const cost = upgradeSystem.getCost(upgradeKey);
     
-    cards.forEach(card => {
-      const upgradeKey = card.dataset.key;
-      const newCard = this.createUpgradeCard(upgradeKey);
-      card.replaceWith(newCard);
-    });
-  }
+    // Update classes
+    if (!isUnlocked) {
+      card.classList.add('locked');
+    } else {
+      card.classList.remove('locked');
+    }
+    
+    if (!canAfford && !isMaxed) {
+      card.classList.add('unaffordable');
+    } else {
+      card.classList.remove('unaffordable');
+    }
+    
+    // Update button state
+    const btn = card.querySelector('.btn');
+    if (btn) {
+      btn.disabled = !isUnlocked || !canAfford;
+    }
+    
+    // Update cost display
+    const costSpan = card.querySelector('.upgrade-cost span:last-child');
+    if (costSpan) {
+      costSpan.textContent = `${Formatters.formatNumber(cost)} ${this.getResourceIcon(upgrade.costResource)}`;
+    }
+  });
+}
   
   getCategoryName(category) {
     const names = {

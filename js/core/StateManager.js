@@ -113,6 +113,7 @@ class StateManager {
       dailyRewards: {
         streak: 0,
         lastClaim: null,
+        lastModalShown: null,
         claimed: []
       },
       
@@ -826,6 +827,17 @@ class StateManager {
             ]
           }
         };
+
+        // ✅ ADAUGĂ ACEST NOU CASE AICI (DUPĂ CLAIM_DAILY_REWARD):
+case 'DAILY_REWARD_MODAL_SHOWN':
+  return {
+    ...state,
+    dailyRewards: {
+      ...state. dailyRewards,
+      lastModalShown: action.payload. timestamp
+    }
+  };
+
       
       // ===== AUTOMATION =====
       case 'UNLOCK_AUTOMATION':

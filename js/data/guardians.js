@@ -13,7 +13,7 @@ const GUARDIAN_POOL = {
     emoji: '☀️',
     type: 'energy',
     realm: 'forest',
-    rarities: ['common', 'uncommon', 'rare'],
+    rarities: ['common', 'uncommon'],
     lore: 'Born from the first rays of dawn, it channels solar power.'
   },
   
@@ -24,7 +24,7 @@ const GUARDIAN_POOL = {
     emoji: '⚡',
     type: 'energy',
     realm: 'forest',
-    rarities: ['uncommon', 'rare', 'epic'],
+    rarities: ['uncommon', 'rare'],
     lore: 'Its wings generate storms that power ancient technologies.'
   },
   
@@ -58,7 +58,7 @@ const GUARDIAN_POOL = {
     emoji: '🦊',
     type: 'mana',
     realm: 'forest',
-    rarities: ['common', 'uncommon', 'rare'],
+    rarities: ['common', 'uncommon'],
     lore: 'Each tail holds a different magical secret.'
   },
   
@@ -80,7 +80,7 @@ const GUARDIAN_POOL = {
     emoji: '🔥',
     type: 'mana',
     realm: 'forest',
-    rarities: ['rare', 'epic', 'legendary'],
+    rarities: ['rare', 'epic'],
     lore: 'Death only makes it stronger, mana flowing eternal.'
   },
   
@@ -103,7 +103,7 @@ const GUARDIAN_POOL = {
     emoji: '🗿',
     type: 'volcanic',
     realm: 'volcano',
-    rarities: ['common', 'uncommon', 'rare'],
+    rarities: ['common', 'uncommon'],
     lore: 'Forged in the heart of the volcano itself.'
   },
   
@@ -114,7 +114,7 @@ const GUARDIAN_POOL = {
     emoji: '🐍',
     type: 'volcanic',
     realm: 'volcano',
-    rarities: ['uncommon', 'rare', 'epic'],
+    rarities: ['uncommon', 'rare'],
     lore: 'It drinks lava like water.'
   },
   
@@ -125,7 +125,7 @@ const GUARDIAN_POOL = {
     emoji: '👹',
     type: 'volcanic',
     realm: 'volcano',
-    rarities: ['rare', 'epic', 'legendary'],
+    rarities: ['rare', 'epic'],
     lore: 'Mountains crumble before its fury.'
   },
   
@@ -196,7 +196,7 @@ const GUARDIAN_POOL = {
     rarities: ['legendary'],
     lore: 'Past, present, and future are one to it.',
     special: {
-      offlineBonus: 0.2 // +20% offline production
+      offlineBonus: 0.15 // +15% offline production (reduced from 20%)
     }
   },
   
@@ -210,11 +210,11 @@ const GUARDIAN_POOL = {
     rarities: ['rare', 'epic'],
     lore: 'Its tears crystallize into precious gems.',
     special: {
-      gemBonus: 0.1 // +10% gems from all sources
+      gemBonus: 0.08 // +8% gems from all sources (reduced from 10%)
     }
   },
 
-    // ===== OCEAN REALM GUARDIANS =====
+  // ===== OCEAN REALM GUARDIANS =====
   aquaSprite: {
     id: 'aquaSprite',
     name: 'Aqua Sprite',
@@ -227,7 +227,7 @@ const GUARDIAN_POOL = {
     ability: {
       type: 'boost',
       target: 'tidalEnergy',
-      multiplier: 1.10 // +10% tidal energy generation
+      multiplier: 1.08 // +8% tidal energy (reduced from 10%)
     }
   },
 
@@ -243,7 +243,7 @@ const GUARDIAN_POOL = {
     ability: {
       type: 'synergy',
       target: 'kelpFarm',
-      multiplier: 1.25 // +25% production from kelpFarm
+      multiplier: 1.20 // +20% production from kelpFarm (reduced from 25%)
     }
   },
 
@@ -259,7 +259,7 @@ const GUARDIAN_POOL = {
     ability: {
       type: 'chanceBonus',
       target: 'coralBattery',
-      chance: 0.10, // 10% chance for extra pearls
+      chance: 0.08, // 8% chance for extra pearls (reduced from 10%)
       resource: 'pearls'
     }
   },
@@ -281,7 +281,7 @@ const GUARDIAN_POOL = {
 };
 
 // Rarity configurations (from CONFIG but can be overridden here)
-const RARITIES = CONFIG.BALANCING.GUARDIAN_RARITIES;
+const RARITIES = CONFIG. BALANCING.GUARDIAN_RARITIES;
 
 export { GUARDIAN_POOL, RARITIES };
 export default GUARDIAN_POOL;

@@ -5,59 +5,44 @@
 
 const BOSSES = {
   corruptedTreeant: {
-  id: 'corruptedTreeant',
-  name: 'Corrupted Treant',
-  description: 'An ancient tree guardian twisted by dark energy',
-  emoji: '🌳',
-  realm: 'forest',
-  tier: 1,
-  
-  hp: 1000,
-  
-  // ❌ ȘTERGE COMPLET unlockCondition pentru primul boss
-  // unlockCondition: {
-  //   production: { energy: 100 },
-  //   structures: { total: 15 }
-  // },
-  
-  puzzleRequirement: {
-    targetScore: 500,
-    maxMoves: 20,
-    difficulty: 'normal'
-  },
-  
-  damageFormula: (score, combo) => {
-    let damage = Math.floor(score / 10);
-    if (combo >= 5) damage *= 1.5;
-    if (combo >= 10) damage *= 2;
-    return Math.floor(damage);
-  },
+    id: 'corruptedTreeant',
+    name: 'Corrupted Treant',
+    description: 'An ancient tree guardian twisted by dark energy',
+    emoji: '🌳',
+    realm: 'forest',
+    tier: 1,
+    
+    hp: 2500, // Redus de la 1000
+    
+    // ✅ Fără unlock condition - primul boss e disponibil de la început
+    
+    puzzleRequirement: {
+      targetScore: 800, // Crescut de la 500
+      maxMoves: 25, // Crescut de la 20
+      difficulty: 'normal'
+    },
     
     damageFormula: (score, combo) => {
-      // Base damage from score
-      let damage = Math.floor(score / 10);
-      
-      // Combo multiplier
+      let damage = Math.floor(score / 12); // Redus de la /10
       if (combo >= 5) damage *= 1.5;
       if (combo >= 10) damage *= 2;
-      
       return Math.floor(damage);
     },
     
     rewards: {
       firstTime: {
-        gems: 200,
-        crystals: 10,
-        energy: 50000,
+        gems: 100, // Redus de la 200
+        crystals: 5, // Redus de la 10
+        energy: 25000, // Redus de la 50000
         guaranteedGuardian: {
           rarity: 'rare',
           type: 'energy'
         }
       },
       repeat: {
-        gems: 50,
-        crystals: 2,
-        energy: 10000
+        gems: 30, // Redus de la 50
+        crystals: 1, // Redus de la 2
+        energy: 5000 // Redus de la 10000
       }
     },
     
@@ -67,7 +52,7 @@ const BOSSES = {
     
     strategies: [
       'Focus on high combos for maximum damage',
-      'Use all 20 moves efficiently',
+      'Use all 25 moves efficiently',
       'Try to clear the board systematically'
     ]
   },
@@ -80,7 +65,7 @@ const BOSSES = {
     realm: 'volcano',
     tier: 2,
     
-    hp: 5000,
+    hp: 8000, // Crescut de la 5000
     
     unlockCondition: {
       realms: { volcano: 'unlocked' },
@@ -89,15 +74,14 @@ const BOSSES = {
     },
     
     puzzleRequirement: {
-      targetScore: 1000,
-      maxMoves: 25,
+      targetScore: 1200, // Crescut de la 1000
+      maxMoves: 28, // Crescut de la 25
       difficulty: 'hard'
     },
     
     damageFormula: (score, combo) => {
-      let damage = Math.floor(score / 8);
+      let damage = Math.floor(score / 10); // Redus de la /8
       
-      // Higher combo requirement for titan
       if (combo >= 7) damage *= 1.5;
       if (combo >= 12) damage *= 2;
       if (combo >= 15) damage *= 2.5;
@@ -107,18 +91,18 @@ const BOSSES = {
     
     rewards: {
       firstTime: {
-        gems: 500,
-        crystals: 30,
-        volcanicEnergy: 100000,
+        gems: 250, // Redus de la 500
+        crystals: 20, // Redus de la 30
+        volcanicEnergy: 50000, // Redus de la 100000
         guaranteedGuardian: {
           rarity: 'epic',
           type: 'volcanic'
         }
       },
       repeat: {
-        gems: 100,
-        crystals: 5,
-        volcanicEnergy: 20000
+        gems: 60, // Redus de la 100
+        crystals: 4, // Redus de la 5
+        volcanicEnergy: 10000 // Redus de la 20000
       }
     },
     
@@ -141,27 +125,26 @@ const BOSSES = {
     realm: 'forest',
     tier: 3,
     
-    hp: 20000,
+    hp: 30000, // Crescut de la 20000
     
     unlockCondition: {
-      ascension: { level: 5 },
+      ascension: { level: 3 }, // Redus de la 5
       bosses: { 
         corruptedTreeant: 'defeated',
         infernoTitan: 'defeated'
       },
-      production: { energy: 10000 }
+      production: { energy: 5000 } // Redus de la 10000
     },
     
     puzzleRequirement: {
-      targetScore: 2000,
-      maxMoves: 30,
+      targetScore: 1800, // Redus de la 2000
+      maxMoves: 32, // Crescut de la 30
       difficulty: 'extreme'
     },
     
     damageFormula: (score, combo) => {
-      let damage = Math.floor(score / 5);
+      let damage = Math.floor(score / 7); // Redus de la /5
       
-      // Extreme combo scaling
       if (combo >= 10) damage *= 1.5;
       if (combo >= 15) damage *= 2;
       if (combo >= 20) damage *= 3;
@@ -171,9 +154,9 @@ const BOSSES = {
     
     rewards: {
       firstTime: {
-        gems: 2000,
-        crystals: 100,
-        energy: 1000000,
+        gems: 1000, // Redus de la 2000
+        crystals: 60, // Redus de la 100
+        energy: 500000, // Redus de la 1000000
         guaranteedGuardian: {
           rarity: 'legendary',
           type: 'all'
@@ -184,13 +167,13 @@ const BOSSES = {
         }
       },
       repeat: {
-        gems: 300,
-        crystals: 20,
-        energy: 200000
+        gems: 150, // Redus de la 300
+        crystals: 12, // Redus de la 20
+        energy: 100000 // Redus de la 200000
       }
     },
     
-    lore: 'The Void Leviathan exists outside time and space. Defeating it requires mastery of all puzzle mechanics and unparalleled skill.',
+    lore: 'The Void Leviathan exists outside time and space.  Defeating it requires mastery of all puzzle mechanics and unparalleled skill.',
     
     achievements: ['bossSlayer', 'transcendent'],
     
@@ -202,7 +185,7 @@ const BOSSES = {
     ]
   },
 
-    oceanLeviathan: {
+  oceanLeviathan: {
     id: 'oceanLeviathan',
     name: 'Ocean Leviathan',
     description: 'Ancient beast lurking in the abyss, harnesses the hidden currents.',
@@ -210,50 +193,56 @@ const BOSSES = {
     realm: 'ocean',
     tier: 2,
 
-    hp: 12000,
+    hp: 15000, // Crescut de la 12000
 
     unlockCondition: {
       realms: { ocean: 'unlocked' },
-      ascension: { level: 3 },
-      structures: { deepSeaPump: 3 }
+      ascension: { level: 2 }, // Redus de la 3
+      structures: { deepSeaPump: 2 } // Redus de la 3
     },
 
     puzzleRequirement: {
-      targetScore: 1400,
-      maxMoves: 24,
+      targetScore: 1500, // Crescut de la 1400
+      maxMoves: 26, // Crescut de la 24
       difficulty: 'hard'
     },
 
     damageFormula: (score, combo) => {
-      let damage = Math.floor(score / 6);
+      let damage = Math.floor(score / 8); // Redus de la /6
       if (combo >= 8) damage *= 1.5;
       if (combo >= 12) damage *= 2;
+      if (combo >= 16) damage *= 2.5; // Adăugat bonus extra
       return Math.floor(damage);
     },
 
     rewards: {
       firstTime: {
-        gems: 800,
-        crystals: 50,
-        tidalEnergy: 180000,
+        gems: 400, // Redus de la 800
+        crystals: 30, // Redus de la 50
+        tidalEnergy: 100000, // Redus de la 180000
+        pearls: 50, // ✅ ADĂUGAT pearls ca reward
         guaranteedGuardian: {
           rarity: 'legendary',
           type: 'water'
         }
       },
       repeat: {
-        gems: 160,
-        crystals: 12,
-        tidalEnergy: 35000
+        gems: 80, // Redus de la 160
+        crystals: 8, // Redus de la 12
+        tidalEnergy: 20000, // Redus de la 35000
+        pearls: 10 // ✅ ADĂUGAT pearls pentru repeat
       }
     },
 
     lore: 'Deepest terror and guardian of the abyss. Only with mastery of Ocean structures and guardians can one hope to prevail.',
 
+    achievements: ['abyssVanquisher'],
+
     strategies: [
       'Try for combos >12 for maximum damage',
       'Balance puzzle moves vs direct scores',
-      'Focus on kelp synergy and pearl bonuses'
+      'Focus on kelp synergy and pearl bonuses',
+      'Ocean guardians boost damage significantly'
     ]
   },
   
@@ -267,40 +256,49 @@ const BOSSES = {
     realm: 'ocean',
     tier: 2,
     
-    hp: 8000,
+    hp: 10000, // Crescut de la 8000
     
     unlockCondition: {
       realms: { ocean: 'unlocked' },
-      ascension: { level: 3 }
+      ascension: { level: 2 }, // Redus de la 3
+      bosses: { oceanLeviathan: 'defeated' } // ✅ ADĂUGAT prerequisite
     },
     
     puzzleRequirement: {
-      targetScore: 1200,
-      maxMoves: 25,
+      targetScore: 1300, // Crescut de la 1200
+      maxMoves: 27, // Crescut de la 25
       difficulty: 'hard'
     },
     
     damageFormula: (score, combo) => {
-      return Math.floor(score / 7);
+      let damage = Math.floor(score / 9); // Redus de la /7
+      if (combo >= 8) damage *= 1.5;
+      if (combo >= 13) damage *= 2;
+      return Math.floor(damage);
     },
     
     rewards: {
       firstTime: {
-        gems: 600,
-        crystals: 40,
-        tidalEnergy: 150000,
+        gems: 300, // Redus de la 600
+        crystals: 25, // Redus de la 40
+        tidalEnergy: 80000, // Redus de la 150000
+        pearls: 30, // ✅ ADĂUGAT pearls
         guaranteedGuardian: {
           rarity: 'epic',
           type: 'water'
         }
       },
       repeat: {
-        gems: 120,
-        crystals: 8
+        gems: 60, // Redus de la 120
+        crystals: 6, // Redus de la 8
+        tidalEnergy: 15000,
+        pearls: 5 // ✅ ADĂUGAT pearls
       }
     },
     
-    lore: 'Ancient ruler of the ocean depths.',
+    lore: 'Ancient ruler of the ocean depths, commands the tides with its tentacles.',
+    
+    achievements: ['bossSlayer'],
     
     locked: true // Not implemented yet
   },
@@ -313,28 +311,37 @@ const BOSSES = {
     realm: 'cosmos',
     tier: 4,
     
-    hp: 50000,
+    hp: 75000, // Crescut de la 50000
     
     unlockCondition: {
       realms: { cosmos: 'unlocked' },
-      ascension: { level: 10 }
+      ascension: { level: 5 }, // Redus de la 10
+      bosses: {
+        voidLeviathan: 'defeated',
+        oceanLeviathan: 'defeated',
+        infernoTitan: 'defeated'
+      }
     },
     
     puzzleRequirement: {
-      targetScore: 5000,
+      targetScore: 3000, // Redus de la 5000
       maxMoves: 40,
       difficulty: 'nightmare'
     },
     
     damageFormula: (score, combo) => {
-      return Math.floor(score / 3);
+      let damage = Math.floor(score / 4); // Redus de la /3
+      if (combo >= 15) damage *= 1.5;
+      if (combo >= 20) damage *= 2;
+      if (combo >= 25) damage *= 3;
+      return Math.floor(damage);
     },
     
     rewards: {
       firstTime: {
-        gems: 10000,
-        crystals: 500,
-        cosmicEnergy: 10000000,
+        gems: 5000, // Redus de la 10000
+        crystals: 300, // Redus de la 500
+        cosmicEnergy: 5000000, // Redus de la 10000000
         guaranteedGuardian: {
           rarity: 'legendary',
           type: 'cosmic'
@@ -345,8 +352,8 @@ const BOSSES = {
         }
       },
       repeat: {
-        gems: 1000,
-        crystals: 100
+        gems: 500, // Redus de la 1000
+        crystals: 60 // Redus de la 100
       }
     },
     

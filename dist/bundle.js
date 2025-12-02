@@ -41,13 +41,13 @@ var CONFIG = {
   // Balancing
   BALANCING: {
     // Starting resources
-    STARTING_ENERGY: 10,
+    STARTING_ENERGY: 50,
     STARTING_MANA: 0,
     STARTING_GEMS: 100,
     // Tutorial bonus
     STARTING_CRYSTALS: 0,
     // Caps
-    BASE_ENERGY_CAP: 1000,
+    BASE_ENERGY_CAP: 5000,
     BASE_MANA_CAP: 100,
     BASE_VOLCANIC_ENERGY_CAP: 5000,
     // Offline
@@ -1222,6 +1222,7 @@ var StateManager = /*#__PURE__*/function () {
         dailyRewards: {
           streak: 0,
           lastClaim: null,
+          lastModalShown: null,
           claimed: []
         },
         // Automation
@@ -1761,6 +1762,14 @@ var StateManager = /*#__PURE__*/function () {
                 day: action.payload.day,
                 timestamp: action.payload.lastClaim
               }])
+            })
+          });
+
+        // ✅ ADAUGĂ ACEST NOU CASE AICI (DUPĂ CLAIM_DAILY_REWARD):
+        case 'DAILY_REWARD_MODAL_SHOWN':
+          return _objectSpread(_objectSpread({}, state), {}, {
+            dailyRewards: _objectSpread(_objectSpread({}, state.dailyRewards), {}, {
+              lastModalShown: action.payload.timestamp
             })
           });
 
@@ -2446,7 +2455,7 @@ var ACHIEVEMENTS = {
       return state.statistics.totalClicks >= 1;
     },
     reward: {
-      gems: 10
+      gems: 5
     },
     hidden: false
   },
@@ -2462,8 +2471,8 @@ var ACHIEVEMENTS = {
       return state.statistics.structuresPurchased >= 1;
     },
     reward: {
-      gems: 20,
-      energy: 100
+      gems: 10,
+      energy: 50
     },
     hidden: false
   },
@@ -2479,7 +2488,7 @@ var ACHIEVEMENTS = {
       return state.statistics.upgradesPurchased >= 1;
     },
     reward: {
-      gems: 30
+      gems: 15
     },
     hidden: false
   },
@@ -2495,8 +2504,8 @@ var ACHIEVEMENTS = {
       return state.guardians.length >= 1;
     },
     reward: {
-      gems: 50,
-      energy: 1000
+      gems: 25,
+      energy: 500
     },
     hidden: false
   },
@@ -2504,33 +2513,33 @@ var ACHIEVEMENTS = {
   energyCollector: {
     id: 'energyCollector',
     name: 'Energy Collector',
-    description: 'Produce 10,000 total energy',
+    description: 'Produce 5,000 total energy',
     emoji: '⚡',
     category: 'production',
     tier: 'bronze',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.ascension.lifetimeEnergy >= 10000;
+      return state.ascension.lifetimeEnergy >= 5000;
     },
     reward: {
-      gems: 25,
-      energy: 500
+      gems: 15,
+      energy: 250
     },
     hidden: false
   },
   energyHoarder: {
     id: 'energyHoarder',
     name: 'Energy Hoarder',
-    description: 'Produce 100,000 total energy',
+    description: 'Produce 50,000 total energy',
     emoji: '⚡',
     category: 'production',
     tier: 'silver',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.ascension.lifetimeEnergy >= 100000;
+      return state.ascension.lifetimeEnergy >= 50000;
     },
     reward: {
-      gems: 50,
+      gems: 30,
       crystals: 1
     },
     hidden: false
@@ -2538,34 +2547,34 @@ var ACHIEVEMENTS = {
   energyTycoon: {
     id: 'energyTycoon',
     name: 'Energy Tycoon',
-    description: 'Produce 1,000,000 total energy',
+    description: 'Produce 500,000 total energy',
     emoji: '⚡',
     category: 'production',
     tier: 'gold',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.ascension.lifetimeEnergy >= 1000000;
+      return state.ascension.lifetimeEnergy >= 500000;
     },
     reward: {
-      gems: 100,
-      crystals: 5
+      gems: 60,
+      crystals: 3
     },
     hidden: false
   },
   energyGod: {
     id: 'energyGod',
     name: 'Energy God',
-    description: 'Produce 100,000,000 total energy',
+    description: 'Produce 10,000,000 total energy',
     emoji: '⚡',
     category: 'production',
     tier: 'platinum',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.ascension.lifetimeEnergy >= 100000000;
+      return state.ascension.lifetimeEnergy >= 10000000;
     },
     reward: {
-      gems: 500,
-      crystals: 25
+      gems: 250,
+      crystals: 15
     },
     hidden: false
   },
@@ -2573,33 +2582,33 @@ var ACHIEVEMENTS = {
   productionNovice: {
     id: 'productionNovice',
     name: 'Production Novice',
-    description: 'Reach 100 energy/second',
+    description: 'Reach 50 energy/second',
     emoji: '📈',
     category: 'milestone',
     tier: 'bronze',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.production.energy >= 100;
+      return state.production.energy >= 50;
     },
     reward: {
-      gems: 30,
-      energy: 2000
+      gems: 20,
+      energy: 1000
     },
     hidden: false
   },
   productionExpert: {
     id: 'productionExpert',
     name: 'Production Expert',
-    description: 'Reach 1,000 energy/second',
+    description: 'Reach 500 energy/second',
     emoji: '📈',
     category: 'milestone',
     tier: 'silver',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.production.energy >= 1000;
+      return state.production.energy >= 500;
     },
     reward: {
-      gems: 75,
+      gems: 40,
       crystals: 2
     },
     hidden: false
@@ -2607,17 +2616,17 @@ var ACHIEVEMENTS = {
   productionMaster: {
     id: 'productionMaster',
     name: 'Production Master',
-    description: 'Reach 10,000 energy/second',
+    description: 'Reach 5,000 energy/second',
     emoji: '📈',
     category: 'milestone',
     tier: 'gold',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.production.energy >= 10000;
+      return state.production.energy >= 5000;
     },
     reward: {
-      gems: 200,
-      crystals: 10
+      gems: 100,
+      crystals: 8
     },
     hidden: false
   },
@@ -2634,61 +2643,61 @@ var ACHIEVEMENTS = {
       return structureSystem.getStats().totalLevels >= 10;
     },
     reward: {
-      gems: 40,
-      energy: 5000
+      gems: 20,
+      energy: 2000
     },
     hidden: false
   },
   structureArchitect: {
     id: 'structureArchitect',
     name: 'Structure Architect',
-    description: 'Own 50 total structure levels',
+    description: 'Own 30 total structure levels',
     emoji: '🏗️',
     category: 'structures',
     tier: 'silver',
     condition: function condition() {
       var structureSystem = require('../systems/StructureSystem.js')["default"];
-      return structureSystem.getStats().totalLevels >= 50;
+      return structureSystem.getStats().totalLevels >= 30;
     },
     reward: {
-      gems: 100,
-      crystals: 3
+      gems: 50,
+      crystals: 2
     },
     hidden: false
   },
   structureMagnate: {
     id: 'structureMagnate',
     name: 'Structure Magnate',
-    description: 'Own 200 total structure levels',
+    description: 'Own 100 total structure levels',
     emoji: '🏗️',
     category: 'structures',
     tier: 'gold',
     condition: function condition() {
       var structureSystem = require('../systems/StructureSystem.js')["default"];
-      return structureSystem.getStats().totalLevels >= 200;
+      return structureSystem.getStats().totalLevels >= 100;
     },
     reward: {
-      gems: 250,
-      crystals: 15
+      gems: 150,
+      crystals: 10
     },
     hidden: false
   },
   maxedOut: {
     id: 'maxedOut',
     name: 'Maxed Out',
-    description: 'Get any structure to level 100',
+    description: 'Get any structure to level 50',
     emoji: '💯',
     category: 'structures',
     tier: 'platinum',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
       return Object.values(state.structures).some(function (s) {
-        return s.level >= 100;
+        return s.level >= 50;
       });
     },
     reward: {
-      gems: 500,
-      crystals: 20
+      gems: 300,
+      crystals: 15
     },
     hidden: false
   },
@@ -2696,33 +2705,33 @@ var ACHIEVEMENTS = {
   upgradeEnthusiast: {
     id: 'upgradeEnthusiast',
     name: 'Upgrade Enthusiast',
-    description: 'Purchase 10 upgrades',
+    description: 'Purchase 5 upgrades',
     emoji: '⬆️',
     category: 'upgrades',
     tier: 'bronze',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.statistics.upgradesPurchased >= 10;
+      return state.statistics.upgradesPurchased >= 5;
     },
     reward: {
-      gems: 50
+      gems: 25
     },
     hidden: false
   },
   upgradeAddict: {
     id: 'upgradeAddict',
     name: 'Upgrade Addict',
-    description: 'Purchase 50 upgrades',
+    description: 'Purchase 25 upgrades',
     emoji: '⬆️',
     category: 'upgrades',
     tier: 'silver',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.statistics.upgradesPurchased >= 50;
+      return state.statistics.upgradesPurchased >= 25;
     },
     reward: {
-      gems: 150,
-      crystals: 5
+      gems: 80,
+      crystals: 3
     },
     hidden: false
   },
@@ -2740,8 +2749,8 @@ var ACHIEVEMENTS = {
       return ((_state$achievements$p = state.achievements.patientUpgrader) === null || _state$achievements$p === void 0 ? void 0 : _state$achievements$p.triggered) || false;
     },
     reward: {
-      gems: 200,
-      crystals: 10
+      gems: 120,
+      crystals: 8
     },
     hidden: false
   },
@@ -2749,50 +2758,50 @@ var ACHIEVEMENTS = {
   guardianCollector: {
     id: 'guardianCollector',
     name: 'Guardian Collector',
-    description: 'Own 5 guardians',
+    description: 'Own 3 guardians',
     emoji: '🐉',
     category: 'guardians',
     tier: 'bronze',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.guardians.length >= 5;
+      return state.guardians.length >= 3;
     },
     reward: {
-      gems: 75
+      gems: 40
     },
     hidden: false
   },
   guardianHoarder: {
     id: 'guardianHoarder',
     name: 'Guardian Hoarder',
-    description: 'Own 20 guardians',
+    description: 'Own 10 guardians',
     emoji: '🐉',
     category: 'guardians',
     tier: 'silver',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.guardians.length >= 20;
+      return state.guardians.length >= 10;
     },
     reward: {
-      gems: 200,
-      crystals: 5
+      gems: 100,
+      crystals: 4
     },
     hidden: false
   },
   guardianArmy: {
     id: 'guardianArmy',
     name: 'Guardian Army',
-    description: 'Own 50 guardians',
+    description: 'Own 25 guardians',
     emoji: '🐉',
     category: 'guardians',
     tier: 'gold',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.guardians.length >= 50;
+      return state.guardians.length >= 25;
     },
     reward: {
-      gems: 500,
-      crystals: 20
+      gems: 250,
+      crystals: 15
     },
     hidden: false
   },
@@ -2810,7 +2819,7 @@ var ACHIEVEMENTS = {
       });
     },
     reward: {
-      gems: 50
+      gems: 30
     },
     hidden: false
   },
@@ -2828,7 +2837,7 @@ var ACHIEVEMENTS = {
       });
     },
     reward: {
-      gems: 150,
+      gems: 80,
       crystals: 3
     },
     hidden: false
@@ -2847,8 +2856,8 @@ var ACHIEVEMENTS = {
       });
     },
     reward: {
-      gems: 500,
-      crystals: 25
+      gems: 300,
+      crystals: 20
     },
     hidden: false
   },
@@ -2856,50 +2865,50 @@ var ACHIEVEMENTS = {
   questCompleter: {
     id: 'questCompleter',
     name: 'Quest Completer',
-    description: 'Complete 10 quests',
+    description: 'Complete 5 quests',
     emoji: '📜',
     category: 'quests',
     tier: 'bronze',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.statistics.questsCompleted >= 10;
+      return state.statistics.questsCompleted >= 5;
     },
     reward: {
-      gems: 50
+      gems: 25
     },
     hidden: false
   },
   questMaster: {
     id: 'questMaster',
     name: 'Quest Master',
-    description: 'Complete 50 quests',
+    description: 'Complete 25 quests',
     emoji: '📜',
     category: 'quests',
     tier: 'silver',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.statistics.questsCompleted >= 50;
+      return state.statistics.questsCompleted >= 25;
     },
     reward: {
-      gems: 150,
-      crystals: 5
+      gems: 80,
+      crystals: 4
     },
     hidden: false
   },
   questLegend: {
     id: 'questLegend',
     name: 'Quest Legend',
-    description: 'Complete 200 quests',
+    description: 'Complete 100 quests',
     emoji: '📜',
     category: 'quests',
     tier: 'gold',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.statistics.questsCompleted >= 200;
+      return state.statistics.questsCompleted >= 100;
     },
     reward: {
-      gems: 400,
-      crystals: 20
+      gems: 200,
+      crystals: 15
     },
     hidden: false
   },
@@ -2916,41 +2925,41 @@ var ACHIEVEMENTS = {
       return state.statistics.puzzlesWon >= 1;
     },
     reward: {
-      gems: 30
+      gems: 15
     },
     hidden: false
   },
   puzzleExpert: {
     id: 'puzzleExpert',
     name: 'Puzzle Expert',
-    description: 'Win 20 puzzle games',
+    description: 'Win 10 puzzle games',
     emoji: '🧩',
     category: 'puzzle',
     tier: 'silver',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.statistics.puzzlesWon >= 20;
+      return state.statistics.puzzlesWon >= 10;
     },
     reward: {
-      gems: 100,
-      crystals: 3
+      gems: 50,
+      crystals: 2
     },
     hidden: false
   },
   highScorer: {
     id: 'highScorer',
     name: 'High Scorer',
-    description: 'Score 2000+ in a puzzle game',
+    description: 'Score 1500+ in a puzzle game',
     emoji: '🎯',
     category: 'puzzle',
     tier: 'gold',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.statistics.puzzleHighScore >= 2000;
+      return state.statistics.puzzleHighScore >= 1500;
     },
     reward: {
-      gems: 200,
-      crystals: 10
+      gems: 100,
+      crystals: 8
     },
     hidden: false
   },
@@ -2967,42 +2976,42 @@ var ACHIEVEMENTS = {
       return state.ascension.level >= 1;
     },
     reward: {
-      gems: 300,
-      crystals: 15
+      gems: 150,
+      crystals: 10
     },
     hidden: false
   },
   serialAscender: {
     id: 'serialAscender',
     name: 'Serial Ascender',
-    description: 'Reach ascension level 5',
+    description: 'Reach ascension level 3',
     emoji: '✨',
     category: 'ascension',
     tier: 'platinum',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.ascension.level >= 5;
+      return state.ascension.level >= 3;
     },
     reward: {
-      gems: 750,
-      crystals: 50
+      gems: 400,
+      crystals: 30
     },
     hidden: false
   },
   transcendent: {
     id: 'transcendent',
     name: 'Transcendent',
-    description: 'Reach ascension level 10',
+    description: 'Reach ascension level 5',
     emoji: '🌟',
     category: 'ascension',
     tier: 'diamond',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.ascension.level >= 10;
+      return state.ascension.level >= 5;
     },
     reward: {
-      gems: 2000,
-      crystals: 100
+      gems: 1000,
+      crystals: 60
     },
     hidden: false
   },
@@ -3019,8 +3028,8 @@ var ACHIEVEMENTS = {
       return state.realms.unlocked.includes('volcano');
     },
     reward: {
-      gems: 250,
-      crystals: 10
+      gems: 120,
+      crystals: 8
     },
     hidden: false
   },
@@ -3037,25 +3046,25 @@ var ACHIEVEMENTS = {
       return state.statistics.bossesDefeated >= 1;
     },
     reward: {
-      gems: 150,
-      crystals: 5
+      gems: 80,
+      crystals: 4
     },
     hidden: false
   },
   bossSlayer: {
     id: 'bossSlayer',
     name: 'Boss Slayer',
-    description: 'Defeat 5 bosses',
+    description: 'Defeat 3 bosses',
     emoji: '⚔️',
     category: 'bosses',
     tier: 'gold',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.statistics.bossesDefeated >= 5;
+      return state.statistics.bossesDefeated >= 3;
     },
     reward: {
-      gems: 400,
-      crystals: 20
+      gems: 200,
+      crystals: 15
     },
     hidden: false
   },
@@ -3072,7 +3081,8 @@ var ACHIEVEMENTS = {
       return state.realms.unlocked.includes('ocean');
     },
     reward: {
-      crystals: 7
+      gems: 100,
+      crystals: 5
     },
     hidden: false,
     lore: 'You plunged into the deep — this marks a new adventure!'
@@ -3080,17 +3090,17 @@ var ACHIEVEMENTS = {
   tideTycoon: {
     id: 'tideTycoon',
     name: 'Tide Tycoon',
-    description: 'Reach 2,000 tidal energy/sec in Ocean Realm.',
+    description: 'Reach 1,000 tidal energy/sec in Ocean Realm.',
     emoji: '🌊',
     category: 'milestone',
     tier: 'gold',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.production.tidalEnergy >= 2000 && state.realms.current === 'ocean';
+      return state.production.tidalEnergy >= 1000 && state.realms.current === 'ocean';
     },
     reward: {
-      gems: 35,
-      pearls: 10
+      gems: 80,
+      pearls: 8
     },
     hidden: false,
     lore: 'Industrial mastery under the waves!'
@@ -3098,36 +3108,37 @@ var ACHIEVEMENTS = {
   kelpOverlord: {
     id: 'kelpOverlord',
     name: 'Kelp Overlord',
-    description: 'Own at least 50 Kelp Farms in Ocean Realm.',
+    description: 'Own at least 25 Kelp Farms in Ocean Realm.',
     emoji: '🪸',
     category: 'structures',
     tier: 'platinum',
     condition: function condition() {
       var _state$structures$kel;
       var state = require('../core/StateManager.js')["default"].getState();
-      return ((_state$structures$kel = state.structures.kelpFarm) === null || _state$structures$kel === void 0 ? void 0 : _state$structures$kel.level) >= 50;
+      return ((_state$structures$kel = state.structures.kelpFarm) === null || _state$structures$kel === void 0 ? void 0 : _state$structures$kel.level) >= 25;
     },
     reward: {
-      tidalEnergy: 35000,
-      pearls: 20
+      tidalEnergy: 15000,
+      gems: 120,
+      pearls: 10
     },
     hidden: false,
-    lore: 'You’re the ruler of aquatic farming!'
+    lore: 'You\'re the ruler of aquatic farming!'
   },
   pearlMagnate: {
     id: 'pearlMagnate',
     name: 'Pearl Magnate',
-    description: 'Collect 200 pearls in Ocean Realm.',
+    description: 'Collect 100 pearls in Ocean Realm.',
     emoji: '🏝️',
     category: 'resources',
     tier: 'platinum',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.resources.pearls >= 200;
+      return state.resources.pearls >= 100;
     },
     reward: {
-      gems: 80,
-      crystals: 15
+      gems: 150,
+      crystals: 12
     },
     hidden: false,
     lore: 'Every pearl is a testament to your deep-sea skill.'
@@ -3145,11 +3156,12 @@ var ACHIEVEMENTS = {
       return (_state$statistics$bos = state.statistics.bossesDefeatedIds) === null || _state$statistics$bos === void 0 ? void 0 : _state$statistics$bos.includes('oceanLeviathan');
     },
     reward: {
+      gems: 300,
+      crystals: 25,
       legendaryGuardian: {
         type: 'water',
         rarity: 'legendary'
-      },
-      title: 'Abyss Vanquisher'
+      }
     },
     hidden: false,
     lore: 'Deep abyss now bows to your power.'
@@ -3158,67 +3170,67 @@ var ACHIEVEMENTS = {
   speedrunner: {
     id: 'speedrunner',
     name: 'Speedrunner',
-    description: 'Reach 1M energy in under 1 hour',
+    description: 'Reach 500K energy in under 1 hour',
     emoji: '⚡',
     category: 'special',
     tier: 'platinum',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.ascension.lifetimeEnergy >= 1000000 && state.statistics.totalPlayTime < 3600000;
+      return state.ascension.lifetimeEnergy >= 500000 && state.statistics.totalPlayTime < 3600000;
     },
     reward: {
-      gems: 1000,
-      crystals: 50
+      gems: 500,
+      crystals: 30
     },
     hidden: true
   },
   gemHoarder: {
     id: 'gemHoarder',
     name: 'Gem Hoarder',
-    description: 'Accumulate 5,000 gems',
+    description: 'Accumulate 2,500 gems',
     emoji: '💎',
     category: 'special',
     tier: 'gold',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.resources.gems >= 5000;
+      return state.resources.gems >= 2500;
     },
     reward: {
-      gems: 500
+      gems: 250
     },
     hidden: true
   },
   dedicatedPlayer: {
     id: 'dedicatedPlayer',
     name: 'Dedicated Player',
-    description: 'Play for 10 hours total',
+    description: 'Play for 5 hours total',
     emoji: '⏱️',
     category: 'special',
     tier: 'silver',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.statistics.totalPlayTime >= 36000000; // 10 hours in ms
+      return state.statistics.totalPlayTime >= 18000000; // 5 hours in ms
     },
     reward: {
-      gems: 300,
-      crystals: 15
+      gems: 150,
+      crystals: 10
     },
     hidden: true
   },
   noLifeGamer: {
     id: 'noLifeGamer',
     name: 'No Life Gamer',
-    description: 'Play for 100 hours total',
+    description: 'Play for 50 hours total',
     emoji: '🎮',
     category: 'special',
     tier: 'platinum',
     condition: function condition() {
       var state = require('../core/StateManager.js')["default"].getState();
-      return state.statistics.totalPlayTime >= 360000000; // 100 hours in ms
+      return state.statistics.totalPlayTime >= 180000000; // 50 hours in ms
     },
     reward: {
-      gems: 2000,
-      crystals: 100
+      gems: 1000,
+      crystals: 60
     },
     hidden: true
   }
@@ -3232,65 +3244,62 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 /**
  * Boss definitions
  * Challenging encounters that require puzzle mastery
  */
 
 var BOSSES = {
-  corruptedTreeant: _defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty({
+  corruptedTreeant: {
     id: 'corruptedTreeant',
     name: 'Corrupted Treant',
     description: 'An ancient tree guardian twisted by dark energy',
     emoji: '🌳',
     realm: 'forest',
     tier: 1,
-    hp: 1000,
-    // ❌ ȘTERGE COMPLET unlockCondition pentru primul boss
-    // unlockCondition: {
-    //   production: { energy: 100 },
-    //   structures: { total: 15 }
-    // },
+    hp: 2500,
+    // Redus de la 1000
+
+    // ✅ Fără unlock condition - primul boss e disponibil de la început
 
     puzzleRequirement: {
-      targetScore: 500,
-      maxMoves: 20,
+      targetScore: 800,
+      // Crescut de la 500
+      maxMoves: 25,
+      // Crescut de la 20
       difficulty: 'normal'
     },
     damageFormula: function damageFormula(score, combo) {
-      var damage = Math.floor(score / 10);
+      var damage = Math.floor(score / 12); // Redus de la /10
       if (combo >= 5) damage *= 1.5;
       if (combo >= 10) damage *= 2;
       return Math.floor(damage);
-    }
-  }, "damageFormula", function damageFormula(score, combo) {
-    // Base damage from score
-    var damage = Math.floor(score / 10);
-
-    // Combo multiplier
-    if (combo >= 5) damage *= 1.5;
-    if (combo >= 10) damage *= 2;
-    return Math.floor(damage);
-  }), "rewards", {
-    firstTime: {
-      gems: 200,
-      crystals: 10,
-      energy: 50000,
-      guaranteedGuardian: {
-        rarity: 'rare',
-        type: 'energy'
+    },
+    rewards: {
+      firstTime: {
+        gems: 100,
+        // Redus de la 200
+        crystals: 5,
+        // Redus de la 10
+        energy: 25000,
+        // Redus de la 50000
+        guaranteedGuardian: {
+          rarity: 'rare',
+          type: 'energy'
+        }
+      },
+      repeat: {
+        gems: 30,
+        // Redus de la 50
+        crystals: 1,
+        // Redus de la 2
+        energy: 5000 // Redus de la 10000
       }
     },
-    repeat: {
-      gems: 50,
-      crystals: 2,
-      energy: 10000
-    }
-  }), "lore", 'Once a protector of the forest, now consumed by corruption. Only by matching the natural elements can you purify its twisted form.'), "achievements", ['firstVictory']), "strategies", ['Focus on high combos for maximum damage', 'Use all 20 moves efficiently', 'Try to clear the board systematically']),
+    lore: 'Once a protector of the forest, now consumed by corruption. Only by matching the natural elements can you purify its twisted form.',
+    achievements: ['firstVictory'],
+    strategies: ['Focus on high combos for maximum damage', 'Use all 25 moves efficiently', 'Try to clear the board systematically']
+  },
   infernoTitan: {
     id: 'infernoTitan',
     name: 'Inferno Titan',
@@ -3298,7 +3307,9 @@ var BOSSES = {
     emoji: '🔥',
     realm: 'volcano',
     tier: 2,
-    hp: 5000,
+    hp: 8000,
+    // Crescut de la 5000
+
     unlockCondition: {
       realms: {
         volcano: 'unlocked'
@@ -3311,14 +3322,15 @@ var BOSSES = {
       }
     },
     puzzleRequirement: {
-      targetScore: 1000,
-      maxMoves: 25,
+      targetScore: 1200,
+      // Crescut de la 1000
+      maxMoves: 28,
+      // Crescut de la 25
       difficulty: 'hard'
     },
     damageFormula: function damageFormula(score, combo) {
-      var damage = Math.floor(score / 8);
+      var damage = Math.floor(score / 10); // Redus de la /8
 
-      // Higher combo requirement for titan
       if (combo >= 7) damage *= 1.5;
       if (combo >= 12) damage *= 2;
       if (combo >= 15) damage *= 2.5;
@@ -3326,18 +3338,23 @@ var BOSSES = {
     },
     rewards: {
       firstTime: {
-        gems: 500,
-        crystals: 30,
-        volcanicEnergy: 100000,
+        gems: 250,
+        // Redus de la 500
+        crystals: 20,
+        // Redus de la 30
+        volcanicEnergy: 50000,
+        // Redus de la 100000
         guaranteedGuardian: {
           rarity: 'epic',
           type: 'volcanic'
         }
       },
       repeat: {
-        gems: 100,
-        crystals: 5,
-        volcanicEnergy: 20000
+        gems: 60,
+        // Redus de la 100
+        crystals: 4,
+        // Redus de la 5
+        volcanicEnergy: 10000 // Redus de la 20000
       }
     },
     lore: 'Forged in the heart of the volcano eons ago, this titan has never been defeated. Its flames burn hot enough to melt reality itself.',
@@ -3351,28 +3368,32 @@ var BOSSES = {
     emoji: '🐉',
     realm: 'forest',
     tier: 3,
-    hp: 20000,
+    hp: 30000,
+    // Crescut de la 20000
+
     unlockCondition: {
       ascension: {
-        level: 5
+        level: 3
       },
+      // Redus de la 5
       bosses: {
         corruptedTreeant: 'defeated',
         infernoTitan: 'defeated'
       },
       production: {
-        energy: 10000
-      }
+        energy: 5000
+      } // Redus de la 10000
     },
     puzzleRequirement: {
-      targetScore: 2000,
-      maxMoves: 30,
+      targetScore: 1800,
+      // Redus de la 2000
+      maxMoves: 32,
+      // Crescut de la 30
       difficulty: 'extreme'
     },
     damageFormula: function damageFormula(score, combo) {
-      var damage = Math.floor(score / 5);
+      var damage = Math.floor(score / 7); // Redus de la /5
 
-      // Extreme combo scaling
       if (combo >= 10) damage *= 1.5;
       if (combo >= 15) damage *= 2;
       if (combo >= 20) damage *= 3;
@@ -3380,9 +3401,12 @@ var BOSSES = {
     },
     rewards: {
       firstTime: {
-        gems: 2000,
-        crystals: 100,
-        energy: 1000000,
+        gems: 1000,
+        // Redus de la 2000
+        crystals: 60,
+        // Redus de la 100
+        energy: 500000,
+        // Redus de la 1000000
         guaranteedGuardian: {
           rarity: 'legendary',
           type: 'all'
@@ -3393,12 +3417,14 @@ var BOSSES = {
         }
       },
       repeat: {
-        gems: 300,
-        crystals: 20,
-        energy: 200000
+        gems: 150,
+        // Redus de la 300
+        crystals: 12,
+        // Redus de la 20
+        energy: 100000 // Redus de la 200000
       }
     },
-    lore: 'The Void Leviathan exists outside time and space. Defeating it requires mastery of all puzzle mechanics and unparalleled skill.',
+    lore: 'The Void Leviathan exists outside time and space.  Defeating it requires mastery of all puzzle mechanics and unparalleled skill.',
     achievements: ['bossSlayer', 'transcendent'],
     strategies: ['This is the ultimate challenge', 'HP persists between attempts', 'Perfect combo chains are essential', 'Consider using gems to boost puzzle rewards']
   },
@@ -3409,47 +3435,63 @@ var BOSSES = {
     emoji: '🦈',
     realm: 'ocean',
     tier: 2,
-    hp: 12000,
+    hp: 15000,
+    // Crescut de la 12000
+
     unlockCondition: {
       realms: {
         ocean: 'unlocked'
       },
       ascension: {
-        level: 3
+        level: 2
       },
+      // Redus de la 3
       structures: {
-        deepSeaPump: 3
-      }
+        deepSeaPump: 2
+      } // Redus de la 3
     },
     puzzleRequirement: {
-      targetScore: 1400,
-      maxMoves: 24,
+      targetScore: 1500,
+      // Crescut de la 1400
+      maxMoves: 26,
+      // Crescut de la 24
       difficulty: 'hard'
     },
     damageFormula: function damageFormula(score, combo) {
-      var damage = Math.floor(score / 6);
+      var damage = Math.floor(score / 8); // Redus de la /6
       if (combo >= 8) damage *= 1.5;
       if (combo >= 12) damage *= 2;
+      if (combo >= 16) damage *= 2.5; // Adăugat bonus extra
       return Math.floor(damage);
     },
     rewards: {
       firstTime: {
-        gems: 800,
-        crystals: 50,
-        tidalEnergy: 180000,
+        gems: 400,
+        // Redus de la 800
+        crystals: 30,
+        // Redus de la 50
+        tidalEnergy: 100000,
+        // Redus de la 180000
+        pearls: 50,
+        // ✅ ADĂUGAT pearls ca reward
         guaranteedGuardian: {
           rarity: 'legendary',
           type: 'water'
         }
       },
       repeat: {
-        gems: 160,
-        crystals: 12,
-        tidalEnergy: 35000
+        gems: 80,
+        // Redus de la 160
+        crystals: 8,
+        // Redus de la 12
+        tidalEnergy: 20000,
+        // Redus de la 35000
+        pearls: 10 // ✅ ADĂUGAT pearls pentru repeat
       }
     },
     lore: 'Deepest terror and guardian of the abyss. Only with mastery of Ocean structures and guardians can one hope to prevail.',
-    strategies: ['Try for combos >12 for maximum damage', 'Balance puzzle moves vs direct scores', 'Focus on kelp synergy and pearl bonuses']
+    achievements: ['abyssVanquisher'],
+    strategies: ['Try for combos >12 for maximum damage', 'Balance puzzle moves vs direct scores', 'Focus on kelp synergy and pearl bonuses', 'Ocean guardians boost damage significantly']
   },
   // FUTURE BOSSES
 
@@ -3460,39 +3502,60 @@ var BOSSES = {
     emoji: '🦑',
     realm: 'ocean',
     tier: 2,
-    hp: 8000,
+    hp: 10000,
+    // Crescut de la 8000
+
     unlockCondition: {
       realms: {
         ocean: 'unlocked'
       },
       ascension: {
-        level: 3
-      }
+        level: 2
+      },
+      // Redus de la 3
+      bosses: {
+        oceanLeviathan: 'defeated'
+      } // ✅ ADĂUGAT prerequisite
     },
     puzzleRequirement: {
-      targetScore: 1200,
-      maxMoves: 25,
+      targetScore: 1300,
+      // Crescut de la 1200
+      maxMoves: 27,
+      // Crescut de la 25
       difficulty: 'hard'
     },
     damageFormula: function damageFormula(score, combo) {
-      return Math.floor(score / 7);
+      var damage = Math.floor(score / 9); // Redus de la /7
+      if (combo >= 8) damage *= 1.5;
+      if (combo >= 13) damage *= 2;
+      return Math.floor(damage);
     },
     rewards: {
       firstTime: {
-        gems: 600,
-        crystals: 40,
-        tidalEnergy: 150000,
+        gems: 300,
+        // Redus de la 600
+        crystals: 25,
+        // Redus de la 40
+        tidalEnergy: 80000,
+        // Redus de la 150000
+        pearls: 30,
+        // ✅ ADĂUGAT pearls
         guaranteedGuardian: {
           rarity: 'epic',
           type: 'water'
         }
       },
       repeat: {
-        gems: 120,
-        crystals: 8
+        gems: 60,
+        // Redus de la 120
+        crystals: 6,
+        // Redus de la 8
+        tidalEnergy: 15000,
+        pearls: 5 // ✅ ADĂUGAT pearls
       }
     },
-    lore: 'Ancient ruler of the ocean depths.',
+    lore: 'Ancient ruler of the ocean depths, commands the tides with its tentacles.',
+    achievements: ['bossSlayer'],
     locked: true // Not implemented yet
   },
   cosmicHarbinger: {
@@ -3502,28 +3565,44 @@ var BOSSES = {
     emoji: '🌌',
     realm: 'cosmos',
     tier: 4,
-    hp: 50000,
+    hp: 75000,
+    // Crescut de la 50000
+
     unlockCondition: {
       realms: {
         cosmos: 'unlocked'
       },
       ascension: {
-        level: 10
+        level: 5
+      },
+      // Redus de la 10
+      bosses: {
+        voidLeviathan: 'defeated',
+        oceanLeviathan: 'defeated',
+        infernoTitan: 'defeated'
       }
     },
     puzzleRequirement: {
-      targetScore: 5000,
+      targetScore: 3000,
+      // Redus de la 5000
       maxMoves: 40,
       difficulty: 'nightmare'
     },
     damageFormula: function damageFormula(score, combo) {
-      return Math.floor(score / 3);
+      var damage = Math.floor(score / 4); // Redus de la /3
+      if (combo >= 15) damage *= 1.5;
+      if (combo >= 20) damage *= 2;
+      if (combo >= 25) damage *= 3;
+      return Math.floor(damage);
     },
     rewards: {
       firstTime: {
-        gems: 10000,
-        crystals: 500,
-        cosmicEnergy: 10000000,
+        gems: 5000,
+        // Redus de la 10000
+        crystals: 300,
+        // Redus de la 500
+        cosmicEnergy: 5000000,
+        // Redus de la 10000000
         guaranteedGuardian: {
           rarity: 'legendary',
           type: 'cosmic'
@@ -3534,8 +3613,9 @@ var BOSSES = {
         }
       },
       repeat: {
-        gems: 1000,
-        crystals: 100
+        gems: 500,
+        // Redus de la 1000
+        crystals: 60 // Redus de la 100
       }
     },
     lore: 'The final challenge. Are you worthy?',
@@ -3566,7 +3646,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     emoji: '☀️',
     type: 'energy',
     realm: 'forest',
-    rarities: ['common', 'uncommon', 'rare'],
+    rarities: ['common', 'uncommon'],
     lore: 'Born from the first rays of dawn, it channels solar power.'
   },
   thunderbird: {
@@ -3576,7 +3656,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     emoji: '⚡',
     type: 'energy',
     realm: 'forest',
-    rarities: ['uncommon', 'rare', 'epic'],
+    rarities: ['uncommon', 'rare'],
     lore: 'Its wings generate storms that power ancient technologies.'
   },
   stormElemental: {
@@ -3607,7 +3687,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     emoji: '🦊',
     type: 'mana',
     realm: 'forest',
-    rarities: ['common', 'uncommon', 'rare'],
+    rarities: ['common', 'uncommon'],
     lore: 'Each tail holds a different magical secret.'
   },
   arcaneOwl: {
@@ -3627,7 +3707,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     emoji: '🔥',
     type: 'mana',
     realm: 'forest',
-    rarities: ['rare', 'epic', 'legendary'],
+    rarities: ['rare', 'epic'],
     lore: 'Death only makes it stronger, mana flowing eternal.'
   },
   voidWitch: {
@@ -3648,7 +3728,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     emoji: '🗿',
     type: 'volcanic',
     realm: 'volcano',
-    rarities: ['common', 'uncommon', 'rare'],
+    rarities: ['common', 'uncommon'],
     lore: 'Forged in the heart of the volcano itself.'
   },
   lavaSerpent: {
@@ -3658,7 +3738,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     emoji: '🐍',
     type: 'volcanic',
     realm: 'volcano',
-    rarities: ['uncommon', 'rare', 'epic'],
+    rarities: ['uncommon', 'rare'],
     lore: 'It drinks lava like water.'
   },
   infernoTitan: {
@@ -3668,7 +3748,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     emoji: '👹',
     type: 'volcanic',
     realm: 'volcano',
-    rarities: ['rare', 'epic', 'legendary'],
+    rarities: ['rare', 'epic'],
     lore: 'Mountains crumble before its fury.'
   },
   primordialFlame: {
@@ -3733,7 +3813,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     rarities: ['legendary'],
     lore: 'Past, present, and future are one to it.',
     special: {
-      offlineBonus: 0.2 // +20% offline production
+      offlineBonus: 0.15 // +15% offline production (reduced from 20%)
     }
   },
   gemFairy: {
@@ -3746,7 +3826,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     rarities: ['rare', 'epic'],
     lore: 'Its tears crystallize into precious gems.',
     special: {
-      gemBonus: 0.1 // +10% gems from all sources
+      gemBonus: 0.08 // +8% gems from all sources (reduced from 10%)
     }
   },
   // ===== OCEAN REALM GUARDIANS =====
@@ -3762,7 +3842,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     ability: {
       type: 'boost',
       target: 'tidalEnergy',
-      multiplier: 1.10 // +10% tidal energy generation
+      multiplier: 1.08 // +8% tidal energy (reduced from 10%)
     }
   },
   kelpGuardian: {
@@ -3777,7 +3857,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     ability: {
       type: 'synergy',
       target: 'kelpFarm',
-      multiplier: 1.25 // +25% production from kelpFarm
+      multiplier: 1.20 // +20% production from kelpFarm (reduced from 25%)
     }
   },
   coralWarden: {
@@ -3792,8 +3872,8 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
     ability: {
       type: 'chanceBonus',
       target: 'coralBattery',
-      chance: 0.10,
-      // 10% chance for extra pearls
+      chance: 0.08,
+      // 8% chance for extra pearls (reduced from 10%)
       resource: 'pearls'
     }
   },
@@ -3848,9 +3928,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'bronze',
     reward: {
-      timeShards: 50,
-      energy: 1000
+      gems: 25,
+      energy: 500
     },
+    // Redus: timeShards eliminat, rewards reduse
     condition: function condition(stats) {
       return stats.totalSpins >= 1;
     },
@@ -3863,9 +3944,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'bronze',
     reward: {
-      timeShards: 100,
-      gems: 25
+      gems: 50,
+      energy: 1000
     },
+    // Redus
     condition: function condition(stats) {
       return stats.currentStreak >= 3;
     },
@@ -3878,10 +3960,11 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'silver',
     reward: {
-      timeShards: 250,
-      gems: 50,
-      crystals: 2
+      gems: 100,
+      crystals: 2,
+      energy: 2500
     },
+    // Redus
     condition: function condition(stats) {
       return stats.currentStreak >= 7;
     },
@@ -3894,11 +3977,11 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'gold',
     reward: {
-      timeShards: 1000,
-      gems: 200,
-      crystals: 10,
+      gems: 400,
+      crystals: 8,
       guardian: 1
     },
+    // Redus
     condition: function condition(stats) {
       return stats.currentStreak >= 30;
     },
@@ -3911,9 +3994,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'silver',
     reward: {
-      timeShards: 300,
-      gems: 75
+      gems: 120,
+      crystals: 3
     },
+    // Redus
     condition: function condition(stats) {
       return stats.totalSpins >= 50;
     },
@@ -3926,10 +4010,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'gold',
     reward: {
-      timeShards: 750,
-      gems: 150,
-      crystals: 5
+      gems: 300,
+      crystals: 10
     },
+    // Redus
     condition: function condition(stats) {
       return stats.totalSpins >= 100;
     },
@@ -3942,9 +4026,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'gold',
     reward: {
-      timeShards: 500,
-      gems: 100
+      gems: 200,
+      crystals: 5
     },
+    // Redus
     condition: function condition(stats) {
       return stats.highestGemReward >= 500;
     },
@@ -3957,9 +4042,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'platinum',
     reward: {
-      timeShards: 1000,
+      gems: 500,
       crystals: 15
     },
+    // Redus
     condition: function condition(stats) {
       return stats.guardiansWon >= 1;
     },
@@ -3974,11 +4060,28 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'bronze',
     reward: {
-      timeShards: 50,
-      energy: 2000
+      gems: 20,
+      energy: 1000
     },
+    // Redus
     condition: function condition(stats) {
       return stats.gamesPlayed >= 1;
+    },
+    hidden: false
+  }, {
+    id: '2048_reach_128',
+    name: 'Early Success',
+    description: 'Reach the 128 tile',
+    icon: '🟪',
+    category: 'game2048',
+    tier: 'bronze',
+    reward: {
+      gems: 30,
+      energy: 1500
+    },
+    // Nou achievement pentru progresie mai smooth
+    condition: function condition(stats) {
+      return stats.highestTile >= 128;
     },
     hidden: false
   }, {
@@ -3987,11 +4090,12 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     description: 'Reach the 256 tile',
     icon: '🟦',
     category: 'game2048',
-    tier: 'bronze',
+    tier: 'silver',
     reward: {
-      timeShards: 100,
-      gems: 30
+      gems: 50,
+      crystals: 1
     },
+    // Redus
     condition: function condition(stats) {
       return stats.highestTile >= 256;
     },
@@ -4004,10 +4108,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'silver',
     reward: {
-      timeShards: 200,
-      gems: 50,
-      crystals: 3
+      gems: 80,
+      crystals: 2
     },
+    // Redus
     condition: function condition(stats) {
       return stats.highestTile >= 512;
     },
@@ -4020,10 +4124,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'gold',
     reward: {
-      timeShards: 400,
-      gems: 100,
+      gems: 150,
       crystals: 5
     },
+    // Redus
     condition: function condition(stats) {
       return stats.highestTile >= 1024;
     },
@@ -4036,11 +4140,11 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'platinum',
     reward: {
-      timeShards: 1000,
-      gems: 250,
+      gems: 400,
       crystals: 15,
       guardian: 1
     },
+    // Redus
     condition: function condition(stats) {
       return stats.highestTile >= 2048;
     },
@@ -4053,12 +4157,28 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'diamond',
     reward: {
-      timeShards: 2500,
-      gems: 500,
-      crystals: 25
+      gems: 1000,
+      crystals: 30
     },
+    // Redus
     condition: function condition(stats) {
       return stats.highestTile >= 4096;
+    },
+    hidden: false
+  }, {
+    id: '2048_score_5k',
+    name: 'Score Starter',
+    description: 'Reach 5,000 points in a single game',
+    icon: '⭐',
+    category: 'game2048',
+    tier: 'bronze',
+    reward: {
+      gems: 40,
+      energy: 2000
+    },
+    // Nou - milestone mai mic
+    condition: function condition(stats) {
+      return stats.highScore >= 5000;
     },
     hidden: false
   }, {
@@ -4069,9 +4189,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'silver',
     reward: {
-      timeShards: 250,
-      gems: 75
+      gems: 100,
+      crystals: 3
     },
+    // Redus
     condition: function condition(stats) {
       return stats.highScore >= 10000;
     },
@@ -4084,12 +4205,28 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'gold',
     reward: {
-      timeShards: 750,
-      gems: 200,
+      gems: 300,
       crystals: 10
     },
+    // Redus
     condition: function condition(stats) {
       return stats.highScore >= 50000;
+    },
+    hidden: false
+  }, {
+    id: '2048_games_10',
+    name: 'Getting Practice',
+    description: 'Play 10 games',
+    icon: '🎲',
+    category: 'game2048',
+    tier: 'bronze',
+    reward: {
+      gems: 50,
+      energy: 2500
+    },
+    // Nou - milestone mai mic
+    condition: function condition(stats) {
+      return stats.gamesPlayed >= 10;
     },
     hidden: false
   }, {
@@ -4100,9 +4237,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'silver',
     reward: {
-      timeShards: 300,
-      gems: 80
+      gems: 120,
+      crystals: 4
     },
+    // Redus
     condition: function condition(stats) {
       return stats.gamesPlayed >= 25;
     },
@@ -4115,10 +4253,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'gold',
     reward: {
-      timeShards: 1000,
-      gems: 250,
-      crystals: 10
+      gems: 400,
+      crystals: 15
     },
+    // Redus
     condition: function condition(stats) {
       return stats.gamesPlayed >= 100;
     },
@@ -4133,24 +4271,42 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'bronze',
     reward: {
-      timeShards: 50,
-      energy: 2000
+      gems: 25,
+      energy: 1000
     },
+    // Redus
     condition: function condition(stats) {
       return stats.gamesPlayed >= 1;
     },
     hidden: false
   }, {
-    id: 'match3_combo_5',
+    id: 'match3_combo_3',
     name: 'Combo Starter',
-    description: 'Achieve a 5x combo',
+    description: 'Achieve a 3x combo',
     icon: '🔥',
     category: 'match3',
     tier: 'bronze',
     reward: {
-      timeShards: 100,
-      gems: 30
+      gems: 30,
+      energy: 1500
     },
+    // Nou - milestone mai mic
+    condition: function condition(stats) {
+      return stats.bestCombo >= 3;
+    },
+    hidden: false
+  }, {
+    id: 'match3_combo_5',
+    name: 'Combo Builder',
+    description: 'Achieve a 5x combo',
+    icon: '💫',
+    category: 'match3',
+    tier: 'silver',
+    reward: {
+      gems: 60,
+      crystals: 2
+    },
+    // Redus
     condition: function condition(stats) {
       return stats.bestCombo >= 5;
     },
@@ -4163,10 +4319,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'silver',
     reward: {
-      timeShards: 250,
-      gems: 75,
-      crystals: 3
+      gems: 120,
+      crystals: 4
     },
+    // Redus
     condition: function condition(stats) {
       return stats.bestCombo >= 10;
     },
@@ -4179,25 +4335,42 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'gold',
     reward: {
-      timeShards: 500,
-      gems: 150,
-      crystals: 8
+      gems: 250,
+      crystals: 10
     },
+    // Redus
     condition: function condition(stats) {
       return stats.bestCombo >= 15;
+    },
+    hidden: false
+  }, {
+    id: 'match3_score_500',
+    name: 'Score Beginner',
+    description: 'Score 500 points in a single game',
+    icon: '🎯',
+    category: 'match3',
+    tier: 'bronze',
+    reward: {
+      gems: 40,
+      energy: 2000
+    },
+    // Nou - milestone mai mic
+    condition: function condition(stats) {
+      return stats.highScore >= 500;
     },
     hidden: false
   }, {
     id: 'match3_score_1000',
     name: 'High Scorer',
     description: 'Score 1,000 points in a single game',
-    icon: '🎯',
+    icon: '⭐',
     category: 'match3',
     tier: 'silver',
     reward: {
-      timeShards: 200,
-      gems: 50
+      gems: 80,
+      crystals: 3
     },
+    // Redus
     condition: function condition(stats) {
       return stats.highScore >= 1000;
     },
@@ -4210,10 +4383,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'gold',
     reward: {
-      timeShards: 600,
-      gems: 150,
-      crystals: 5
+      gems: 250,
+      crystals: 8
     },
+    // Redus
     condition: function condition(stats) {
       return stats.highScore >= 2500;
     },
@@ -4226,9 +4399,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'silver',
     reward: {
-      timeShards: 250,
-      gems: 60
+      gems: 100,
+      crystals: 3
     },
+    // Redus
     condition: function condition(stats) {
       var _stats$specialGemsCre;
       return ((_stats$specialGemsCre = stats.specialGemsCreated) === null || _stats$specialGemsCre === void 0 ? void 0 : _stats$specialGemsCre.bomb) >= 10;
@@ -4242,10 +4416,10 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'gold',
     reward: {
-      timeShards: 400,
-      gems: 100,
-      crystals: 5
+      gems: 180,
+      crystals: 6
     },
+    // Redus
     condition: function condition(stats) {
       var _stats$specialGemsCre2;
       return ((_stats$specialGemsCre2 = stats.specialGemsCreated) === null || _stats$specialGemsCre2 === void 0 ? void 0 : _stats$specialGemsCre2.lightning) >= 5;
@@ -4259,27 +4433,43 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'platinum',
     reward: {
-      timeShards: 1000,
-      gems: 250,
-      crystals: 10
+      gems: 400,
+      crystals: 12
     },
+    // Redus
     condition: function condition(stats) {
       var _stats$specialGemsCre3;
       return ((_stats$specialGemsCre3 = stats.specialGemsCreated) === null || _stats$specialGemsCre3 === void 0 ? void 0 : _stats$specialGemsCre3.rainbow) >= 1;
     },
     hidden: false
   }, {
+    id: 'match3_games_10',
+    name: 'Match Explorer',
+    description: 'Play 10 Match-3 games',
+    icon: '🎮',
+    category: 'match3',
+    tier: 'bronze',
+    reward: {
+      gems: 60,
+      energy: 3000
+    },
+    // Nou - milestone mai mic
+    condition: function condition(stats) {
+      return stats.gamesPlayed >= 10;
+    },
+    hidden: false
+  }, {
     id: 'match3_games_50',
     name: 'Match Veteran',
     description: 'Play 50 Match-3 games',
-    icon: '🎮',
+    icon: '🎯',
     category: 'match3',
     tier: 'gold',
     reward: {
-      timeShards: 750,
-      gems: 200,
-      crystals: 8
+      gems: 300,
+      crystals: 10
     },
+    // Redus
     condition: function condition(stats) {
       return stats.gamesPlayed >= 50;
     },
@@ -4287,16 +4477,16 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
   }, {
     id: 'match3_perfect_score',
     name: 'Perfect Victory',
-    description: 'Win a boss battle with 3000+ score',
+    description: 'Win a boss battle with 2000+ score',
     icon: '⭐',
     category: 'match3',
     tier: 'platinum',
     reward: {
-      timeShards: 1500,
-      gems: 300,
-      crystals: 15,
+      gems: 600,
+      crystals: 20,
       guardian: 1
     },
+    // Redus + score requirement redus
     condition: function condition(stats) {
       return stats.perfectVictories >= 1;
     },
@@ -4326,13 +4516,14 @@ var ACHIEVEMENT_TIERS = exports.ACHIEVEMENT_TIERS = {
   platinum: {
     color: '#E5E4E2',
     icon: '💎',
-    multiplier: 3
+    multiplier: 2.5
   },
+  // Redus de la 3
   diamond: {
     color: '#B9F2FF',
     icon: '💠',
-    multiplier: 5
-  }
+    multiplier: 4
+  } // Redus de la 5
 };
 
 /**
@@ -4385,12 +4576,12 @@ var QUEST_TEMPLATES = {
     description: 'Produce {amount} energy',
     emoji: '⚡',
     resource: 'energy',
-    amounts: [1000, 5000, 10000, 50000, 100000],
+    amounts: [500, 2000, 5000, 15000, 50000],
     rewards: function rewards(amount) {
       return {
-        energy: Math.floor(amount * 0.1),
-        // 10% bonus
-        gems: Math.min(5 + Math.floor(amount / 10000), 50)
+        energy: Math.floor(amount * 0.08),
+        // 8% bonus (reduced from 10%)
+        gems: Math.min(3 + Math.floor(amount / 5000), 30)
       };
     },
     weight: 30,
@@ -4403,12 +4594,12 @@ var QUEST_TEMPLATES = {
     description: 'Produce {amount} mana',
     emoji: '✨',
     resource: 'mana',
-    amounts: [10, 50, 100, 500, 1000],
+    amounts: [5, 20, 50, 200, 500],
     rewards: function rewards(amount) {
       return {
-        mana: Math.floor(amount * 0.2),
-        // 20% bonus
-        gems: Math.min(10 + Math.floor(amount / 50), 100)
+        mana: Math.floor(amount * 0.15),
+        // 15% bonus (reduced from 20%)
+        gems: Math.min(5 + Math.floor(amount / 25), 50)
       };
     },
     weight: 25,
@@ -4426,12 +4617,12 @@ var QUEST_TEMPLATES = {
     description: 'Produce {amount} volcanic energy',
     emoji: '🌋',
     resource: 'volcanicEnergy',
-    amounts: [100, 500, 1000, 5000, 10000],
+    amounts: [50, 250, 500, 2500, 5000],
     rewards: function rewards(amount) {
       return {
-        volcanicEnergy: Math.floor(amount * 0.15),
-        gems: Math.min(15 + Math.floor(amount / 500), 150),
-        crystals: Math.floor(amount / 5000)
+        volcanicEnergy: Math.floor(amount * 0.12),
+        gems: Math.min(8 + Math.floor(amount / 250), 80),
+        crystals: Math.floor(amount / 2500)
       };
     },
     weight: 20,
@@ -4450,12 +4641,12 @@ var QUEST_TEMPLATES = {
     description: 'Purchase {amount} structures',
     emoji: '🏗️',
     target: 'any',
-    amounts: [5, 10, 20, 50, 100],
+    amounts: [3, 5, 10, 25, 50],
     rewards: function rewards(amount) {
       return {
-        energy: amount * 500,
-        gems: Math.min(10 + amount, 100),
-        mana: Math.floor(amount / 10)
+        energy: amount * 200,
+        gems: Math.min(5 + amount, 50),
+        mana: Math.floor(amount / 5)
       };
     },
     weight: 20,
@@ -4468,11 +4659,11 @@ var QUEST_TEMPLATES = {
     description: 'Purchase {amount} {structure}',
     emoji: '🎯',
     targets: ['solarPanel', 'windTurbine', 'hydroPlant', 'manaExtractor'],
-    amounts: [3, 5, 10, 20],
+    amounts: [2, 3, 5, 10],
     rewards: function rewards(amount) {
       return {
-        energy: amount * 1000,
-        gems: amount * 5
+        energy: amount * 500,
+        gems: amount * 3
       };
     },
     weight: 15,
@@ -4485,12 +4676,12 @@ var QUEST_TEMPLATES = {
     name: 'Research & Development',
     description: 'Purchase {amount} upgrades',
     emoji: '🔬',
-    amounts: [1, 3, 5, 10],
+    amounts: [1, 2, 3, 5],
     rewards: function rewards(amount) {
       return {
-        gems: amount * 20,
-        energy: amount * 2000,
-        mana: amount * 10
+        gems: amount * 15,
+        energy: amount * 1000,
+        mana: amount * 5
       };
     },
     weight: 15,
@@ -4509,12 +4700,12 @@ var QUEST_TEMPLATES = {
     description: 'Reach {amount} energy/s',
     emoji: '📈',
     metric: 'energyPerSecond',
-    amounts: [100, 500, 1000, 5000, 10000],
+    amounts: [50, 200, 500, 2000, 5000],
     rewards: function rewards(amount) {
       return {
-        gems: Math.min(25 + Math.floor(amount / 100), 200),
-        crystals: Math.floor(amount / 1000),
-        energy: amount * 100
+        gems: Math.min(15 + Math.floor(amount / 50), 100),
+        crystals: Math.floor(amount / 500),
+        energy: amount * 50
       };
     },
     weight: 10,
@@ -4527,11 +4718,11 @@ var QUEST_TEMPLATES = {
     description: 'Reach structure level {amount}',
     emoji: '⬆️',
     metric: 'maxStructureLevel',
-    amounts: [10, 25, 50, 100],
+    amounts: [5, 10, 25, 50],
     rewards: function rewards(amount) {
       return {
-        gems: amount * 2,
-        energy: amount * 1000
+        gems: amount * 1,
+        energy: amount * 500
       };
     },
     weight: 10,
@@ -4544,12 +4735,12 @@ var QUEST_TEMPLATES = {
     name: 'Puzzle Master',
     description: 'Win {amount} puzzle games',
     emoji: '🧩',
-    counts: [1, 3, 5, 10],
+    counts: [1, 2, 3, 5],
     minScore: 500,
     rewards: function rewards(count) {
       return {
-        gems: count * 15,
-        energy: count * 2000
+        gems: count * 10,
+        energy: count * 1000
       };
     },
     weight: 15,
@@ -4561,11 +4752,11 @@ var QUEST_TEMPLATES = {
     name: 'High Scorer',
     description: 'Score {amount} in puzzle',
     emoji: '🎯',
-    scores: [1000, 1500, 2000, 3000],
+    scores: [800, 1200, 1600, 2500],
     rewards: function rewards(score) {
       return {
-        gems: Math.floor(score / 50),
-        energy: score * 5
+        gems: Math.floor(score / 80),
+        energy: score * 3
       };
     },
     weight: 10,
@@ -4578,11 +4769,11 @@ var QUEST_TEMPLATES = {
     name: 'Guardian Summoner',
     description: 'Summon {amount} guardians',
     emoji: '🐉',
-    counts: [1, 3, 5, 10],
+    counts: [1, 2, 3, 5],
     rewards: function rewards(count) {
       return {
-        gems: count * 50,
-        energy: count * 5000
+        gems: count * 30,
+        energy: count * 2500
       };
     },
     weight: 10,
@@ -4603,16 +4794,16 @@ var QUEST_TEMPLATES = {
     rewards: function rewards(rarity) {
       var rewardMap = {
         rare: {
-          gems: 100,
+          gems: 50,
           crystals: 1
         },
         epic: {
-          gems: 250,
+          gems: 150,
           crystals: 3
         },
         legendary: {
-          gems: 500,
-          crystals: 10
+          gems: 300,
+          crystals: 8
         }
       };
       return rewardMap[rarity];
@@ -4635,9 +4826,9 @@ var QUEST_TEMPLATES = {
     bosses: ['corruptedTreeant', 'infernoTitan', 'voidLeviathan'],
     rewards: function rewards(bossId) {
       return {
-        gems: 100,
+        gems: 75,
         crystals: 5,
-        energy: 50000
+        energy: 25000
       };
     },
     weight: 5,
@@ -4658,9 +4849,9 @@ var QUEST_TEMPLATES = {
     realms: ['volcano'],
     rewards: function rewards(realmId) {
       return {
-        gems: 200,
-        crystals: 10,
-        energy: 100000
+        gems: 100,
+        crystals: 8,
+        energy: 50000
       };
     },
     weight: 3,
@@ -4675,8 +4866,8 @@ var QUEST_TEMPLATES = {
     emoji: '✨',
     rewards: function rewards() {
       return {
-        gems: 500,
-        crystals: 20
+        gems: 250,
+        crystals: 15
       };
     },
     weight: 2,
@@ -4690,6 +4881,7 @@ var QUEST_TEMPLATES = {
   // ===== OCEAN REALM QUESTS =====
   ocean_intro: {
     id: 'ocean_intro',
+    type: 'realm',
     name: 'Discover the Ocean',
     description: 'Unlock and enter the Ocean Realm.',
     emoji: '🌊',
@@ -4700,82 +4892,147 @@ var QUEST_TEMPLATES = {
       }
     },
     rewards: {
-      tidalEnergy: 5000,
-      crystals: 5
+      tidalEnergy: 2500,
+      gems: 50,
+      crystals: 3
     },
+    weight: 3,
+    difficulty: 'hard',
     lore: 'You found your way to the mysterious underwater world. The tides welcome you.'
   },
   tide_master: {
     id: 'tide_master',
+    type: 'milestone',
     name: 'Tide Master',
-    description: 'Reach 500 tidal energy/sec production in the Ocean Realm.',
+    description: 'Reach 250 tidal energy/sec production in the Ocean Realm.',
     emoji: '🌊',
     realm: 'ocean',
-    requirements: {
-      production: {
-        tidalEnergy: 500
-      }
+    metric: 'tidalEnergyPerSecond',
+    amounts: [250],
+    rewards: function rewards(amount) {
+      return {
+        pearls: 15,
+        gems: 30,
+        crystals: 5
+      };
     },
-    rewards: {
-      pearls: 25,
-      gems: 50,
-      crystals: 10
+    weight: 8,
+    difficulty: 'hard',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      }
     },
     lore: 'You tamed the tides and mastered the ocean\'s energy.'
   },
   kelp_tycoon: {
     id: 'kelp_tycoon',
+    type: 'buy',
     name: 'Kelp Tycoon',
-    description: 'Own at least 20 Kelp Farms in Ocean Realm.',
+    description: 'Own at least 10 Kelp Farms in Ocean Realm.',
     emoji: '🪸',
     realm: 'ocean',
-    requirements: {
-      structures: {
-        kelpFarm: 20
-      }
+    target: 'kelpFarm',
+    amounts: [10],
+    rewards: function rewards(amount) {
+      return {
+        tidalEnergy: 8000,
+        gems: 15
+      };
     },
-    rewards: {
-      tidalEnergy: 15000,
-      gems: 20
+    weight: 12,
+    difficulty: 'medium',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      },
+      structures: {
+        kelpFarm: 5
+      }
     },
     lore: 'You\'ve built the largest kelp farm in the deep.'
   },
   pearl_diver: {
     id: 'pearl_diver',
+    type: 'collect',
     name: 'Pearl Diver',
-    description: 'Collect 50 pearls using Coral Battery.',
+    description: 'Collect 30 pearls using Coral Battery.',
     emoji: '🏝️',
     realm: 'ocean',
-    requirements: {
-      resources: {
-        pearls: 50
-      }
+    resource: 'pearls',
+    amounts: [30],
+    rewards: function rewards(amount) {
+      return {
+        gems: 20,
+        crystals: 5
+      };
     },
-    rewards: {
-      gems: 25,
-      crystals: 10
+    weight: 10,
+    difficulty: 'hard',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      },
+      structures: {
+        coralBattery: 3
+      }
     },
     lore: 'Your diving skills have brought back the ocean\'s treasures.'
   },
   abyss_conqueror: {
     id: 'abyss_conqueror',
+    type: 'boss',
     name: 'Abyss Conqueror',
     description: 'Defeat the Ocean Leviathan boss.',
     emoji: '🦈',
     realm: 'ocean',
-    requirements: {
+    bosses: ['oceanLeviathan'],
+    rewards: function rewards(bossId) {
+      return {
+        gems: 100,
+        crystals: 10,
+        tidalEnergy: 50000,
+        legendaryGuardian: {
+          type: 'water',
+          rarity: 'legendary'
+        }
+      };
+    },
+    weight: 3,
+    difficulty: 'hard',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      },
       bosses: {
-        oceanLeviathan: 'defeated'
+        oceanLeviathan: 'unlocked'
       }
     },
-    rewards: {
-      legendaryGuardian: {
-        type: 'water',
-        rarity: 'legendary'
-      },
-      title: 'Abyss Conqueror'
-    },
     lore: 'You conquered the deepest horror the ocean could offer.'
+  },
+  // ===== OCEAN PRODUCTION QUESTS =====
+  produceTidal: {
+    id: 'produceTidal',
+    type: 'produce',
+    name: 'Tidal Wave',
+    description: 'Produce {amount} tidal energy',
+    emoji: '🌊',
+    resource: 'tidalEnergy',
+    amounts: [100, 500, 1500, 5000, 15000],
+    rewards: function rewards(amount) {
+      return {
+        tidalEnergy: Math.floor(amount * 0.12),
+        gems: Math.min(8 + Math.floor(amount / 300), 70),
+        pearls: Math.floor(amount / 3000)
+      };
+    },
+    weight: 20,
+    difficulty: 'medium',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      }
+    }
   }
 };
 var _default = exports["default"] = QUEST_TEMPLATES;
@@ -4786,13 +5043,20 @@ var _default = exports["default"] = QUEST_TEMPLATES;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.canUnlockRealm = canUnlockRealm;
 exports["default"] = void 0;
+exports.getRealmById = getRealmById;
+exports.getUnlockedRealms = getUnlockedRealms;
 var _config = _interopRequireDefault(require("../config.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
-/**
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; } /**
  * Realm definitions
  */
-
 var REALMS = {
   forest: {
     id: 'forest',
@@ -4809,7 +5073,12 @@ var REALMS = {
       specialResources: []
     },
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    lore: 'A peaceful forest where energy flows naturally through ancient trees and crystal-clear streams.'
+    lore: 'A peaceful forest where energy flows naturally through ancient trees and crystal-clear streams.',
+    bonuses: {
+      // Starter realm - no special bonuses
+      energyProduction: 1.0,
+      manaProduction: 1.0
+    }
   },
   volcano: {
     id: 'volcano',
@@ -4826,7 +5095,7 @@ var REALMS = {
       }
     },
     unlockCost: {
-      crystals: _config["default"].BALANCING.VOLCANO_UNLOCK_COST
+      crystals: _config["default"].BALANCING.VOLCANO_UNLOCK_COST || 200 // Fallback dacă nu e în CONFIG
     },
     features: {
       structures: ['magmaVent', 'lavaCrystallizer', 'obsidianForge'],
@@ -4836,11 +5105,13 @@ var REALMS = {
     background: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)',
     lore: 'An ancient volcano where primordial fire still burns. The heat here can forge anything... or destroy everything.',
     bonuses: {
-      // Special bonuses for being in this realm
-      manaConversion: 1.2,
-      // +20% mana from volcanic sources
-      gemChance: 0.05 // 5% chance for gems from volcanic structures
-    }
+      volcanicProduction: 1.10,
+      // +10% volcanic energy (redus de la implicit)
+      manaConversion: 1.15,
+      // +15% mana from volcanic sources (redus de la 1.2)
+      gemChance: 0.03 // 3% chance for gems (redus de la 5%)
+    },
+    bossId: 'infernoTitan'
   },
   // === OCEAN REALM ===
   ocean: {
@@ -4851,14 +5122,18 @@ var REALMS = {
     theme: 'blue',
     unlockCondition: {
       ascension: {
-        level: 3
+        level: 2
       },
+      // Redus de la 3
       realms: {
         volcano: 'unlocked'
-      }
+      },
+      production: {
+        energy: 2000
+      } // Adăugat milestone de producție
     },
     unlockCost: {
-      crystals: 500
+      crystals: 300 // Redus de la 500
     },
     features: {
       structures: ['tidalGenerator', 'kelpFarm', 'coralBattery', 'deepSeaPump', 'pressureReactor'],
@@ -4866,19 +5141,85 @@ var REALMS = {
       specialResources: ['tidalEnergy', 'pearls']
     },
     background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-    lore: 'The ocean depths hold secrets older than time itself. Harness tides and marine life for immense energy.',
+    lore: 'The ocean depths hold secrets older than time itself.  Harness tides and marine life for immense energy.',
     bonuses: {
-      energyProduction: 1.15,
-      // +15% energy production in ocean
-      pearlDropChance: 0.10,
-      // 10% chance for pearls from kelp/coral
-      guardianAffinity: 1.20 // +20% water guardian bonus here
+      tidalProduction: 1.08,
+      // +8% tidal energy production (redus de la 1. 15)
+      pearlDropChance: 0.06,
+      // 6% chance for pearls (redus de la 10%)
+      guardianAffinity: 1.12 // +12% water guardian bonus (redus de la 1. 20)
     },
-    bossId: 'leviathan',
-    // Reference to Ocean boss, to be defined
-    questIds: ['ocean_intro', 'tide_master'],
-    // Reference to quests for the realm
-    locked: true // Set to false when all module data is ready
+    bossId: 'oceanLeviathan',
+    questIds: ['ocean_intro', 'tide_master', 'kelp_tycoon', 'pearl_diver'],
+    locked: false // ✅ Acum e disponibil! 
+  },
+  // === FUTURE REALMS ===
+
+  desert: {
+    id: 'desert',
+    name: 'Desert Expanse',
+    description: 'Endless dunes hiding ancient solar power',
+    emoji: '�sa',
+    theme: 'yellow',
+    unlockCondition: {
+      ascension: {
+        level: 3
+      },
+      realms: {
+        ocean: 'unlocked'
+      }
+    },
+    unlockCost: {
+      crystals: 600
+    },
+    features: {
+      structures: ['solarArray', 'sandExtractor', 'mirageCore'],
+      guardianTypes: ['solar', 'all'],
+      specialResources: ['solarEssence']
+    },
+    background: 'linear-gradient(135deg, #f2994a 0%, #f2c94c 100%)',
+    lore: 'Where the sun burns brightest and sand holds forgotten secrets.',
+    bonuses: {
+      solarProduction: 1.25,
+      // +25% solar energy
+      energyProduction: 1.10,
+      // +10% all energy
+      heatResistance: 0.9 // -10% structure costs
+    },
+    locked: true // Not implemented yet
+  },
+  tundra: {
+    id: 'tundra',
+    name: 'Frozen Tundra',
+    description: 'Ice and cold preserve ancient energies',
+    emoji: '❄️',
+    theme: 'cyan',
+    unlockCondition: {
+      ascension: {
+        level: 4
+      },
+      realms: {
+        desert: 'unlocked'
+      }
+    },
+    unlockCost: {
+      crystals: 1000
+    },
+    features: {
+      structures: ['cryoReactor', 'iceHarvester', 'auraBorealis'],
+      guardianTypes: ['ice', 'all'],
+      specialResources: ['cryoEnergy']
+    },
+    background: 'linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%)',
+    lore: 'Frozen wastes where time moves slowly and energy is preserved eternally.',
+    bonuses: {
+      cryoProduction: 1.30,
+      // +30% cryo energy
+      crystalChance: 0.08,
+      // 8% chance for crystals
+      guardianDuration: 1.20 // +20% guardian buff duration
+    },
+    locked: true // Not implemented yet
   },
   cosmos: {
     id: 'cosmos',
@@ -4889,22 +5230,115 @@ var REALMS = {
     unlockCondition: {
       ascension: {
         level: 5
+      },
+      realms: {
+        tundra: 'unlocked'
+      },
+      bosses: {
+        voidLeviathan: 'defeated',
+        oceanLeviathan: 'defeated',
+        infernoTitan: 'defeated'
       }
     },
     unlockCost: {
       crystals: 2000
     },
     features: {
-      structures: [],
-      // To be defined
+      structures: ['starForge', 'blackHoleGenerator', 'warpReactor'],
       guardianTypes: ['cosmic', 'all'],
-      specialResources: ['cosmicEnergy']
+      specialResources: ['cosmicEnergy', 'starDust']
     },
     background: 'linear-gradient(135deg, #000000 0%, #434343 100%)',
-    lore: 'Where reality bends and infinite energy awaits.',
-    locked: true // Not implemented yet
+    lore: 'Where reality bends and infinite energy awaits.  The final frontier.',
+    bonuses: {
+      allProduction: 1.50,
+      // +50% ALL production types
+      ascensionBonus: 1.25,
+      // +25% ascension crystal gain
+      guardianPower: 1.40 // +40% all guardian bonuses
+    },
+    bossId: 'cosmicHarbinger',
+    locked: true // Final realm - Not implemented yet
   }
 };
+
+/**
+ * Get realm by ID
+ */
+function getRealmById(realmId) {
+  return REALMS[realmId] || null;
+}
+
+/**
+ * Get unlocked realms based on state
+ */
+function getUnlockedRealms(state) {
+  return Object.values(REALMS).filter(function (realm) {
+    if (!realm.unlockCondition) return true; // Forest always unlocked
+    if (realm.locked) return false; // Not implemented
+
+    return state.realms.unlocked.includes(realm.id);
+  });
+}
+
+/**
+ * Check if realm can be unlocked
+ */
+function canUnlockRealm(realmId, state) {
+  var _realm$unlockCost;
+  var realm = REALMS[realmId];
+  if (!realm || realm.locked) return false;
+  if (!realm.unlockCondition) return true;
+  var condition = realm.unlockCondition;
+
+  // Check ascension level
+  if (condition.ascension && state.ascension.level < condition.ascension.level) {
+    return false;
+  }
+
+  // Check other realms
+  if (condition.realms) {
+    for (var _i = 0, _Object$entries = Object.entries(condition.realms); _i < _Object$entries.length; _i++) {
+      var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+        requiredRealm = _Object$entries$_i[0],
+        status = _Object$entries$_i[1];
+      if (status === 'unlocked' && !state.realms.unlocked.includes(requiredRealm)) {
+        return false;
+      }
+    }
+  }
+
+  // Check bosses
+  if (condition.bosses) {
+    for (var _i2 = 0, _Object$entries2 = Object.entries(condition.bosses); _i2 < _Object$entries2.length; _i2++) {
+      var _state$bosses$boss;
+      var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+        boss = _Object$entries2$_i[0],
+        _status = _Object$entries2$_i[1];
+      if (_status === 'defeated' && !((_state$bosses$boss = state.bosses[boss]) !== null && _state$bosses$boss !== void 0 && _state$bosses$boss.defeated)) {
+        return false;
+      }
+    }
+  }
+
+  // Check production
+  if (condition.production) {
+    for (var _i3 = 0, _Object$entries3 = Object.entries(condition.production); _i3 < _Object$entries3.length; _i3++) {
+      var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
+        resource = _Object$entries3$_i[0],
+        amount = _Object$entries3$_i[1];
+      if (state.production[resource] < amount) {
+        return false;
+      }
+    }
+  }
+
+  // Check resources for cost
+  if ((_realm$unlockCost = realm.unlockCost) !== null && _realm$unlockCost !== void 0 && _realm$unlockCost.crystals && state.resources.crystals < realm.unlockCost.crystals) {
+    return false;
+  }
+  return true;
+}
 var _default = exports["default"] = REALMS;
 
 },{"../config.js":1}],13:[function(require,module,exports){
@@ -4914,8 +5348,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
+exports.getPackageById = getPackageById;
+exports.getPackagesByCategory = getPackagesByCategory;
+exports.isOfferAvailable = isOfferAvailable;
 /**
- * Shop definitions - IAP packages, VIP, etc.
+ * Shop definitions - IAP packages, VIP, etc. 
  */
 
 var SHOP_ITEMS = {
@@ -4927,11 +5364,12 @@ var SHOP_ITEMS = {
       description: 'Perfect for beginners',
       gems: 500,
       bonus: {
-        energy: 10000,
-        mana: 100
+        energy: 5000,
+        // Redus de la 10000
+        mana: 50 // Redus de la 100
       },
       price: 0.99,
-      priceDisplay: '$0.99',
+      priceDisplay: '$0. 99',
       emoji: '💎',
       popular: false
     },
@@ -4941,9 +5379,11 @@ var SHOP_ITEMS = {
       description: 'Good value for active players',
       gems: 1200,
       bonus: {
-        energy: 25000,
-        mana: 250,
-        crystals: 5
+        energy: 15000,
+        // Redus de la 25000
+        mana: 150,
+        // Redus de la 250
+        crystals: 3 // Redus de la 5
       },
       price: 1.99,
       priceDisplay: '$1.99',
@@ -4957,9 +5397,12 @@ var SHOP_ITEMS = {
       description: 'Best value!',
       gems: 3000,
       bonus: {
-        energy: 100000,
-        mana: 1000,
-        crystals: 15,
+        energy: 50000,
+        // Redus de la 100000
+        mana: 500,
+        // Redus de la 1000
+        crystals: 10,
+        // Redus de la 15
         guardian: 1
       },
       price: 4.99,
@@ -4974,10 +5417,13 @@ var SHOP_ITEMS = {
       description: 'For serious players',
       gems: 7500,
       bonus: {
-        energy: 500000,
-        mana: 5000,
-        crystals: 50,
-        guardian: 3
+        energy: 250000,
+        // Redus de la 500000
+        mana: 2500,
+        // Redus de la 5000
+        crystals: 30,
+        // Redus de la 50
+        guardian: 2 // Redus de la 3
       },
       price: 9.99,
       priceDisplay: '$9.99',
@@ -4991,10 +5437,14 @@ var SHOP_ITEMS = {
       description: 'The best deal',
       gems: 20000,
       bonus: {
-        energy: 2000000,
-        mana: 20000,
-        crystals: 200,
-        guardian: 10,
+        energy: 1000000,
+        // Redus de la 2000000
+        mana: 10000,
+        // Redus de la 20000
+        crystals: 120,
+        // Redus de la 200
+        guardian: 6,
+        // Redus de la 10
         guaranteedLegendary: 1
       },
       price: 19.99,
@@ -5013,57 +5463,103 @@ var SHOP_ITEMS = {
     price: 4.99,
     priceDisplay: '$4.99/month',
     duration: 2592000000,
+    // 30 days
     emoji: '👑',
     benefits: {
-      offlineProduction: 1.0,
-      dailyGems: 50,
-      questSlots: 5,
-      upgradeQueueSlots: 5,
-      guardianDiscount: 0.5,
+      offlineProduction: 0.75,
+      // Redus de la 1.0 (100% → 75%)
+      dailyGems: 30,
+      // Redus de la 50
+      questSlots: 4,
+      // Redus de la 5 (+1 în loc de +2)
+      upgradeQueueSlots: 4,
+      // Redus de la 5
+      guardianDiscount: 0.20,
+      // Redus de la 0.5 (50% → 20%)
       noAds: true,
       exclusiveCosmetics: true
     },
-    benefitsDisplay: ['100% offline production', '50 gems daily', '+2 quest slots', '+2 upgrade queue slots', '50% off guardian summons', 'No ads', 'Exclusive cosmetics']
+    benefitsDisplay: ['75% offline production',
+    // Updated
+    '30 gems daily',
+    // Updated
+    '+1 quest slot',
+    // Updated
+    '+1 upgrade queue slot',
+    // Updated
+    '20% off guardian summons',
+    // Updated
+    'No ads', 'Exclusive cosmetics']
   },
   // ===== LIMITED TIME OFFERS =====
   limitedOffers: [{
     id: 'welcome_offer',
     name: 'Welcome Offer',
     description: 'New player special - 24h only!',
-    gems: 2000,
+    gems: 1500,
+    // Redus de la 2000
     bonus: {
-      energy: 100000,
-      crystals: 20,
-      guardian: 2
+      energy: 50000,
+      // Redus de la 100000
+      crystals: 12,
+      // Redus de la 20
+      guardian: 1 // Redus de la 2
     },
     price: 2.99,
     priceDisplay: '$2.99',
     emoji: '🎁',
     duration: 86400000,
+    // 24h
     condition: {
       playTime: {
         max: 3600000
-      }
+      } // First hour
     },
     discount: 70
   }, {
     id: 'ascension_boost',
     name: 'Ascension Boost',
     description: 'Just ascended? Get a head start!',
-    gems: 1000,
+    gems: 800,
+    // Redus de la 1000
     bonus: {
-      energy: 500000,
-      crystals: 50,
+      energy: 250000,
+      // Redus de la 500000
+      crystals: 30,
+      // Redus de la 50
       quickStart: true
     },
     price: 3.99,
     priceDisplay: '$3.99',
     emoji: '✨',
     duration: 1800000,
+    // 30 min offer window
     condition: {
       justAscended: true
     },
     discount: 50
+  },
+  // ✅ NOU - Weekend Deal
+  {
+    id: 'weekend_special',
+    name: 'Weekend Special',
+    description: 'Weekend only - Double rewards!',
+    gems: 2500,
+    bonus: {
+      energy: 100000,
+      mana: 1000,
+      crystals: 20,
+      guardian: 2
+    },
+    price: 4.99,
+    priceDisplay: '$4.99',
+    emoji: '🎉',
+    duration: 172800000,
+    // 48h (weekend)
+    condition: {
+      dayOfWeek: [6, 0] // Saturday & Sunday
+    },
+    discount: 60
   }],
   // ===== REWARDED ADS =====
   rewardedAds: {
@@ -5072,10 +5568,12 @@ var SHOP_ITEMS = {
       name: 'Energy Boost',
       description: 'Watch ad for energy',
       reward: {
-        energy: 5000
+        energy: 2500 // Redus de la 5000
       },
       cooldown: 300000,
-      dailyLimit: 10,
+      // 5 min
+      dailyLimit: 8,
+      // Redus de la 10
       emoji: '⚡'
     },
     gemReward: {
@@ -5083,60 +5581,96 @@ var SHOP_ITEMS = {
       name: 'Free Gems',
       description: 'Watch ad for gems',
       reward: {
-        gems: 25
+        gems: 15 // Redus de la 25
       },
       cooldown: 600000,
-      dailyLimit: 5,
+      // 10 min
+      dailyLimit: 4,
+      // Redus de la 5
       emoji: '💎'
     },
     doubleReward: {
       id: 'doubleReward',
       name: 'Double Rewards',
-      description: '2x all production for 10 minutes',
+      description: '1. 5x all production for 10 minutes',
+      // Updated description
       reward: {
-        multiplier: 2,
-        duration: 600000
+        multiplier: 1.5,
+        // Redus de la 2 (100% → 50%)
+        duration: 600000 // 10 min
       },
-      cooldown: 1800000,
-      dailyLimit: 3,
+      cooldown: 3600000,
+      // Crescut la 1h (de la 30 min)
+      dailyLimit: 2,
+      // Redus de la 3
+      emoji: '✨'
+    },
+    // ✅ NOU - Mana Boost
+    manaBoost: {
+      id: 'manaBoost',
+      name: 'Mana Surge',
+      description: 'Watch ad for mana',
+      reward: {
+        mana: 100
+      },
+      cooldown: 450000,
+      // 7.5 min
+      dailyLimit: 6,
       emoji: '✨'
     }
   },
   // ===== DAILY DEAL =====
   dailyDeal: {
     refreshTime: 86400000,
+    // 24h
     deals: [{
       id: 'energy_sale',
       name: 'Energy Sale',
-      gems: 500,
+      gems: 400,
+      // Redus de la 500
       bonus: {
-        energy: 100000
+        energy: 50000
       },
+      // Redus de la 100000
       price: 0.99,
       discount: 50
     }, {
       id: 'crystal_deal',
       name: 'Crystal Deal',
-      gems: 1000,
+      gems: 800,
+      // Redus de la 1000
       bonus: {
-        crystals: 25
+        crystals: 15
       },
+      // Redus de la 25
       price: 1.99,
       discount: 60
     }, {
       id: 'guardian_special',
       name: 'Guardian Special',
-      gems: 800,
+      gems: 600,
+      // Redus de la 800
       bonus: {
-        guardian: 5
+        guardian: 3
       },
+      // Redus de la 5
       price: 2.99,
       discount: 40
+    },
+    // ✅ NOU - Mana Deal
+    {
+      id: 'mana_bundle',
+      name: 'Mana Bundle',
+      gems: 500,
+      bonus: {
+        mana: 500,
+        energy: 25000
+      },
+      price: 1.49,
+      discount: 55
     }]
   },
-  // ← VIRGULĂ AICI! ÎNCHIDE dailyDeal
-
-  // ===== MINI-GAMES PACKAGES ===== ← AICI LA ACELAȘI NIVEL CU dailyDeal!
+  // ===== MINI-GAMES PACKAGES =====
   miniGamesPackages: {
     extraSpins3: {
       id: 'extra_spins_3',
@@ -5144,7 +5678,7 @@ var SHOP_ITEMS = {
       description: 'Get 3 additional spins for the Daily Wheel!',
       spins: 3,
       bonus: {
-        gems: 100
+        gems: 50 // Redus de la 100
       },
       price: 0.99,
       priceDisplay: '$0.99',
@@ -5157,11 +5691,12 @@ var SHOP_ITEMS = {
       description: 'Best value! 10 spins + bonus gems',
       spins: 10,
       bonus: {
-        gems: 500,
-        energy: 10000
+        gems: 300,
+        // Redus de la 500
+        energy: 5000 // Redus de la 10000
       },
       price: 2.99,
-      priceDisplay: '$2.99',
+      priceDisplay: '$2. 99',
       emoji: '🎡',
       popular: true,
       bonusPercentage: 30
@@ -5172,16 +5707,144 @@ var SHOP_ITEMS = {
       description: 'Spin as much as you want for 24 hours!',
       unlimited: true,
       duration: 86400000,
+      // 24h
       bonus: {
-        gems: 1000
+        gems: 500 // Redus de la 1000
       },
       price: 4.99,
       priceDisplay: '$4.99',
       emoji: '🎡✨',
       special: true
+    },
+    // ✅ NOU - 2048 Undo Pack
+    game2048UndoPack: {
+      id: '2048_undo_pack',
+      name: '2048 Undo Pack',
+      description: '10 undo moves for 2048 game',
+      undoMoves: 10,
+      bonus: {
+        gems: 100
+      },
+      price: 1.99,
+      priceDisplay: '$1.99',
+      emoji: '↩️',
+      popular: false
+    },
+    // ✅ NOU - Match-3 Power-Up Bundle
+    match3PowerUpBundle: {
+      id: 'match3_powerup_bundle',
+      name: 'Match-3 Power-Ups',
+      description: 'Get 5 of each special gem power-up! ',
+      powerUps: {
+        bomb: 5,
+        lightning: 5,
+        rainbow: 2
+      },
+      bonus: {
+        gems: 200
+      },
+      price: 2.99,
+      priceDisplay: '$2.99',
+      emoji: '💥',
+      popular: true
     }
-  } // ← FĂRĂ VIRGULĂ (ultimul element)
+  },
+  // ===== COSMETICS & CUSTOMIZATION =====
+  cosmetics: {
+    themes: [{
+      id: 'dark_nebula',
+      name: 'Dark Nebula Theme',
+      description: 'Cosmic dark theme with animated stars',
+      price: 500,
+      currency: 'gems',
+      emoji: '🌌',
+      category: 'theme'
+    }, {
+      id: 'ocean_waves',
+      name: 'Ocean Waves Theme',
+      description: 'Soothing blue ocean theme',
+      price: 400,
+      currency: 'gems',
+      emoji: '🌊',
+      category: 'theme'
+    }, {
+      id: 'lava_flow',
+      name: 'Lava Flow Theme',
+      description: 'Hot volcanic theme',
+      price: 450,
+      currency: 'gems',
+      emoji: '🌋',
+      category: 'theme'
+    }],
+    animations: [{
+      id: 'sparkle_click',
+      name: 'Sparkle Click',
+      description: 'Sparkles when clicking',
+      price: 200,
+      currency: 'gems',
+      emoji: '✨'
+    }, {
+      id: 'energy_trail',
+      name: 'Energy Trail',
+      description: 'Leaves energy trail on cursor',
+      price: 300,
+      currency: 'gems',
+      emoji: '⚡'
+    }]
+  }
 };
+
+/**
+ * Get package by ID
+ */
+function getPackageById(packageId) {
+  var _SHOP_ITEMS$category;
+  var category = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'gemPackages';
+  return ((_SHOP_ITEMS$category = SHOP_ITEMS[category]) === null || _SHOP_ITEMS$category === void 0 ? void 0 : _SHOP_ITEMS$category[packageId]) || null;
+}
+
+/**
+ * Get all packages in a category
+ */
+function getPackagesByCategory(category) {
+  return SHOP_ITEMS[category] || {};
+}
+
+/**
+ * Check if limited offer is available
+ */
+function isOfferAvailable(offer, playerState) {
+  if (!offer.condition) return true;
+  var condition = offer.condition;
+
+  // Check play time
+  if (condition.playTime) {
+    var totalPlayTime = playerState.statistics.totalPlayTime;
+    if (condition.playTime.max && totalPlayTime > condition.playTime.max) {
+      return false;
+    }
+    if (condition.playTime.min && totalPlayTime < condition.playTime.min) {
+      return false;
+    }
+  }
+
+  // Check ascension
+  if (condition.justAscended) {
+    var timeSinceAscension = Date.now() - (playerState.ascension.lastAscensionTime || 0);
+    if (timeSinceAscension > offer.duration) {
+      return false;
+    }
+  }
+
+  // Check day of week
+  if (condition.dayOfWeek) {
+    var currentDay = new Date().getDay();
+    if (!condition.dayOfWeek.includes(currentDay)) {
+      return false;
+    }
+  }
+  return true;
+}
 var _default = exports["default"] = SHOP_ITEMS;
 
 },{}],14:[function(require,module,exports){
@@ -5204,11 +5867,11 @@ var STRUCTURES = {
     emoji: '☀️',
     tier: 1,
     // Costs
-    baseCost: 10,
-    costMultiplier: 1.15,
+    baseCost: 50,
+    costMultiplier: 1.25,
     costResource: 'energy',
     // Production
-    baseProduction: 1,
+    baseProduction: 0.5,
     productionExponent: 1.0,
     resource: 'energy',
     // Unlock
@@ -5224,15 +5887,15 @@ var STRUCTURES = {
     description: 'Generates energy from wind',
     emoji: '💨',
     tier: 1,
-    baseCost: 50,
-    costMultiplier: 1.18,
+    baseCost: 300,
+    costMultiplier: 1.30,
     costResource: 'energy',
-    baseProduction: 5,
+    baseProduction: 2,
     productionExponent: 1.05,
     resource: 'energy',
     unlockCondition: {
       resources: {
-        energy: 100
+        energy: 500
       }
     },
     flavorTexts: ['The wind whispers of energy', 'Spinning into the future', 'Renewable and reliable']
@@ -5244,15 +5907,15 @@ var STRUCTURES = {
     description: 'Water-powered energy generation',
     emoji: '💧',
     tier: 2,
-    baseCost: 500,
-    costMultiplier: 1.20,
+    baseCost: 2500,
+    costMultiplier: 1.35,
     costResource: 'energy',
-    baseProduction: 25,
+    baseProduction: 10,
     productionExponent: 1.1,
     resource: 'energy',
     unlockCondition: {
       resources: {
-        energy: 1000
+        energy: 5000
       }
     },
     flavorTexts: ['The power of flowing water', 'Hydro energy never sleeps', 'Rivers of electricity']
@@ -5263,10 +5926,10 @@ var STRUCTURES = {
     description: 'Taps into Earth\'s heat',
     emoji: '🌋',
     tier: 2,
-    baseCost: 5000,
-    costMultiplier: 1.22,
+    baseCost: 25000,
+    costMultiplier: 1.40,
     costResource: 'energy',
-    baseProduction: 150,
+    baseProduction: 50,
     productionExponent: 1.12,
     resource: 'energy',
     unlockCondition: {
@@ -5283,15 +5946,15 @@ var STRUCTURES = {
     description: 'Nuclear fusion energy',
     emoji: '⚛️',
     tier: 3,
-    baseCost: 50000,
-    costMultiplier: 1.25,
+    baseCost: 500000,
+    costMultiplier: 1.45,
     costResource: 'energy',
-    baseProduction: 1000,
+    baseProduction: 300,
     productionExponent: 1.15,
     resource: 'energy',
     unlockCondition: {
       resources: {
-        energy: 100000
+        energy: 1000000
       },
       upgrades: {
         advancedTech: 1
@@ -5328,15 +5991,15 @@ var STRUCTURES = {
     description: 'Extracts mana from energy',
     emoji: '🔮',
     tier: 2,
-    baseCost: 1000,
+    baseCost: 100000,
     costMultiplier: 1.25,
     costResource: 'energy',
-    baseProduction: 0.1,
+    baseProduction: 0.05,
     productionExponent: 1.1,
     resource: 'mana',
     unlockCondition: {
       resources: {
-        energy: 5000
+        energy: 25000
       }
     },
     flavorTexts: ['Converting energy to magic', 'Mana flows freely', 'The mystic conversion']
@@ -5347,7 +6010,7 @@ var STRUCTURES = {
     description: 'Crystallizes pure mana',
     emoji: '💎',
     tier: 3,
-    baseCost: 10000,
+    baseCost: 1500000,
     costMultiplier: 1.28,
     costResource: 'energy',
     baseProduction: 1,
@@ -5355,7 +6018,7 @@ var STRUCTURES = {
     resource: 'mana',
     unlockCondition: {
       resources: {
-        mana: 50
+        mana: 200
       },
       structures: {
         manaExtractor: 10
@@ -5371,10 +6034,10 @@ var STRUCTURES = {
     emoji: '🌋',
     tier: 1,
     realm: 'volcano',
-    baseCost: 100,
-    costMultiplier: 1.20,
+    baseCost: 500,
+    costMultiplier: 1.28,
     costResource: 'volcanicEnergy',
-    baseProduction: 5,
+    baseProduction: 2,
     productionExponent: 1.1,
     resource: 'volcanicEnergy',
     unlockCondition: {
@@ -5391,10 +6054,10 @@ var STRUCTURES = {
     emoji: '🔥',
     tier: 2,
     realm: 'volcano',
-    baseCost: 1000,
-    costMultiplier: 1.25,
+    baseCost: 5000,
+    costMultiplier: 1.32,
     costResource: 'volcanicEnergy',
-    baseProduction: 0.5,
+    baseProduction: 0.2,
     productionExponent: 1.15,
     resource: 'mana',
     unlockCondition: {
@@ -5422,10 +6085,10 @@ var STRUCTURES = {
       emoji: '🌊',
       tier: 1,
       realm: 'ocean',
-      baseCost: 150,
-      costMultiplier: 1.18,
+      baseCost: 800,
+      costMultiplier: 1.28,
       costResource: 'tidalEnergy',
-      baseProduction: 8,
+      baseProduction: 3,
       productionExponent: 1.12,
       resource: 'tidalEnergy',
       unlockCondition: {
@@ -5442,10 +6105,10 @@ var STRUCTURES = {
       emoji: '🪸',
       tier: 2,
       realm: 'ocean',
-      baseCost: 1800,
-      costMultiplier: 1.22,
+      baseCost: 8000,
+      costMultiplier: 1.32,
       costResource: 'tidalEnergy',
-      baseProduction: 50,
+      baseProduction: 15,
       productionExponent: 1.13,
       resource: 'tidalEnergy',
       unlockCondition: {
@@ -5465,10 +6128,10 @@ var STRUCTURES = {
       emoji: '🏝️',
       tier: 3,
       realm: 'ocean',
-      baseCost: 20000,
-      costMultiplier: 1.26,
+      baseCost: 100000,
+      costMultiplier: 1.38,
       costResource: 'tidalEnergy',
-      baseProduction: 300,
+      baseProduction: 80,
       productionExponent: 1.15,
       resource: 'tidalEnergy',
       unlockCondition: {
@@ -5488,10 +6151,10 @@ var STRUCTURES = {
       emoji: '🦑',
       tier: 3,
       realm: 'ocean',
-      baseCost: 60000,
-      costMultiplier: 1.3,
+      baseCost: 500000,
+      costMultiplier: 1.42,
       costResource: 'tidalEnergy',
-      baseProduction: 1200,
+      baseProduction: 250,
       productionExponent: 1.18,
       resource: 'tidalEnergy',
       unlockCondition: {
@@ -5514,10 +6177,10 @@ var STRUCTURES = {
       emoji: '⚓',
       tier: 3,
       realm: 'ocean',
-      baseCost: 150000,
-      costMultiplier: 1.32,
+      baseCost: 1500000,
+      costMultiplier: 1.45,
       costResource: 'tidalEnergy',
-      baseProduction: 3,
+      baseProduction: 1,
       productionExponent: 1.2,
       resource: 'mana',
       unlockCondition: {
@@ -5570,8 +6233,8 @@ var UPGRADES = {
     emoji: '⚡',
     category: 'production',
     maxLevel: 50,
-    baseCost: 100,
-    costMultiplier: 1.5,
+    baseCost: 500,
+    costMultiplier: 1.8,
     costResource: 'energy',
     effect: function effect(level) {
       // +10% per level, compounding
@@ -5590,8 +6253,8 @@ var UPGRADES = {
     emoji: '✨',
     category: 'production',
     maxLevel: 20,
-    baseCost: 50,
-    costMultiplier: 2.0,
+    baseCost: 200,
+    costMultiplier: 2.5,
     costResource: 'mana',
     effect: function effect(level) {
       return Math.pow(1.15, level); // +15% per level
@@ -5602,7 +6265,7 @@ var UPGRADES = {
     },
     unlockCondition: {
       resources: {
-        mana: 10
+        mana: 50
       }
     }
   },
@@ -5613,8 +6276,8 @@ var UPGRADES = {
     emoji: '🌋',
     category: 'production',
     maxLevel: 30,
-    baseCost: 200,
-    costMultiplier: 1.6,
+    baseCost: 1000,
+    costMultiplier: 1.8,
     costResource: 'volcanicEnergy',
     effect: function effect(level) {
       return Math.pow(1.12, level); // +12% per level
@@ -5637,20 +6300,20 @@ var UPGRADES = {
     emoji: '🔋',
     category: 'capacity',
     maxLevel: 30,
-    baseCost: 200,
+    baseCost: 500,
     costMultiplier: 1.4,
     costResource: 'energy',
     effect: function effect(level) {
-      // Base 1000 + 50% per level
-      return 1000 * Math.pow(1.5, level);
+      // Base 5000 + 50% per level
+      return 5000 * Math.pow(1.5, level);
     },
     getDescription: function getDescription(level) {
-      var cap = Math.floor(1000 * Math.pow(1.5, level));
+      var cap = Math.floor(5000 * Math.pow(1.5, level));
       return "Energy cap: ".concat(cap.toLocaleString());
     },
     unlockCondition: {
       resources: {
-        energy: 500
+        energy: 2500
       }
     }
   },
@@ -5661,8 +6324,8 @@ var UPGRADES = {
     emoji: '🔮',
     category: 'capacity',
     maxLevel: 20,
-    baseCost: 100,
-    costMultiplier: 1.5,
+    baseCost: 500,
+    costMultiplier: 1.6,
     costResource: 'mana',
     effect: function effect(level) {
       return 100 * Math.pow(1.5, level);
@@ -5673,7 +6336,7 @@ var UPGRADES = {
     },
     unlockCondition: {
       resources: {
-        mana: 20
+        mana: 100
       }
     }
   },
@@ -5684,8 +6347,8 @@ var UPGRADES = {
     emoji: '⚱️',
     category: 'capacity',
     maxLevel: 25,
-    baseCost: 500,
-    costMultiplier: 1.45,
+    baseCost: 2500,
+    costMultiplier: 1.5,
     costResource: 'volcanicEnergy',
     effect: function effect(level) {
       return 5000 * Math.pow(1.5, level);
@@ -5708,8 +6371,8 @@ var UPGRADES = {
     emoji: '☀️',
     category: 'synergy',
     maxLevel: 5,
-    baseCost: 1000,
-    costMultiplier: 3.0,
+    baseCost: 5000,
+    costMultiplier: 3.5,
     costResource: 'energy',
     targetStructure: 'solarPanel',
     effect: function effect(level) {
@@ -5732,8 +6395,8 @@ var UPGRADES = {
     emoji: '💨',
     category: 'synergy',
     maxLevel: 5,
-    baseCost: 2000,
-    costMultiplier: 3.0,
+    baseCost: 10000,
+    costMultiplier: 3.5,
     costResource: 'energy',
     targetStructure: 'windTurbine',
     effect: function effect(level) {
@@ -5756,8 +6419,8 @@ var UPGRADES = {
     emoji: '💧',
     category: 'synergy',
     maxLevel: 5,
-    baseCost: 5000,
-    costMultiplier: 3.0,
+    baseCost: 25000,
+    costMultiplier: 3.5,
     costResource: 'energy',
     targetStructure: 'hydroPlant',
     effect: function effect(level) {
@@ -5853,7 +6516,7 @@ var UPGRADES = {
     emoji: '🔬',
     category: 'unlock',
     maxLevel: 1,
-    baseCost: 10000,
+    baseCost: 100000,
     costMultiplier: 1.0,
     costResource: 'energy',
     effect: function effect() {
@@ -5866,7 +6529,7 @@ var UPGRADES = {
     },
     unlockCondition: {
       resources: {
-        energy: 50000
+        energy: 250000
       },
       structures: {
         geoThermal: 5
@@ -5880,7 +6543,7 @@ var UPGRADES = {
     emoji: '💠',
     category: 'unlock',
     maxLevel: 1,
-    baseCost: 100,
+    baseCost: 500,
     costMultiplier: 1.0,
     costResource: 'mana',
     effect: function effect() {
@@ -5893,7 +6556,7 @@ var UPGRADES = {
     },
     unlockCondition: {
       resources: {
-        mana: 100
+        mana: 500
       },
       structures: {
         manaExtractor: 10
@@ -5981,8 +6644,8 @@ var UPGRADES = {
     emoji: '🌊',
     category: 'synergy',
     maxLevel: 5,
-    baseCost: 1500,
-    costMultiplier: 3.0,
+    baseCost: 8000,
+    costMultiplier: 3.5,
     costResource: 'tidalEnergy',
     targetStructure: 'tidalGenerator',
     effect: function effect(level) {
@@ -6005,8 +6668,8 @@ var UPGRADES = {
     emoji: '🪸',
     category: 'synergy',
     maxLevel: 5,
-    baseCost: 3000,
-    costMultiplier: 3.0,
+    baseCost: 15000,
+    costMultiplier: 3.5,
     costResource: 'tidalEnergy',
     targetStructure: 'kelpFarm',
     effect: function effect(level) {
@@ -6029,8 +6692,8 @@ var UPGRADES = {
     emoji: '🏝️',
     category: 'synergy',
     maxLevel: 5,
-    baseCost: 7000,
-    costMultiplier: 3.2,
+    baseCost: 35000,
+    costMultiplier: 3.8,
     costResource: 'tidalEnergy',
     targetStructure: 'coralBattery',
     effect: function effect(level) {
@@ -6053,7 +6716,7 @@ var UPGRADES = {
     emoji: '⚓',
     category: 'unlock',
     maxLevel: 1,
-    baseCost: 30000,
+    baseCost: 200000,
     costMultiplier: 1.0,
     costResource: 'tidalEnergy',
     effect: function effect() {
@@ -8659,14 +9322,14 @@ var DailyRewardSystem = /*#__PURE__*/function () {
         day: 1,
         rewards: {
           gems: 25,
-          energy: 5000
+          energy: 1000
         },
         emoji: '🎁'
       }, {
         day: 2,
         rewards: {
           gems: 50,
-          energy: 10000,
+          energy: 2500,
           mana: 50
         },
         emoji: '🎁'
@@ -8674,7 +9337,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
         day: 3,
         rewards: {
           gems: 75,
-          energy: 25000,
+          energy: 5000,
           mana: 100
         },
         emoji: '🎁'
@@ -8682,7 +9345,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
         day: 4,
         rewards: {
           gems: 100,
-          energy: 50000,
+          energy: 10000,
           mana: 200,
           crystals: 1
         },
@@ -8691,7 +9354,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
         day: 5,
         rewards: {
           gems: 150,
-          energy: 100000,
+          energy: 20000,
           mana: 500,
           crystals: 3
         },
@@ -8700,7 +9363,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
         day: 6,
         rewards: {
           gems: 200,
-          energy: 250000,
+          energy: 50000,
           mana: 1000,
           crystals: 5
         },
@@ -8709,7 +9372,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
         day: 7,
         rewards: {
           gems: 500,
-          energy: 1000000,
+          energy: 100000,
           mana: 5000,
           crystals: 20,
           guardian: 1 // Random guardian
@@ -8890,14 +9553,42 @@ var DailyRewardSystem = /*#__PURE__*/function () {
     }
 
     /**
-     * Check daily reward on game start
-     */
+    * Check daily reward on game start
+    */
   }, {
     key: "checkDailyReward",
     value: function checkDailyReward() {
+      var state = _StateManager["default"].getState();
       var canClaimResult = this.canClaim();
+      var now = Date.now();
+
+      // ✅ PRIORITATE 1: Dacă ai claimed deja azi, STOP!
+      if (canClaimResult.reason === 'already-claimed') {
+        _Logger["default"].info('DailyRewardSystem', 'Reward already claimed today, no modal');
+        return;
+      }
+
+      // ✅ PRIORITATE 2: Verifică dacă modalul a fost deja arătat azi
+      var lastModalShown = state.dailyRewards.lastModalShown || 0;
+      var timeSinceModal = now - lastModalShown;
+      var oneDay = 86400000; // 24h in ms
+
+      // Dacă ai văzut modalul în ultimele 24h (chiar dacă n-ai claimed), nu-l mai arăta
+      if (timeSinceModal < oneDay) {
+        _Logger["default"].info('DailyRewardSystem', "Modal already shown ".concat(Math.floor(timeSinceModal / 1000 / 60), " minutes ago - not showing again"));
+        return;
+      }
+
+      // ✅ PRIORITATE 3: Poți revendica și modalul n-a fost arătat azi = SHOW MODAL!
       if (canClaimResult.can) {
-        // Show daily reward modal
+        // Marchează că ai arătat modalul ACUM
+        _StateManager["default"].dispatch({
+          type: 'DAILY_REWARD_MODAL_SHOWN',
+          payload: {
+            timestamp: now
+          }
+        });
+        _Logger["default"].info('DailyRewardSystem', 'Showing daily reward modal');
         setTimeout(function () {
           _EventBus["default"].emit('daily-reward:available');
         }, 2000); // Delay to let game load
@@ -16699,12 +17390,39 @@ var UpgradesUI = /*#__PURE__*/function () {
     key: "update",
     value: function update() {
       var _this2 = this;
-      // Re-render all cards
+      // Update only button states and costs, don't re-render entire cards
       var cards = this.container.querySelectorAll('.upgrade-card');
       cards.forEach(function (card) {
         var upgradeKey = card.dataset.key;
-        var newCard = _this2.createUpgradeCard(upgradeKey);
-        card.replaceWith(newCard);
+        var upgrade = _UpgradeSystem["default"].getUpgrade(upgradeKey);
+        var isUnlocked = _UpgradeSystem["default"].isUnlocked(upgradeKey);
+        var canAfford = _UpgradeSystem["default"].canAfford(upgradeKey);
+        var isMaxed = _UpgradeSystem["default"].isMaxed(upgradeKey);
+        var cost = _UpgradeSystem["default"].getCost(upgradeKey);
+
+        // Update classes
+        if (!isUnlocked) {
+          card.classList.add('locked');
+        } else {
+          card.classList.remove('locked');
+        }
+        if (!canAfford && !isMaxed) {
+          card.classList.add('unaffordable');
+        } else {
+          card.classList.remove('unaffordable');
+        }
+
+        // Update button state
+        var btn = card.querySelector('.btn');
+        if (btn) {
+          btn.disabled = !isUnlocked || !canAfford;
+        }
+
+        // Update cost display
+        var costSpan = card.querySelector('.upgrade-cost span:last-child');
+        if (costSpan) {
+          costSpan.textContent = "".concat(_Formatters["default"].formatNumber(cost), " ").concat(_this2.getResourceIcon(upgrade.costResource));
+        }
       });
     }
   }, {

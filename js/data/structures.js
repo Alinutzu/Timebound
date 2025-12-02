@@ -12,12 +12,12 @@ const STRUCTURES = {
     tier: 1,
     
     // Costs
-    baseCost: 10,
-    costMultiplier: 1.15,
+    baseCost: 50,
+    costMultiplier: 1.25,
     costResource: 'energy',
     
     // Production
-    baseProduction: 1,
+    baseProduction: 0.5,
     productionExponent: 1.0,
     resource: 'energy',
     
@@ -39,16 +39,16 @@ const STRUCTURES = {
     emoji: '💨',
     tier: 1,
     
-    baseCost: 50,
-    costMultiplier: 1.18,
+    baseCost: 300,
+    costMultiplier: 1.30,
     costResource: 'energy',
     
-    baseProduction: 5,
+    baseProduction: 2,
     productionExponent: 1.05,
     resource: 'energy',
     
     unlockCondition: {
-      resources: { energy: 100 }
+      resources: { energy: 500 }
     },
     
     flavorTexts: [
@@ -66,16 +66,16 @@ const STRUCTURES = {
     emoji: '💧',
     tier: 2,
     
-    baseCost: 500,
-    costMultiplier: 1.20,
+    baseCost: 2500,
+    costMultiplier: 1.35,
     costResource: 'energy',
     
-    baseProduction: 25,
+    baseProduction: 10,
     productionExponent: 1.1,
     resource: 'energy',
     
     unlockCondition: {
-      resources: { energy: 1000 }
+      resources: { energy: 5000 }
     },
     
     flavorTexts: [
@@ -92,11 +92,11 @@ const STRUCTURES = {
     emoji: '🌋',
     tier: 2,
     
-    baseCost: 5000,
-    costMultiplier: 1.22,
+    baseCost: 25000,
+    costMultiplier: 1.40,
     costResource: 'energy',
     
-    baseProduction: 150,
+    baseProduction: 50,
     productionExponent: 1.12,
     resource: 'energy',
     
@@ -121,16 +121,16 @@ const STRUCTURES = {
     emoji: '⚛️',
     tier: 3,
     
-    baseCost: 50000,
-    costMultiplier: 1.25,
+    baseCost: 500000,
+    costMultiplier: 1.45,
     costResource: 'energy',
     
-    baseProduction: 1000,
+    baseProduction: 300,
     productionExponent: 1.15,
     resource: 'energy',
     
     unlockCondition: {
-      resources: { energy: 100000 },
+      resources: { energy: 1000000 },
       upgrades: { advancedTech: 1 }
     },
     
@@ -176,16 +176,16 @@ const STRUCTURES = {
     emoji: '🔮',
     tier: 2,
     
-    baseCost: 1000,
+    baseCost: 100000,
     costMultiplier: 1.25,
     costResource: 'energy',
     
-    baseProduction: 0.1,
+    baseProduction: 0.05,
     productionExponent: 1.1,
     resource: 'mana',
     
     unlockCondition: {
-      resources: { energy: 5000 }
+      resources: { energy: 25000 }
     },
     
     flavorTexts: [
@@ -202,7 +202,7 @@ const STRUCTURES = {
     emoji: '💎',
     tier: 3,
     
-    baseCost: 10000,
+    baseCost: 1500000,
     costMultiplier: 1.28,
     costResource: 'energy',
     
@@ -211,7 +211,7 @@ const STRUCTURES = {
     resource: 'mana',
     
     unlockCondition: {
-      resources: { mana: 50 },
+      resources: { mana: 200 },
       structures: { manaExtractor: 10 }
     },
     
@@ -231,11 +231,11 @@ const STRUCTURES = {
     tier: 1,
     realm: 'volcano',
     
-    baseCost: 100,
-    costMultiplier: 1.20,
+    baseCost: 500,
+    costMultiplier: 1.28,
     costResource: 'volcanicEnergy',
     
-    baseProduction: 5,
+    baseProduction: 2,
     productionExponent: 1.1,
     resource: 'volcanicEnergy',
     
@@ -258,11 +258,11 @@ const STRUCTURES = {
     tier: 2,
     realm: 'volcano',
     
-    baseCost: 1000,
-    costMultiplier: 1.25,
+    baseCost: 5000,
+    costMultiplier: 1.32,
     costResource: 'volcanicEnergy',
     
-    baseProduction: 0.5,
+    baseProduction: 0.2,
     productionExponent: 1.15,
     resource: 'mana',
     
@@ -294,10 +294,10 @@ const STRUCTURES = {
     emoji: '🌊',
     tier: 1,
     realm: 'ocean',
-    baseCost: 150,
-    costMultiplier: 1.18,
+    baseCost: 800,
+    costMultiplier: 1.28,
     costResource: 'tidalEnergy',
-    baseProduction: 8,
+    baseProduction: 3,
     productionExponent: 1.12,
     resource: 'tidalEnergy',
     unlockCondition: {
@@ -316,10 +316,10 @@ const STRUCTURES = {
     emoji: '🪸',
     tier: 2,
     realm: 'ocean',
-    baseCost: 1800,
-    costMultiplier: 1.22,
+    baseCost: 8000,
+    costMultiplier: 1.32,
     costResource: 'tidalEnergy',
-    baseProduction: 50,
+    baseProduction: 15,
     productionExponent: 1.13,
     resource: 'tidalEnergy',
     unlockCondition: {
@@ -339,10 +339,10 @@ const STRUCTURES = {
     emoji: '🏝️',
     tier: 3,
     realm: 'ocean',
-    baseCost: 20000,
-    costMultiplier: 1.26,
+    baseCost: 100000,
+    costMultiplier: 1.38,
     costResource: 'tidalEnergy',
-    baseProduction: 300,
+    baseProduction: 80,
     productionExponent: 1.15,
     resource: 'tidalEnergy',
     unlockCondition: {
@@ -362,10 +362,10 @@ const STRUCTURES = {
     emoji: '🦑',
     tier: 3,
     realm: 'ocean',
-    baseCost: 60000,
-    costMultiplier: 1.3,
+    baseCost: 500000,
+    costMultiplier: 1.42,
     costResource: 'tidalEnergy',
-    baseProduction: 1200,
+    baseProduction: 250,
     productionExponent: 1.18,
     resource: 'tidalEnergy',
     unlockCondition: {
@@ -386,10 +386,10 @@ const STRUCTURES = {
     emoji: '⚓',
     tier: 3,
     realm: 'ocean',
-    baseCost: 150000,
-    costMultiplier: 1.32,
+    baseCost: 1500000,
+    costMultiplier: 1.45,
     costResource: 'tidalEnergy',
-    baseProduction: 3,
+    baseProduction: 1,
     productionExponent: 1.2,
     resource: 'mana',
     unlockCondition: {

@@ -9306,9 +9306,12 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
  */
 var DailyRewardSystem = /*#__PURE__*/function () {
   function DailyRewardSystem() {
+    var _this = this;
     _classCallCheck(this, DailyRewardSystem);
     this.rewards = this.getRewardStructure();
-    this.checkDailyReward();
+    _EventBus["default"].on('game:initialized', function () {
+      _this.checkDailyReward();
+    });
     _Logger["default"].info('DailyRewardSystem', 'Initialized');
   }
 

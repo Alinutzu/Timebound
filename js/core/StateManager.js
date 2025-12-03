@@ -833,8 +833,8 @@ case 'DAILY_REWARD_MODAL_SHOWN':
   return {
     ...state,
     dailyRewards: {
-      ...state. dailyRewards,
-      lastModalShown: action.payload. timestamp
+      ...state.dailyRewards,
+      lastModalShown: action.payload.timestamp
     }
   };
 

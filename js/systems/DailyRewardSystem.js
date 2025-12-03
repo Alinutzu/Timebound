@@ -10,7 +10,9 @@ class DailyRewardSystem {
   constructor() {
     this.rewards = this.getRewardStructure();
     
-    this.checkDailyReward();
+    eventBus.on('game:initialized', () => {
+      this.checkDailyReward();
+    });
     
     logger.info('DailyRewardSystem', 'Initialized');
   }
@@ -266,7 +268,7 @@ checkDailyReward() {
 
   // Dacă ai văzut modalul în ultimele 24h (chiar dacă n-ai claimed), nu-l mai arăta
   if (timeSinceModal < oneDay) {
-    logger. info('DailyRewardSystem', `Modal already shown ${Math.floor(timeSinceModal/1000/60)} minutes ago - not showing again`);
+    logger.info('DailyRewardSystem', `Modal already shown ${Math.floor(timeSinceModal/1000/60)} minutes ago - not showing again`);
     return;
   }
 

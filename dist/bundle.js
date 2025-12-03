@@ -6222,6 +6222,13 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 /**
  * Upgrade definitions with balancing
+ *
+ * Balancing philosophy (in linii mari, ca în idle/incremental games):
+ * - Primele upgrade-uri sunt accesibile și dau un „wow” vizibil.
+ * - Costurile cresc exponențial, dar nu atât de brutal încât să blocheze progresul.
+ * - Capacity upgrades apar când începi să „lovești cap-ul” des.
+ * - Synergiile sunt mai scumpe și mai late-game, dar foarte puternice.
+ * - QoL și special sunt milestones, nu blocaje.
  */
 
 var UPGRADES = {
@@ -6232,19 +6239,22 @@ var UPGRADES = {
     description: 'Increases all energy production',
     emoji: '⚡',
     category: 'production',
-    maxLevel: 50,
-    baseCost: 500,
-    costMultiplier: 1.8,
+    // Early-mid game backbone: simți câștigul, dar nu sari instant în infinit
+    maxLevel: 40,
+    baseCost: 200,
+    // accesibil foarte devreme
+    costMultiplier: 1.5,
+    // scaling blând, potrivit pentru „primul” upgrade important
     costResource: 'energy',
     effect: function effect(level) {
-      // +10% per level, compounding
-      return Math.pow(1.1, level);
+      // ~+12% per level, compounding
+      return Math.pow(1.12, level);
     },
     getDescription: function getDescription(level) {
-      var bonus = ((Math.pow(1.1, level) - 1) * 100).toFixed(1);
+      var bonus = ((Math.pow(1.12, level) - 1) * 100).toFixed(1);
       return "+".concat(bonus, "% energy production");
     },
-    unlockCondition: null
+    unlockCondition: null // disponibil de la început
   },
   manaEfficiency: {
     id: 'manaEfficiency',
@@ -6252,20 +6262,24 @@ var UPGRADES = {
     description: 'Increases mana production',
     emoji: '✨',
     category: 'production',
-    maxLevel: 20,
-    baseCost: 200,
-    costMultiplier: 2.5,
+    // Mana e o resursă secundară, dar importantă
+    maxLevel: 25,
+    baseCost: 300,
+    costMultiplier: 1.8,
+    // mai agresiv decât energy, dar nu absurd
     costResource: 'mana',
     effect: function effect(level) {
-      return Math.pow(1.15, level); // +15% per level
+      // ~+14% per level, compounding
+      return Math.pow(1.14, level);
     },
     getDescription: function getDescription(level) {
-      var bonus = ((Math.pow(1.15, level) - 1) * 100).toFixed(1);
+      var bonus = ((Math.pow(1.14, level) - 1) * 100).toFixed(1);
       return "+".concat(bonus, "% mana production");
     },
     unlockCondition: {
+      // intri în jocul cu mana destul de repede
       resources: {
-        mana: 50
+        mana: 20
       }
     }
   },
@@ -6275,15 +6289,17 @@ var UPGRADES = {
     description: 'Boosts volcanic energy production',
     emoji: '🌋',
     category: 'production',
+    // Realm mai avansat → costuri mai mari dar scaling ceva mai blând
     maxLevel: 30,
-    baseCost: 1000,
-    costMultiplier: 1.8,
+    baseCost: 2000,
+    costMultiplier: 1.6,
     costResource: 'volcanicEnergy',
     effect: function effect(level) {
-      return Math.pow(1.12, level); // +12% per level
+      // ~+15% per level, compounding
+      return Math.pow(1.15, level);
     },
     getDescription: function getDescription(level) {
-      var bonus = ((Math.pow(1.12, level) - 1) * 100).toFixed(1);
+      var bonus = ((Math.pow(1.15, level) - 1) * 100).toFixed(1);
       return "+".concat(bonus, "% volcanic energy production");
     },
     unlockCondition: {
@@ -6299,21 +6315,26 @@ var UPGRADES = {
     description: 'Increases maximum energy capacity',
     emoji: '🔋',
     category: 'capacity',
-    maxLevel: 30,
+    // Capacity de early-mid game
+    maxLevel: 20,
     baseCost: 500,
-    costMultiplier: 1.4,
+    // corelat cu ce vezi în UI ca „prim milestone”
+    costMultiplier: 1.6,
     costResource: 'energy',
     effect: function effect(level) {
-      // Base 5000 + 50% per level
-      return 5000 * Math.pow(1.5, level);
+      // Plecăm de la un cap decent și scalăm sănătos
+      // Level 0 (implicit) înseamnă cap de bază din CONFIG; aici dăm valoarea când ai 1 level
+      // Din sistemul tău: SET_CAP setează efectul direct ca nou cap
+      return 3000 * Math.pow(1.8, level);
     },
     getDescription: function getDescription(level) {
-      var cap = Math.floor(5000 * Math.pow(1.5, level));
+      var cap = Math.floor(3000 * Math.pow(1.8, level));
       return "Energy cap: ".concat(cap.toLocaleString());
     },
     unlockCondition: {
+      // simți nevoia de cap când ai atins de câteva ori acest prag
       resources: {
-        energy: 2500
+        energy: 500
       }
     }
   },
@@ -6323,20 +6344,20 @@ var UPGRADES = {
     description: 'Increases maximum mana capacity',
     emoji: '🔮',
     category: 'capacity',
-    maxLevel: 20,
-    baseCost: 500,
-    costMultiplier: 1.6,
+    maxLevel: 15,
+    baseCost: 300,
+    costMultiplier: 1.7,
     costResource: 'mana',
     effect: function effect(level) {
-      return 100 * Math.pow(1.5, level);
+      return 500 * Math.pow(1.8, level);
     },
     getDescription: function getDescription(level) {
-      var cap = Math.floor(100 * Math.pow(1.5, level));
+      var cap = Math.floor(500 * Math.pow(1.8, level));
       return "Mana cap: ".concat(cap.toLocaleString());
     },
     unlockCondition: {
       resources: {
-        mana: 100
+        mana: 50
       }
     }
   },
@@ -6346,15 +6367,15 @@ var UPGRADES = {
     description: 'Increases volcanic energy capacity',
     emoji: '⚱️',
     category: 'capacity',
-    maxLevel: 25,
-    baseCost: 2500,
-    costMultiplier: 1.5,
+    maxLevel: 15,
+    baseCost: 5000,
+    costMultiplier: 1.7,
     costResource: 'volcanicEnergy',
     effect: function effect(level) {
-      return 5000 * Math.pow(1.5, level);
+      return 4000 * Math.pow(1.8, level);
     },
     getDescription: function getDescription(level) {
-      var cap = Math.floor(5000 * Math.pow(1.5, level));
+      var cap = Math.floor(4000 * Math.pow(1.8, level));
       return "Volcanic cap: ".concat(cap.toLocaleString());
     },
     unlockCondition: {
@@ -6372,14 +6393,15 @@ var UPGRADES = {
     category: 'synergy',
     maxLevel: 5,
     baseCost: 5000,
-    costMultiplier: 3.5,
+    costMultiplier: 2.5,
     costResource: 'energy',
     targetStructure: 'solarPanel',
     effect: function effect(level) {
-      return 1 + level * 0.5; // +50% per level
+      // +40% per level (linear) – foarte puternic pe structuri mari
+      return 1 + level * 0.4;
     },
     getDescription: function getDescription(level) {
-      var bonus = level * 50;
+      var bonus = level * 40;
       return "+".concat(bonus, "% Solar Panel production");
     },
     unlockCondition: {
@@ -6395,15 +6417,15 @@ var UPGRADES = {
     emoji: '💨',
     category: 'synergy',
     maxLevel: 5,
-    baseCost: 10000,
-    costMultiplier: 3.5,
+    baseCost: 15000,
+    costMultiplier: 2.5,
     costResource: 'energy',
     targetStructure: 'windTurbine',
     effect: function effect(level) {
-      return 1 + level * 0.5;
+      return 1 + level * 0.4;
     },
     getDescription: function getDescription(level) {
-      var bonus = level * 50;
+      var bonus = level * 40;
       return "+".concat(bonus, "% Wind Turbine production");
     },
     unlockCondition: {
@@ -6419,11 +6441,12 @@ var UPGRADES = {
     emoji: '💧',
     category: 'synergy',
     maxLevel: 5,
-    baseCost: 25000,
-    costMultiplier: 3.5,
+    baseCost: 30000,
+    costMultiplier: 2.5,
     costResource: 'energy',
     targetStructure: 'hydroPlant',
     effect: function effect(level) {
+      // Hydro ceva mai „late-game”, deci puțin mai puternic
       return 1 + level * 0.5;
     },
     getDescription: function getDescription(level) {
@@ -6445,8 +6468,8 @@ var UPGRADES = {
     category: 'qol',
     maxLevel: 10,
     baseCost: 500,
-    costMultiplier: 1.0,
-    // Fixed cost per level
+    costMultiplier: 1.4,
+    // nu chiar fix, dar nici prea agresiv
     costResource: 'gems',
     effect: function effect(level) {
       // 0% → 100% in 10 levels
@@ -6458,8 +6481,8 @@ var UPGRADES = {
     },
     unlockCondition: {
       resources: {
-        gems: 500
-      }
+        gems: 200
+      } // mai ușor de deblocat, dar scaling de cost mai dur pe termen lung
     }
   },
   autoCollect: {
@@ -6469,7 +6492,8 @@ var UPGRADES = {
     emoji: '🤖',
     category: 'qol',
     maxLevel: 1,
-    baseCost: 1000,
+    baseCost: 2000,
+    // puțin mai scump, să simți că e „feature premium”
     costMultiplier: 1.0,
     costResource: 'gems',
     effect: function effect(level) {
@@ -6480,8 +6504,8 @@ var UPGRADES = {
     },
     unlockCondition: {
       upgrades: {
-        offlineProduction: 5
-      }
+        offlineProduction: 3
+      } // unlock mai devreme decât 5, dar nu instant
     }
   },
   quickStart: {
@@ -6491,11 +6515,11 @@ var UPGRADES = {
     emoji: '🚀',
     category: 'qol',
     maxLevel: 5,
-    baseCost: 2000,
-    costMultiplier: 1.5,
+    baseCost: 3000,
+    costMultiplier: 1.7,
     costResource: 'gems',
     effect: function effect(level) {
-      // Start with 10% of previous run resources
+      // Start with 10% of previous run resources per level
       return level * 0.1;
     },
     getDescription: function getDescription(level) {
@@ -6528,6 +6552,7 @@ var UPGRADES = {
       return 'Unlocks: Fusion Reactor';
     },
     unlockCondition: {
+      // „late-mid / early-late game” milestone
       resources: {
         energy: 250000
       },
@@ -6543,7 +6568,7 @@ var UPGRADES = {
     emoji: '💠',
     category: 'unlock',
     maxLevel: 1,
-    baseCost: 500,
+    baseCost: 1000,
     costMultiplier: 1.0,
     costResource: 'mana',
     effect: function effect() {
@@ -6571,8 +6596,8 @@ var UPGRADES = {
     emoji: '💥',
     category: 'special',
     maxLevel: 10,
-    baseCost: 5000,
-    costMultiplier: 2.0,
+    baseCost: 10000,
+    costMultiplier: 2.2,
     costResource: 'gems',
     effect: function effect(level) {
       return level * 2; // 2% per level
@@ -6597,8 +6622,8 @@ var UPGRADES = {
     emoji: '🍀',
     category: 'special',
     maxLevel: 10,
-    baseCost: 3000,
-    costMultiplier: 1.8,
+    baseCost: 8000,
+    costMultiplier: 2.0,
     costResource: 'gems',
     effect: function effect(level) {
       return level * 5; // 5% per level
@@ -6620,8 +6645,8 @@ var UPGRADES = {
     emoji: '🤝',
     category: 'special',
     maxLevel: 10,
-    baseCost: 2000,
-    costMultiplier: 2.5,
+    baseCost: 5000,
+    costMultiplier: 2.0,
     costResource: 'gems',
     effect: function effect(level) {
       return 1 + level * 0.1; // +10% per level
@@ -6645,7 +6670,7 @@ var UPGRADES = {
     category: 'synergy',
     maxLevel: 5,
     baseCost: 8000,
-    costMultiplier: 3.5,
+    costMultiplier: 2.8,
     costResource: 'tidalEnergy',
     targetStructure: 'tidalGenerator',
     effect: function effect(level) {
@@ -6656,6 +6681,7 @@ var UPGRADES = {
       return "+".concat(bonus, "% Tidal Generator production");
     },
     unlockCondition: {
+      // corectăm cerința: număr de structuri, nu „8000”
       structures: {
         tidalGenerator: 10
       }
@@ -6669,7 +6695,7 @@ var UPGRADES = {
     category: 'synergy',
     maxLevel: 5,
     baseCost: 15000,
-    costMultiplier: 3.5,
+    costMultiplier: 2.8,
     costResource: 'tidalEnergy',
     targetStructure: 'kelpFarm',
     effect: function effect(level) {
@@ -6693,7 +6719,7 @@ var UPGRADES = {
     category: 'synergy',
     maxLevel: 5,
     baseCost: 35000,
-    costMultiplier: 3.8,
+    costMultiplier: 3.0,
     costResource: 'tidalEnergy',
     targetStructure: 'coralBattery',
     effect: function effect(level) {
@@ -6729,6 +6755,7 @@ var UPGRADES = {
       return 'Unlocks: Deep Sea Pump (+20% tidal energy)';
     },
     unlockCondition: {
+      // milestone de structură, nu valoare numerică random
       structures: {
         coralBattery: 5
       }
@@ -13993,12 +14020,13 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
   }, {
     key: "completeUpgrade",
     value: function completeUpgrade(upgrade) {
-      // Apply the upgrade
+      // Apply the upgrade - cost was already paid when queued
       _StateManager["default"].dispatch({
         type: 'BUY_UPGRADE',
         payload: {
           upgradeKey: upgrade.upgradeKey,
-          upgradeCost: upgrade.cost,
+          upgradeCost: 0,
+          // ✅ nu mai scădem nimic
           costResource: upgrade.costResource
         }
       });
@@ -17393,11 +17421,11 @@ var UpgradesUI = /*#__PURE__*/function () {
     key: "update",
     value: function update() {
       var _this2 = this;
-      // Update only button states and costs, don't re-render entire cards
       var cards = this.container.querySelectorAll('.upgrade-card');
       cards.forEach(function (card) {
         var upgradeKey = card.dataset.key;
         var upgrade = _UpgradeSystem["default"].getUpgrade(upgradeKey);
+        var level = _UpgradeSystem["default"].getLevel(upgradeKey);
         var isUnlocked = _UpgradeSystem["default"].isUnlocked(upgradeKey);
         var canAfford = _UpgradeSystem["default"].canAfford(upgradeKey);
         var isMaxed = _UpgradeSystem["default"].isMaxed(upgradeKey);
@@ -17414,17 +17442,53 @@ var UpgradesUI = /*#__PURE__*/function () {
         } else {
           card.classList.remove('unaffordable');
         }
+        if (isMaxed) {
+          card.classList.add('maxed');
+        } else {
+          card.classList.remove('maxed');
+        }
 
         // Update button state
         var btn = card.querySelector('.btn');
         if (btn) {
           btn.disabled = !isUnlocked || !canAfford;
+          if (!isMaxed) {
+            btn.textContent = level === 0 ? 'Unlock' : 'Upgrade';
+          }
         }
 
-        // Update cost display
+        // Update cost display (dacă nu e maxed)
         var costSpan = card.querySelector('.upgrade-cost span:last-child');
-        if (costSpan) {
+        if (costSpan && !isMaxed) {
           costSpan.textContent = "".concat(_Formatters["default"].formatNumber(cost), " ").concat(_this2.getResourceIcon(upgrade.costResource));
+        }
+
+        // UPDATE LEVEL TEXT
+        var levelSpan = card.querySelector('.upgrade-level');
+        if (levelSpan) {
+          levelSpan.textContent = "Lv. ".concat(level, "/").concat(upgrade.maxLevel);
+        }
+
+        // (Opțional) UPDATE EFFECT TEXT
+        var effectContainer = card.querySelector('.upgrade-effect');
+        if (effectContainer) {
+          if (level > 0) {
+            effectContainer.textContent = upgrade.getDescription(level);
+          } else {
+            // dacă vrei să dispară complet la level 0:
+            // effectContainer.textContent = '';
+            // sau un preview la level 1:
+            // effectContainer.textContent = upgrade.getDescription(1);
+          }
+        } else if (level > 0) {
+          // Dacă vrei să apară abia după ce trece de 0
+          var newEffectDiv = document.createElement('div');
+          newEffectDiv.className = 'upgrade-effect';
+          newEffectDiv.textContent = upgrade.getDescription(level);
+          var header = card.querySelector('.upgrade-header');
+          if (header) {
+            header.insertAdjacentElement('afterend', newEffectDiv);
+          }
         }
       });
     }

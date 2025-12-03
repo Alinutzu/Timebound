@@ -145,40 +145,78 @@ class UpgradesUI {
   }
   
   update() {
-  // Update only button states and costs, don't re-render entire cards
-  const cards = this. container.querySelectorAll('.upgrade-card');
-  
+  const cards = this.container.querySelectorAll('.upgrade-card');
+
   cards.forEach(card => {
     const upgradeKey = card.dataset.key;
     const upgrade = upgradeSystem.getUpgrade(upgradeKey);
-    const isUnlocked = upgradeSystem. isUnlocked(upgradeKey);
+    const level = upgradeSystem.getLevel(upgradeKey);
+    const isUnlocked = upgradeSystem.isUnlocked(upgradeKey);
     const canAfford = upgradeSystem.canAfford(upgradeKey);
     const isMaxed = upgradeSystem.isMaxed(upgradeKey);
     const cost = upgradeSystem.getCost(upgradeKey);
-    
+
     // Update classes
     if (!isUnlocked) {
       card.classList.add('locked');
     } else {
       card.classList.remove('locked');
     }
-    
+
     if (!canAfford && !isMaxed) {
       card.classList.add('unaffordable');
     } else {
       card.classList.remove('unaffordable');
     }
-    
+
+    if (isMaxed) {
+      card.classList.add('maxed');
+    } else {
+      card.classList.remove('maxed');
+    }
+
     // Update button state
     const btn = card.querySelector('.btn');
     if (btn) {
       btn.disabled = !isUnlocked || !canAfford;
+      if (!isMaxed) {
+        btn.textContent = level === 0 ? 'Unlock' : 'Upgrade';
+      }
     }
-    
-    // Update cost display
+
+    // Update cost display (dacă nu e maxed)
     const costSpan = card.querySelector('.upgrade-cost span:last-child');
-    if (costSpan) {
+    if (costSpan && !isMaxed) {
       costSpan.textContent = `${Formatters.formatNumber(cost)} ${this.getResourceIcon(upgrade.costResource)}`;
+    }
+
+    // UPDATE LEVEL TEXT
+    const levelSpan = card.querySelector('.upgrade-level');
+    if (levelSpan) {
+      levelSpan.textContent = `Lv. ${level}/${upgrade.maxLevel}`;
+    }
+
+    // (Opțional) UPDATE EFFECT TEXT
+    const effectContainer = card.querySelector('.upgrade-effect');
+    if (effectContainer) {
+      if (level > 0) {
+        effectContainer.textContent = upgrade.getDescription(level);
+      } else {
+        // dacă vrei să dispară complet la level 0:
+        // effectContainer.textContent = '';
+        // sau un preview la level 1:
+        // effectContainer.textContent = upgrade.getDescription(1);
+      }
+    } else if (level > 0) {
+      // Dacă vrei să apară abia după ce trece de 0
+      const newEffectDiv = document.createElement('div');
+      newEffectDiv.className = 'upgrade-effect';
+      newEffectDiv.textContent = upgrade.getDescription(level);
+
+      const header = card.querySelector('.upgrade-header');
+      if (header) {
+        header.insertAdjacentElement('afterend', newEffectDiv);
+      }
     }
   });
 }

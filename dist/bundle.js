@@ -1397,10 +1397,14 @@ var StateManager = /*#__PURE__*/function () {
           var _action$payload2 = action.payload,
             upgradeKey = _action$payload2.upgradeKey,
             upgradeCost = _action$payload2.upgradeCost,
-            costResource = _action$payload2.costResource;
+            costResource = _action$payload2.costResource,
+            skipResourceDeduction = _action$payload2.skipResourceDeduction;
           var currentUpgradeLevel = ((_state$upgrades$upgra = state.upgrades[upgradeKey]) === null || _state$upgrades$upgra === void 0 ? void 0 : _state$upgrades$upgra.level) || 0;
+
+          // Calculate new resources (only deduct if not already deducted)
+          var newResources = skipResourceDeduction ? state.resources : _objectSpread(_objectSpread({}, state.resources), {}, _defineProperty({}, costResource, state.resources[costResource] - upgradeCost));
           return _objectSpread(_objectSpread({}, state), {}, {
-            resources: _objectSpread(_objectSpread({}, state.resources), {}, _defineProperty({}, costResource, state.resources[costResource] - upgradeCost)),
+            resources: newResources,
             upgrades: _objectSpread(_objectSpread({}, state.upgrades), {}, _defineProperty({}, upgradeKey, {
               level: currentUpgradeLevel + 1
             })),
@@ -2194,6 +2198,13 @@ var TickManager = /*#__PURE__*/function () {
     value: function productionTick() {
       var state = _StateManager["default"].getState();
 
+      // ===== FIX: Apply critical energy chance =====
+      var upgradeSystem = require('../systems/UpgradeSystem.js')["default"];
+      var criticalChance = upgradeSystem.getCriticalChance(); // Returns 0-0.20 (0-20%)
+      var isCritical = Math.random() < criticalChance;
+      var criticalMultiplier = isCritical ? 2 : 1;
+      // ===== END FIX =====
+
       // Energy production
       var energyPerTick = state.production.energy * this.deltaTime;
       if (energyPerTick > 0) {
@@ -2312,31 +2323,29 @@ var TickManager = /*#__PURE__*/function () {
   }, {
     key: "calculateOfflineProgress",
     value: function calculateOfflineProgress(lastPlayed) {
-      var _state$upgrades$offli;
       var now = Date.now();
       var timeDiff = now - lastPlayed;
-
-      // Minimum 1 minute offline
       if (timeDiff < 60000) {
         return null;
       }
-
-      // Cap at 24 hours
       var cappedTimeDiff = Math.min(timeDiff, _config["default"].BALANCING.OFFLINE_TIME_CAP);
       var state = _StateManager["default"].getState();
-      var offlineRate = _config["default"].BALANCING.OFFLINE_PRODUCTION_BASE;
 
-      // Check for offline upgrades
-      var offlineUpgradeLevel = ((_state$upgrades$offli = state.upgrades.offlineProduction) === null || _state$upgrades$offli === void 0 ? void 0 : _state$upgrades$offli.level) || 0;
-      var offlineMultiplier = offlineRate + offlineUpgradeLevel * 0.1; // +10% per level
+      // ===== FIX: Use upgrade effect directly =====
+      var upgradeSystem = require('../systems/UpgradeSystem.js')["default"];
+      var offlinePercent = upgradeSystem.getLevel('offlineProduction') > 0 ? upgradeSystem.getEffect('offlineProduction') // Returns 10, 20, 30...100
+      : _config["default"].BALANCING.OFFLINE_PRODUCTION_BASE * 100; // 50%
 
-      // Calculate resources earned
+      var offlineMultiplier = offlinePercent / 100; // Convert to decimal
+      // ===== END FIX =====
+
       var secondsOffline = cappedTimeDiff / 1000;
       var energyEarned = Math.floor(state.production.energy * secondsOffline * offlineMultiplier);
       var manaEarned = Math.floor(state.production.mana * secondsOffline * offlineMultiplier);
       var volcanicEarned = state.realms.unlocked.includes('volcano') ? Math.floor(state.production.volcanicEnergy * secondsOffline * offlineMultiplier) : 0;
       _Logger["default"].info('TickManager', 'Offline progress calculated', {
         timeOffline: cappedTimeDiff,
+        offlinePercent: offlinePercent,
         energyEarned: energyEarned,
         manaEarned: manaEarned,
         volcanicEarned: volcanicEarned
@@ -2348,7 +2357,7 @@ var TickManager = /*#__PURE__*/function () {
           mana: manaEarned,
           volcanicEnergy: volcanicEarned
         },
-        wasCaped: timeDiff > _config["default"].BALANCING.OFFLINE_TIME_CAP
+        wasCapped: timeDiff > _config["default"].BALANCING.OFFLINE_TIME_CAP
       };
     }
 
@@ -2426,7 +2435,7 @@ var TickManager = /*#__PURE__*/function () {
 var tickManager = new TickManager();
 var _default = exports["default"] = tickManager;
 
-},{"../config.js":1,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./ResourceManager.js":3,"./StateManager.js":5}],7:[function(require,module,exports){
+},{"../config.js":1,"../systems/UpgradeSystem.js":31,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./ResourceManager.js":3,"./StateManager.js":5}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7949,20 +7958,30 @@ var AscensionSystem = /*#__PURE__*/function () {
   }, {
     key: "confirmAscend",
     value: function confirmAscend() {
+      // ===== ADAUGĂ: Save current resources for Quick Start =====
+      var stateBefore = _StateManager["default"].getState();
+      var previousResources = {
+        energy: stateBefore.resources.energy,
+        mana: stateBefore.resources.mana,
+        volcanicEnergy: stateBefore.resources.volcanicEnergy
+      };
+      // ===== SFÂRȘIT ADĂUGARE =====
+
       var crystalsEarned = this.calculateCrystalsEarned();
 
       // Dispatch ascension action
       _StateManager["default"].dispatch({
         type: 'ASCEND',
         payload: {
-          crystalsEarned: crystalsEarned
+          crystalsEarned: crystalsEarned,
+          previousResources: previousResources
         }
       });
       var state = _StateManager["default"].getState();
       _Logger["default"].info('AscensionSystem', "Ascended to level ".concat(state.ascension.level, "! Earned ").concat(crystalsEarned, " crystals"));
 
       // Apply quick start bonus if upgrade exists
-      this.applyQuickStart();
+      this.applyQuickStart(previousResources);
 
       // Recalculate everything
       _EventBus["default"].emit('ascension:completed', {
@@ -7982,34 +8001,50 @@ var AscensionSystem = /*#__PURE__*/function () {
     }
 
     /**
-     * Apply quick start bonus (from upgrades)
-     */
+    * Apply quick start bonus (from upgrades)
+    */
   }, {
     key: "applyQuickStart",
     value: function applyQuickStart() {
+      var previousResources = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
       var upgradeSystem = require('./UpgradeSystem.js')["default"];
-      if (upgradeSystem.getLevel('quickStart') > 0) {
-        var bonus = upgradeSystem.getEffect('quickStart');
+      var quickStartLevel = upgradeSystem.getLevel('quickStart');
+      if (quickStartLevel === 0) return;
+      var quickStartPercent = upgradeSystem.getEffect('quickStart');
 
-        // Get previous run stats (would need to be saved before reset)
-        // For now, give a flat bonus
-        var bonusEnergy = 1000 * upgradeSystem.getLevel('quickStart');
-        var bonusMana = 10 * upgradeSystem.getLevel('quickStart');
-        _StateManager["default"].dispatch({
-          type: 'ADD_RESOURCE',
-          payload: {
-            resource: 'energy',
-            amount: bonusEnergy
-          }
-        });
-        _StateManager["default"].dispatch({
-          type: 'ADD_RESOURCE',
-          payload: {
-            resource: 'mana',
-            amount: bonusMana
-          }
-        });
-        _Logger["default"].info('AscensionSystem', "Quick Start bonus applied: ".concat(bonusEnergy, " energy, ").concat(bonusMana, " mana"));
+      // ✅ Acum folosim resursele reale din run-ul anterior
+      if (previousResources) {
+        var energyBonus = Math.floor(previousResources.energy * quickStartPercent);
+        var manaBonus = Math.floor(previousResources.mana * quickStartPercent);
+        var volcanicBonus = Math.floor(previousResources.volcanicEnergy * quickStartPercent);
+        if (energyBonus > 0) {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: 'energy',
+              amount: energyBonus
+            }
+          });
+        }
+        if (manaBonus > 0) {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: 'mana',
+              amount: manaBonus
+            }
+          });
+        }
+        if (volcanicBonus > 0) {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: 'volcanicEnergy',
+              amount: volcanicBonus
+            }
+          });
+        }
+        _Logger["default"].info('AscensionSystem', "\uD83D\uDE80 Quick Start bonus: +".concat(energyBonus, " energy, +").concat(manaBonus, " mana, +").concat(volcanicBonus, " volcanic"));
       }
     }
 
@@ -11045,6 +11080,23 @@ var QuestSystem = /*#__PURE__*/function () {
         return false;
       }
 
+      // ===== INSEREAZĂ AICI - FIX LUCKY GEMS =====
+      // Apply lucky gems bonus chance
+      var upgradeSystem = require('./UpgradeSystem.js')["default"];
+      var luckyChance = upgradeSystem.getLuckyGemsChance(); // Returns 0-0.50
+
+      if (quest.rewards.gems && luckyChance > 0 && Math.random() < luckyChance) {
+        var bonusGems = Math.floor(quest.rewards.gems * 0.5); // +50% bonus
+        quest.rewards.gems += bonusGems;
+        _Logger["default"].info('QuestSystem', "\uD83C\uDF40 Lucky Gems!  Bonus: +".concat(bonusGems, " gems"));
+
+        // Optional: emit event for UI notification
+        _EventBus["default"].emit('quest:lucky-gems', {
+          questId: questId,
+          bonusGems: bonusGems
+        });
+      }
+
       // Give rewards
       for (var _i4 = 0, _Object$entries4 = Object.entries(quest.rewards); _i4 < _Object$entries4.length; _i4++) {
         var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
@@ -11153,7 +11205,7 @@ var QuestSystem = /*#__PURE__*/function () {
 var questSystem = new QuestSystem();
 var _default = exports["default"] = questSystem;
 
-},{"../config.js":1,"../core/StateManager.js":5,"../data/quests.js":11,"../utils/EventBus.js":53,"../utils/Logger.js":55}],25:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":5,"../data/quests.js":11,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./UpgradeSystem.js":31}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12878,26 +12930,17 @@ var StructureSystem = /*#__PURE__*/function () {
 
       // Ascension bonus
       if (state.ascension.level > 0) {
-        multipliers.ascension = 1 + state.ascension.level * 0.1; // +10% per level
+        multipliers.ascension = 1 + state.ascension.level * 0.1;
       }
 
-      // Upgrade bonuses
-      if (resource === 'energy' && state.upgrades.energyBoost) {
-        multipliers.upgrades *= Math.pow(1.1, state.upgrades.energyBoost.level);
-      }
-      if (resource === 'mana' && state.upgrades.manaEfficiency) {
-        multipliers.upgrades *= Math.pow(1.15, state.upgrades.manaEfficiency.level);
-      }
+      // ===== FIX: Use UpgradeSystem instead of duplicate logic =====
+      var upgradeSystem = require('./UpgradeSystem.js')["default"];
+      multipliers.upgrades = upgradeSystem.getProductionMultiplier(resource);
+      // ===== END FIX =====
 
       // Guardian bonuses
-      var guardianBonus = state.guardians.filter(function (g) {
-        return g.type === resource || g.type === 'all';
-      }).reduce(function (sum, g) {
-        return sum + g.bonus;
-      }, 0);
-      if (guardianBonus > 0) {
-        multipliers.guardians = 1 + guardianBonus / 100; // Bonus is in percentage
-      }
+      var guardianSystem = require('./GuardianSystem.js')["default"];
+      multipliers.guardians = guardianSystem.getProductionMultiplier(resource);
 
       // Calculate total
       multipliers.total = multipliers.ascension * multipliers.upgrades * multipliers.guardians;
@@ -13137,7 +13180,7 @@ var StructureSystem = /*#__PURE__*/function () {
 var structureSystem = new StructureSystem();
 var _default = exports["default"] = structureSystem;
 
-},{"../core/StateManager.js":5,"../data/structures.js":14,"../utils/EventBus.js":53,"../utils/Logger.js":55}],29:[function(require,module,exports){
+},{"../core/StateManager.js":5,"../data/structures.js":14,"../utils/EventBus.js":53,"../utils/Logger.js":55,"./GuardianSystem.js":22,"./UpgradeSystem.js":31}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14015,21 +14058,27 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
     }
 
     /**
-     * Complete an upgrade
-     */
+    * Complete an upgrade
+    */
   }, {
     key: "completeUpgrade",
     value: function completeUpgrade(upgrade) {
-      // Apply the upgrade - cost was already paid when queued
+      // Apply the upgrade
       _StateManager["default"].dispatch({
         type: 'BUY_UPGRADE',
         payload: {
           upgradeKey: upgrade.upgradeKey,
-          upgradeCost: 0,
-          // ✅ nu mai scădem nimic
-          costResource: upgrade.costResource
+          upgradeCost: upgrade.cost,
+          costResource: upgrade.costResource,
+          skipResourceDeduction: true
         }
       });
+
+      // ===== FIX: Apply special effects (capacity updates, unlocks, etc.) =====
+      var upgradeSystem = require('./UpgradeSystem.js')["default"];
+      var newLevel = upgradeSystem.getLevel(upgrade.upgradeKey);
+      upgradeSystem.applySpecialEffects(upgrade.upgradeKey, newLevel);
+      // ===== END FIX =====
 
       // Clear active upgrade
       _StateManager["default"].dispatch({
@@ -14593,8 +14642,9 @@ var UpgradeSystem = /*#__PURE__*/function () {
     }
 
     /**
-     * Apply special effects (like unlocks)
-     */
+    * Apply special effects (like unlocks and capacity updates)
+    * NOTE: Called by both instant upgrades and UpgradeQueueSystem
+    */
   }, {
     key: "applySpecialEffects",
     value: function applySpecialEffects(upgradeKey, level) {
@@ -17630,15 +17680,17 @@ var ResourceDisplay = /*#__PURE__*/function () {
       // Amount
       var amountEl = document.getElementById("".concat(resourceKey, "-amount"));
       if (amountEl) {
-        amountEl.textContent = "".concat(_Formatters["default"].formatNumber(amount), " / ").concat(_Formatters["default"].formatNumber(cap));
+        var currentText = _Formatters["default"].formatNumber(amount); // ex: 1.27K
+        var capInt = Math.floor(cap || 0);
+        var capText = capInt.toLocaleString(); // ex: 17,496
+
+        amountEl.textContent = "".concat(currentText, " / ").concat(capText);
       }
 
       // Rate
       var rateEl = document.getElementById("".concat(resourceKey, "-rate"));
       if (rateEl && rate !== undefined) {
         rateEl.textContent = "".concat(_Formatters["default"].formatNumber(rate), "/s");
-
-        // Color based on rate
         if (rate > 0) {
           rateEl.style.color = '#10b981'; // Green
         } else {
@@ -17646,13 +17698,11 @@ var ResourceDisplay = /*#__PURE__*/function () {
         }
       }
 
-      // Progress bar
+      // Progress bar (rămâne la fel)
       var barEl = document.getElementById("".concat(resourceKey, "-bar"));
       if (barEl && cap) {
         var percentage = Math.min(amount / cap * 100, 100);
         barEl.style.width = "".concat(percentage, "%");
-
-        // Color based on fullness
         if (percentage >= 100) {
           barEl.style.backgroundColor = '#ef4444'; // Red (full)
         } else if (percentage >= 80) {

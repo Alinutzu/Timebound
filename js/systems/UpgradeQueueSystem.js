@@ -236,35 +236,39 @@ class UpgradeQueueSystem {
     }
   }
   
-  /**
+    /**
    * Complete an upgrade
    */
   completeUpgrade(upgrade) {
-  // Apply the upgrade - cost was already paid when queued
-  stateManager.dispatch({
-    type: 'BUY_UPGRADE',
-    payload: {
-      upgradeKey: upgrade.upgradeKey,
-      upgradeCost: 0,              // ✅ nu mai scădem nimic
-      costResource: upgrade.costResource
-    }
-  });
-  
-  // Clear active upgrade
-  stateManager.dispatch({
-    type: 'COMPLETE_UPGRADE',
-    payload: { upgradeKey: upgrade.upgradeKey }
-  });
-  
-  logger.info(
-    'UpgradeQueueSystem', 
-    `Completed upgrade: ${upgrade.upgradeKey} → Level ${upgrade.targetLevel}`
-  );
-  eventBus.emit('upgrade:completed', upgrade);
-  
-  // Start next upgrade in queue
-  this.startNextUpgrade();
-}
+    // Apply the upgrade
+    stateManager. dispatch({
+      type: 'BUY_UPGRADE',
+      payload: {
+        upgradeKey: upgrade.upgradeKey,
+        upgradeCost: upgrade.cost,
+        costResource: upgrade.costResource,
+        skipResourceDeduction: true
+      }
+    });
+    
+    // ===== FIX: Apply special effects (capacity updates, unlocks, etc.) =====
+    const upgradeSystem = require('./UpgradeSystem.js').default;
+    const newLevel = upgradeSystem.getLevel(upgrade.upgradeKey);
+    upgradeSystem.applySpecialEffects(upgrade.upgradeKey, newLevel);
+    // ===== END FIX =====
+    
+    // Clear active upgrade
+    stateManager.dispatch({
+      type: 'COMPLETE_UPGRADE',
+      payload: { upgradeKey: upgrade. upgradeKey }
+    });
+    
+    logger.info('UpgradeQueueSystem', `Completed upgrade: ${upgrade.upgradeKey} → Level ${upgrade.targetLevel}`);
+    eventBus.emit('upgrade:completed', upgrade);
+    
+    // Start next upgrade in queue
+    this.startNextUpgrade();
+  }
   
   /**
    * Cancel queued upgrade (refund resources)

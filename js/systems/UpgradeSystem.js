@@ -283,8 +283,9 @@ buy(upgradeKey) {
   return true;
 }
   
-  /**
-   * Apply special effects (like unlocks)
+    /**
+   * Apply special effects (like unlocks and capacity updates)
+   * NOTE: Called by both instant upgrades and UpgradeQueueSystem
    */
   applySpecialEffects(upgradeKey, level) {
     const upgrade = this.upgrades[upgradeKey];

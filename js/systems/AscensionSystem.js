@@ -120,12 +120,24 @@ class AscensionSystem {
    * Confirm and execute ascension
    */
   confirmAscend() {
+
+     // ===== ADAUGĂ: Save current resources for Quick Start =====
+  const stateBefore = stateManager.getState();
+  const previousResources = {
+    energy: stateBefore. resources.energy,
+    mana: stateBefore.resources.mana,
+    volcanicEnergy: stateBefore.resources. volcanicEnergy
+  };
+  // ===== SFÂRȘIT ADĂUGARE =====
+
     const crystalsEarned = this.calculateCrystalsEarned();
     
     // Dispatch ascension action
     stateManager.dispatch({
       type: 'ASCEND',
-      payload: { crystalsEarned }
+      payload: { crystalsEarned,
+        previousResources
+       }
     });
     
     const state = stateManager.getState();
@@ -133,7 +145,7 @@ class AscensionSystem {
     logger.info('AscensionSystem', `Ascended to level ${state.ascension.level}! Earned ${crystalsEarned} crystals`);
     
     // Apply quick start bonus if upgrade exists
-    this.applyQuickStart();
+    this.applyQuickStart(previousResources);
     
     // Recalculate everything
     eventBus.emit('ascension:completed', {
@@ -154,32 +166,46 @@ class AscensionSystem {
   }
   
   /**
-   * Apply quick start bonus (from upgrades)
-   */
-  applyQuickStart() {
-    const upgradeSystem = require('./UpgradeSystem.js').default;
+ * Apply quick start bonus (from upgrades)
+ */
+applyQuickStart(previousResources = null) {
+  const upgradeSystem = require('./UpgradeSystem.js').default;
+  const quickStartLevel = upgradeSystem. getLevel('quickStart');
+  
+  if (quickStartLevel === 0) return;
+  
+  const quickStartPercent = upgradeSystem. getEffect('quickStart');
+  
+  // ✅ Acum folosim resursele reale din run-ul anterior
+  if (previousResources) {
+    const energyBonus = Math. floor(previousResources.energy * quickStartPercent);
+    const manaBonus = Math.floor(previousResources.mana * quickStartPercent);
+    const volcanicBonus = Math.floor(previousResources.volcanicEnergy * quickStartPercent);
     
-    if (upgradeSystem.getLevel('quickStart') > 0) {
-      const bonus = upgradeSystem.getEffect('quickStart');
-      
-      // Get previous run stats (would need to be saved before reset)
-      // For now, give a flat bonus
-      const bonusEnergy = 1000 * upgradeSystem.getLevel('quickStart');
-      const bonusMana = 10 * upgradeSystem.getLevel('quickStart');
-      
-      stateManager.dispatch({
+    if (energyBonus > 0) {
+      stateManager. dispatch({
         type: 'ADD_RESOURCE',
-        payload: { resource: 'energy', amount: bonusEnergy }
+        payload: { resource: 'energy', amount: energyBonus }
       });
-      
-      stateManager.dispatch({
-        type: 'ADD_RESOURCE',
-        payload: { resource: 'mana', amount: bonusMana }
-      });
-      
-      logger.info('AscensionSystem', `Quick Start bonus applied: ${bonusEnergy} energy, ${bonusMana} mana`);
     }
+    
+    if (manaBonus > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: { resource: 'mana', amount: manaBonus }
+      });
+    }
+    
+    if (volcanicBonus > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: { resource: 'volcanicEnergy', amount: volcanicBonus }
+      });
+    }
+    
+    logger.info('AscensionSystem', `🚀 Quick Start bonus: +${energyBonus} energy, +${manaBonus} mana, +${volcanicBonus} volcanic`);
   }
+}
   
   /**
    * Get production multiplier from ascension

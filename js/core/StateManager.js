@@ -320,17 +320,22 @@ class StateManager {
           structures: {}
         };
       
-      // ===== UPGRADES =====
+            // ===== UPGRADES =====
       case 'BUY_UPGRADE':
-        const { upgradeKey, upgradeCost, costResource } = action.payload;
-        const currentUpgradeLevel = state.upgrades[upgradeKey]?.level || 0;
+        const { upgradeKey, upgradeCost, costResource, skipResourceDeduction } = action.payload;
+        const currentUpgradeLevel = state. upgrades[upgradeKey]?. level || 0;
+        
+        // Calculate new resources (only deduct if not already deducted)
+        const newResources = skipResourceDeduction 
+          ? state.resources 
+          : {
+              ...state.resources,
+              [costResource]: state.resources[costResource] - upgradeCost
+            };
         
         return {
           ...state,
-          resources: {
-            ...state.resources,
-            [costResource]: state.resources[costResource] - upgradeCost
-          },
+          resources: newResources,
           upgrades: {
             ...state.upgrades,
             [upgradeKey]: {

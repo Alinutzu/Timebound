@@ -431,6 +431,24 @@ class QuestSystem {
       logger.warn('QuestSystem', `Quest ${questId} not completed`);
       return false;
     }
+
+    // ===== INSEREAZĂ AICI - FIX LUCKY GEMS =====
+// Apply lucky gems bonus chance
+const upgradeSystem = require('./UpgradeSystem.js').default;
+const luckyChance = upgradeSystem.getLuckyGemsChance(); // Returns 0-0.50
+
+if (quest.rewards.gems && luckyChance > 0 && Math.random() < luckyChance) {
+  const bonusGems = Math.floor(quest.rewards.gems * 0.5); // +50% bonus
+  quest.rewards.gems += bonusGems;
+  
+  logger.info('QuestSystem', `🍀 Lucky Gems!  Bonus: +${bonusGems} gems`);
+  
+  // Optional: emit event for UI notification
+  eventBus.emit('quest:lucky-gems', { 
+    questId, 
+    bonusGems 
+  });
+}
     
     // Give rewards
     for (let [resource, amount] of Object.entries(quest.rewards)) {

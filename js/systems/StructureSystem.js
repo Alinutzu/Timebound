@@ -196,42 +196,33 @@ class StructureSystem {
    * Get global multipliers for resource type
    */
   getGlobalMultipliers(resource) {
-    const state = stateManager.getState();
-    let multipliers = {
-      ascension: 1,
-      upgrades: 1,
-      guardians: 1,
-      total: 1
-    };
-    
-    // Ascension bonus
-    if (state.ascension.level > 0) {
-      multipliers.ascension = 1 + (state.ascension.level * 0.1); // +10% per level
-    }
-    
-    // Upgrade bonuses
-    if (resource === 'energy' && state.upgrades.energyBoost) {
-      multipliers.upgrades *= Math.pow(1.1, state.upgrades.energyBoost.level);
-    }
-    
-    if (resource === 'mana' && state.upgrades.manaEfficiency) {
-      multipliers.upgrades *= Math.pow(1.15, state.upgrades.manaEfficiency.level);
-    }
-    
-    // Guardian bonuses
-    const guardianBonus = state.guardians
-      .filter(g => g.type === resource || g.type === 'all')
-      .reduce((sum, g) => sum + g.bonus, 0);
-    
-    if (guardianBonus > 0) {
-      multipliers.guardians = 1 + (guardianBonus / 100); // Bonus is in percentage
-    }
-    
-    // Calculate total
-    multipliers.total = multipliers.ascension * multipliers.upgrades * multipliers.guardians;
-    
-    return multipliers;
+  const state = stateManager.getState();
+  let multipliers = {
+    ascension: 1,
+    upgrades: 1,
+    guardians: 1,
+    total: 1
+  };
+  
+  // Ascension bonus
+  if (state.ascension.level > 0) {
+    multipliers.ascension = 1 + (state.ascension.level * 0.1);
   }
+  
+  // ===== FIX: Use UpgradeSystem instead of duplicate logic =====
+  const upgradeSystem = require('./UpgradeSystem.js'). default;
+  multipliers.upgrades = upgradeSystem.getProductionMultiplier(resource);
+  // ===== END FIX =====
+  
+  // Guardian bonuses
+  const guardianSystem = require('./GuardianSystem.js').default;
+  multipliers.guardians = guardianSystem. getProductionMultiplier(resource);
+  
+  // Calculate total
+  multipliers.total = multipliers.ascension * multipliers.upgrades * multipliers.guardians;
+  
+  return multipliers;
+}
   
   /**
    * Get structure-specific synergies

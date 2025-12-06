@@ -113,6 +113,13 @@ class TickManager {
    */
   productionTick() {
     const state = stateManager.getState();
+
+    // ===== FIX: Apply critical energy chance =====
+  const upgradeSystem = require('../systems/UpgradeSystem.js').default;
+  const criticalChance = upgradeSystem.getCriticalChance(); // Returns 0-0.20 (0-20%)
+  const isCritical = Math.random() < criticalChance;
+  const criticalMultiplier = isCritical ? 2 : 1;
+  // ===== END FIX =====
     
     // Energy production
     const energyPerTick = state.production.energy * this.deltaTime;
@@ -223,56 +230,57 @@ class TickManager {
    * Calculate offline progress
    */
   calculateOfflineProgress(lastPlayed) {
-    const now = Date.now();
-    const timeDiff = now - lastPlayed;
-    
-    // Minimum 1 minute offline
-    if (timeDiff < 60000) {
-      return null;
-    }
-    
-    // Cap at 24 hours
-    const cappedTimeDiff = Math.min(timeDiff, CONFIG.BALANCING.OFFLINE_TIME_CAP);
-    
-    const state = stateManager.getState();
-    const offlineRate = CONFIG.BALANCING.OFFLINE_PRODUCTION_BASE;
-    
-    // Check for offline upgrades
-    const offlineUpgradeLevel = state.upgrades.offlineProduction?.level || 0;
-    const offlineMultiplier = offlineRate + (offlineUpgradeLevel * 0.1); // +10% per level
-    
-    // Calculate resources earned
-    const secondsOffline = cappedTimeDiff / 1000;
-    
-    const energyEarned = Math.floor(
-      state.production.energy * secondsOffline * offlineMultiplier
-    );
-    
-    const manaEarned = Math.floor(
-      state.production.mana * secondsOffline * offlineMultiplier
-    );
-    
-    const volcanicEarned = state.realms.unlocked.includes('volcano')
-      ? Math.floor(state.production.volcanicEnergy * secondsOffline * offlineMultiplier)
-      : 0;
-    
-    logger.info('TickManager', 'Offline progress calculated', {
-      timeOffline: cappedTimeDiff,
-      energyEarned,
-      manaEarned,
-      volcanicEarned
-    });
-    
-    return {
-      timeOffline: cappedTimeDiff,
-      resources: {
-        energy: energyEarned,
-        mana: manaEarned,
-        volcanicEnergy: volcanicEarned
-      },
-      wasCaped: timeDiff > CONFIG.BALANCING.OFFLINE_TIME_CAP
-    };
+  const now = Date.now();
+  const timeDiff = now - lastPlayed;
+  
+  if (timeDiff < 60000) {
+    return null;
   }
+  
+  const cappedTimeDiff = Math.min(timeDiff, CONFIG.BALANCING.OFFLINE_TIME_CAP);
+  const state = stateManager.getState();
+  
+  // ===== FIX: Use upgrade effect directly =====
+  const upgradeSystem = require('../systems/UpgradeSystem.js'). default;
+  const offlinePercent = upgradeSystem.getLevel('offlineProduction') > 0
+    ? upgradeSystem.getEffect('offlineProduction') // Returns 10, 20, 30...100
+    : CONFIG.BALANCING.OFFLINE_PRODUCTION_BASE * 100; // 50%
+  
+  const offlineMultiplier = offlinePercent / 100; // Convert to decimal
+  // ===== END FIX =====
+  
+  const secondsOffline = cappedTimeDiff / 1000;
+  
+  const energyEarned = Math.floor(
+    state.production.energy * secondsOffline * offlineMultiplier
+  );
+  
+  const manaEarned = Math.floor(
+    state.production.mana * secondsOffline * offlineMultiplier
+  );
+  
+  const volcanicEarned = state.realms.unlocked.includes('volcano')
+    ? Math. floor(state.production.volcanicEnergy * secondsOffline * offlineMultiplier)
+    : 0;
+  
+  logger.info('TickManager', 'Offline progress calculated', {
+    timeOffline: cappedTimeDiff,
+    offlinePercent: offlinePercent,
+    energyEarned,
+    manaEarned,
+    volcanicEarned
+  });
+  
+  return {
+    timeOffline: cappedTimeDiff,
+    resources: {
+      energy: energyEarned,
+      mana: manaEarned,
+      volcanicEnergy: volcanicEarned
+    },
+    wasCapped: timeDiff > CONFIG.BALANCING.OFFLINE_TIME_CAP
+  };
+}
   
   /**
    * Apply offline progress

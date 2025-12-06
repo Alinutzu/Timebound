@@ -142,41 +142,43 @@ class ResourceDisplay {
    * Update individual resource
    */
   updateResource(resourceKey, amount, cap, rate) {
-    // Amount
-    const amountEl = document.getElementById(`${resourceKey}-amount`);
-    if (amountEl) {
-      amountEl.textContent = `${Formatters.formatNumber(amount)} / ${Formatters.formatNumber(cap)}`;
-    }
+  // Amount
+  const amountEl = document.getElementById(`${resourceKey}-amount`);
+  if (amountEl) {
+    const currentText = Formatters.formatNumber(amount);       // ex: 1.27K
+    const capInt = Math.floor(cap || 0);
+    const capText = capInt.toLocaleString();                   // ex: 17,496
+
+    amountEl.textContent = `${currentText} / ${capText}`;
+  }
+
+  // Rate
+  const rateEl = document.getElementById(`${resourceKey}-rate`);
+  if (rateEl && rate !== undefined) {
+    rateEl.textContent = `${Formatters.formatNumber(rate)}/s`;
     
-    // Rate
-    const rateEl = document.getElementById(`${resourceKey}-rate`);
-    if (rateEl && rate !== undefined) {
-      rateEl.textContent = `${Formatters.formatNumber(rate)}/s`;
-      
-      // Color based on rate
-      if (rate > 0) {
-        rateEl.style.color = '#10b981'; // Green
-      } else {
-        rateEl.style.color = '#6b7280'; // Gray
-      }
-    }
-    
-    // Progress bar
-    const barEl = document.getElementById(`${resourceKey}-bar`);
-    if (barEl && cap) {
-      const percentage = Math.min((amount / cap) * 100, 100);
-      barEl.style.width = `${percentage}%`;
-      
-      // Color based on fullness
-      if (percentage >= 100) {
-        barEl.style.backgroundColor = '#ef4444'; // Red (full)
-      } else if (percentage >= 80) {
-        barEl.style.backgroundColor = '#f59e0b'; // Orange
-      } else {
-        barEl.style.backgroundColor = '#10b981'; // Green
-      }
+    if (rate > 0) {
+      rateEl.style.color = '#10b981'; // Green
+    } else {
+      rateEl.style.color = '#6b7280'; // Gray
     }
   }
+
+  // Progress bar (rămâne la fel)
+  const barEl = document.getElementById(`${resourceKey}-bar`);
+  if (barEl && cap) {
+    const percentage = Math.min((amount / cap) * 100, 100);
+    barEl.style.width = `${percentage}%`;
+    
+    if (percentage >= 100) {
+      barEl.style.backgroundColor = '#ef4444'; // Red (full)
+    } else if (percentage >= 80) {
+      barEl.style.backgroundColor = '#f59e0b'; // Orange
+    } else {
+      barEl.style.backgroundColor = '#10b981'; // Green
+    }
+  }
+}
 }
 
 export default ResourceDisplay;

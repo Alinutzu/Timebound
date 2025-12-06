@@ -194,12 +194,43 @@
     50% { transform: translateY(-10px); }
 }
 
+/* Înlocuiește secțiunea Mobile Responsive (linia 198-205) cu: */
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .notification-container {
-        top: 10px;
+        /* ===== MUTĂ JOS ÎN LOC DE SUS ===== */
+        top: auto;
+        bottom: 80px; /* Deasupra footer-ului */
         right: 10px;
         left: 10px;
         max-width: none;
+    }
+    
+    /* Notificări mai compacte pe mobile */
+    .notification {
+        padding: 12px;
+    }
+    
+    .notification-title {
+        font-size: 0.875rem;
+    }
+    
+    .notification-message {
+        font-size: 0. 8125rem;
+    }
+    
+    .notification-description {
+        display: none; /* Ascunde descrierea detaliată pe mobile */
+    }
+}
+
+/* Landscape mode pe mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .notification-container {
+        bottom: 10px;
+        right: 10px;
+        left: auto;
+        max-width: 300px;
     }
 }

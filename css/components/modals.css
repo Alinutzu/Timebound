@@ -475,3 +475,15 @@
     color: var(--danger);
     font-size: 2rem;
 }
+
+/* Confirm actions */
+.confirm-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  justify-content: center;
+}
+
+.confirm-actions .btn {
+  min-width: 120px;
+}

@@ -28,6 +28,7 @@ import DailyRewardUI from './ui/DailyRewardUI.js';
 import AutomationUI from './ui/AutomationUI.js';
 import PuzzleUI from './ui/PuzzleUI.js';
 import badgeManager from './ui/BadgeManager.js';
+import confirmModal from './ui/ConfirmModal.js';
 
 
 // Component Managers
@@ -279,12 +280,25 @@ function bindSettingsModal() {
     
     // Reset game
     document.getElementById('reset-game-btn')?.addEventListener('click', () => {
-        if (confirm('Are you ABSOLUTELY SURE? This will delete ALL progress!')) {
-            if (confirm('Last chance! This cannot be undone!')) {
-                game.reset();
-            }
+  confirmModal.show({
+    title: 'Reset Game',
+    message: 'Are you ABSOLUTELY SURE? This will delete ALL progress forever!',
+    danger: true,
+    onConfirm: () => {
+      // Double confirmation
+      confirmModal.show({
+        title: 'Final Warning',
+        message: 'LAST CHANCE! This action cannot be undone.  All structures, upgrades, guardians, and progress will be lost! ',
+        danger: true,
+        onConfirm: () => {
+          game.reset();
+          showNotification('Game reset complete', 'info');
+          setTimeout(() => location.reload(), 1000);
         }
-    });
+      });
+    }
+  });
+});
 }
 
 /**

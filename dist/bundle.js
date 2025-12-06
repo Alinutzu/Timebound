@@ -427,7 +427,7 @@ if (_config["default"].DEBUG_MODE) {
 }
 var _default = exports["default"] = game;
 
-},{"../config.js":1,"../systems/AchievementSystem.js":18,"../systems/AscensionSystem.js":19,"../systems/AutomationSystem.js":20,"../systems/BossSystem.js":21,"../systems/DailyRewardSystem.js":22,"../systems/GuardianSystem.js":23,"../systems/QuestSystem.js":26,"../systems/RealmSystem.js":27,"../systems/ShopSystem.js":28,"../systems/StatisticsSystem.js":29,"../systems/StructureSystem.js":30,"../systems/TutorialSystem.js":31,"../systems/UpgradeQueueSystem.js":32,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./SaveManager.js":5,"./StateManager.js":6,"./TickManager.js":7}],4:[function(require,module,exports){
+},{"../config.js":1,"../systems/AchievementSystem.js":18,"../systems/AscensionSystem.js":19,"../systems/AutomationSystem.js":20,"../systems/BossSystem.js":21,"../systems/DailyRewardSystem.js":22,"../systems/GuardianSystem.js":23,"../systems/QuestSystem.js":26,"../systems/RealmSystem.js":27,"../systems/ShopSystem.js":28,"../systems/StatisticsSystem.js":29,"../systems/StructureSystem.js":30,"../systems/TutorialSystem.js":31,"../systems/UpgradeQueueSystem.js":32,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./SaveManager.js":5,"./StateManager.js":6,"./TickManager.js":7}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -708,7 +708,7 @@ var ResourceManager = /*#__PURE__*/function () {
 var resourceManager = new ResourceManager();
 var _default = exports["default"] = resourceManager;
 
-},{"../utils/Logger.js":58}],5:[function(require,module,exports){
+},{"../utils/Logger.js":59}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1198,7 +1198,7 @@ var SaveManager = /*#__PURE__*/function () {
 var saveManager = new SaveManager();
 var _default = exports["default"] = saveManager;
 
-},{"../config.js":1,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./StateManager.js":6}],6:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./StateManager.js":6}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2170,7 +2170,7 @@ var StateManager = /*#__PURE__*/function () {
 var stateManager = new StateManager();
 var _default = exports["default"] = stateManager;
 
-},{"../config.js":1,"../utils/EventBus.js":56,"../utils/Logger.js":58}],7:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":57,"../utils/Logger.js":59}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2548,7 +2548,7 @@ var TickManager = /*#__PURE__*/function () {
 var tickManager = new TickManager();
 var _default = exports["default"] = tickManager;
 
-},{"../config.js":1,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./ResourceManager.js":4,"./StateManager.js":6}],8:[function(require,module,exports){
+},{"../config.js":1,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./ResourceManager.js":4,"./StateManager.js":6}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6935,6 +6935,7 @@ var _DailyRewardUI = _interopRequireDefault(require("./ui/DailyRewardUI.js"));
 var _AutomationUI = _interopRequireDefault(require("./ui/AutomationUI.js"));
 var _PuzzleUI = _interopRequireDefault(require("./ui/PuzzleUI.js"));
 var _BadgeManager = _interopRequireDefault(require("./ui/BadgeManager.js"));
+var _ConfirmModal = _interopRequireDefault(require("./ui/ConfirmModal.js"));
 var _NotificationManager2 = _interopRequireDefault(require("./ui/NotificationManager.js"));
 var _ModalManager = _interopRequireDefault(require("./ui/ModalManager.js"));
 var _TabManager = _interopRequireDefault(require("./ui/TabManager.js"));
@@ -7244,11 +7245,26 @@ function bindSettingsModal() {
 
   // Reset game
   (_document$getElementB10 = document.getElementById('reset-game-btn')) === null || _document$getElementB10 === void 0 || _document$getElementB10.addEventListener('click', function () {
-    if (confirm('Are you ABSOLUTELY SURE? This will delete ALL progress!')) {
-      if (confirm('Last chance! This cannot be undone!')) {
-        _Game["default"].reset();
+    _ConfirmModal["default"].show({
+      title: 'Reset Game',
+      message: 'Are you ABSOLUTELY SURE? This will delete ALL progress forever!',
+      danger: true,
+      onConfirm: function onConfirm() {
+        // Double confirmation
+        _ConfirmModal["default"].show({
+          title: 'Final Warning',
+          message: 'LAST CHANCE! This action cannot be undone.  All structures, upgrades, guardians, and progress will be lost! ',
+          danger: true,
+          onConfirm: function onConfirm() {
+            _Game["default"].reset();
+            showNotification('Game reset complete', 'info');
+            setTimeout(function () {
+              return location.reload();
+            }, 1000);
+          }
+        });
       }
-    }
+    });
   });
 }
 
@@ -7488,7 +7504,7 @@ document.addEventListener('click', function (e) {
 });
 // ===== SFÂRȘIT HAPTIC FEEDBACK =====
 
-},{"./config.js":1,"./core/Game.js":3,"./core/StateManager.js":6,"./systems/MiniGameAchievementSystem.js":24,"./systems/NotificationManager.js":25,"./ui/AchievementsUI.js":34,"./ui/AutomationUI.js":35,"./ui/BadgeManager.js":36,"./ui/BossesUI.js":37,"./ui/DailyRewardUI.js":38,"./ui/GuardiansUI.js":39,"./ui/ModalManager.js":41,"./ui/NotificationManager.js":42,"./ui/PuzzleUI.js":43,"./ui/QuestsUI.js":44,"./ui/ShopUI.js":45,"./ui/StatisticsUI.js":46,"./ui/StructuresUI.js":47,"./ui/TabManager.js":48,"./ui/UpgradesUI.js":49,"./ui/components/ResourceDisplay.js":50,"./utils/EventBus.js":56,"./utils/Formatters.js":57,"./utils/Logger.js":58,"./utils/NotificationHelper.js":59}],18:[function(require,module,exports){
+},{"./config.js":1,"./core/Game.js":3,"./core/StateManager.js":6,"./systems/MiniGameAchievementSystem.js":24,"./systems/NotificationManager.js":25,"./ui/AchievementsUI.js":34,"./ui/AutomationUI.js":35,"./ui/BadgeManager.js":36,"./ui/BossesUI.js":37,"./ui/ConfirmModal.js":38,"./ui/DailyRewardUI.js":39,"./ui/GuardiansUI.js":40,"./ui/ModalManager.js":42,"./ui/NotificationManager.js":43,"./ui/PuzzleUI.js":44,"./ui/QuestsUI.js":45,"./ui/ShopUI.js":46,"./ui/StatisticsUI.js":47,"./ui/StructuresUI.js":48,"./ui/TabManager.js":49,"./ui/UpgradesUI.js":50,"./ui/components/ResourceDisplay.js":51,"./utils/EventBus.js":57,"./utils/Formatters.js":58,"./utils/Logger.js":59,"./utils/NotificationHelper.js":60}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7998,7 +8014,7 @@ window.claimAchievement = function (achievementKey) {
 };
 var _default = exports["default"] = achievementSystem;
 
-},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../data/achievements.js":8,"../utils/EventBus.js":56,"../utils/Logger.js":58}],19:[function(require,module,exports){
+},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../data/achievements.js":8,"../utils/EventBus.js":57,"../utils/Logger.js":59}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8355,7 +8371,7 @@ var AscensionSystem = /*#__PURE__*/function () {
 var ascensionSystem = new AscensionSystem();
 var _default = exports["default"] = ascensionSystem;
 
-},{"../config.js":1,"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeSystem.js":33}],20:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeSystem.js":33}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8898,7 +8914,7 @@ var AutomationSystem = /*#__PURE__*/function () {
 var automationSystem = new AutomationSystem();
 var _default = exports["default"] = automationSystem;
 
-},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./GuardianSystem.js":23,"./QuestSystem.js":26,"./StructureSystem.js":30,"./UpgradeQueueSystem.js":32,"./UpgradeSystem.js":33}],21:[function(require,module,exports){
+},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./GuardianSystem.js":23,"./QuestSystem.js":26,"./StructureSystem.js":30,"./UpgradeQueueSystem.js":32,"./UpgradeSystem.js":33}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9516,7 +9532,7 @@ var BossSystem = /*#__PURE__*/function () {
 var bossSystem = new BossSystem();
 var _default = exports["default"] = bossSystem;
 
-},{"../core/StateManager.js":6,"../data/bosses.js":9,"../data/guardians.js":10,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./GuardianSystem.js":23,"./StructureSystem.js":30}],22:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/bosses.js":9,"../data/guardians.js":10,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./GuardianSystem.js":23,"./StructureSystem.js":30}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9900,7 +9916,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
 var dailyRewardSystem = new DailyRewardSystem();
 var _default = exports["default"] = dailyRewardSystem;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./GuardianSystem.js":23}],23:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./GuardianSystem.js":23}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10390,7 +10406,7 @@ var GuardianSystem = /*#__PURE__*/function () {
 var guardianSystem = new GuardianSystem();
 var _default = exports["default"] = guardianSystem;
 
-},{"../config.js":1,"../core/StateManager.js":6,"../data/guardians.js":10,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeSystem.js":33}],24:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":6,"../data/guardians.js":10,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeSystem.js":33}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10749,7 +10765,7 @@ var MiniGameAchievementSystem = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameAchievementSystem();
 
-},{"../core/StateManager.js":6,"../data/miniGameAchievements.js":11,"../utils/EventBus.js":56,"../utils/Logger.js":58}],25:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/miniGameAchievements.js":11,"../utils/EventBus.js":57,"../utils/Logger.js":59}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10946,7 +10962,7 @@ var NotificationManager = /*#__PURE__*/function () {
 var notificationManager = new NotificationManager();
 var _default = exports["default"] = notificationManager;
 
-},{"../utils/EventBus.js":56,"../utils/Logger.js":58}],26:[function(require,module,exports){
+},{"../utils/EventBus.js":57,"../utils/Logger.js":59}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11580,7 +11596,7 @@ var QuestSystem = /*#__PURE__*/function () {
 var questSystem = new QuestSystem();
 var _default = exports["default"] = questSystem;
 
-},{"../config.js":1,"../core/StateManager.js":6,"../data/quests.js":12,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeSystem.js":33}],27:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":6,"../data/quests.js":12,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeSystem.js":33}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11922,7 +11938,7 @@ var RealmSystem = /*#__PURE__*/function () {
 var realmSystem = new RealmSystem();
 var _default = exports["default"] = realmSystem;
 
-},{"../core/StateManager.js":6,"../data/realms.js":13,"../utils/EventBus.js":56,"../utils/Logger.js":58}],28:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/realms.js":13,"../utils/EventBus.js":57,"../utils/Logger.js":59}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12535,7 +12551,7 @@ var ShopSystem = /*#__PURE__*/function () {
 var shopSystem = new ShopSystem();
 var _default = exports["default"] = shopSystem;
 
-},{"../core/StateManager.js":6,"../data/guardians.js":10,"../data/shop.js":14,"../ui/games/DailySpinGame.js":53,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./GuardianSystem.js":23}],29:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/guardians.js":10,"../data/shop.js":14,"../ui/games/DailySpinGame.js":54,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./GuardianSystem.js":23}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13050,7 +13066,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
 var statisticsSystem = new StatisticsSystem();
 var _default = exports["default"] = statisticsSystem;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Formatters.js":57,"../utils/Logger.js":58,"./AchievementSystem.js":18,"./BossSystem.js":21,"./GuardianSystem.js":23,"./StructureSystem.js":30,"./UpgradeSystem.js":33}],30:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Formatters.js":58,"../utils/Logger.js":59,"./AchievementSystem.js":18,"./BossSystem.js":21,"./GuardianSystem.js":23,"./StructureSystem.js":30,"./UpgradeSystem.js":33}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13555,7 +13571,7 @@ var StructureSystem = /*#__PURE__*/function () {
 var structureSystem = new StructureSystem();
 var _default = exports["default"] = structureSystem;
 
-},{"../core/StateManager.js":6,"../data/structures.js":15,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./GuardianSystem.js":23,"./UpgradeSystem.js":33}],31:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/structures.js":15,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./GuardianSystem.js":23,"./UpgradeSystem.js":33}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14155,7 +14171,7 @@ var TutorialSystem = /*#__PURE__*/function () {
 var tutorialSystem = new TutorialSystem();
 var _default = exports["default"] = tutorialSystem;
 
-},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeSystem.js":33}],32:[function(require,module,exports){
+},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeSystem.js":33}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14687,7 +14703,7 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
 var upgradeQueueSystem = new UpgradeQueueSystem();
 var _default = exports["default"] = upgradeQueueSystem;
 
-},{"../config.js":1,"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeSystem.js":33}],33:[function(require,module,exports){
+},{"../config.js":1,"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeSystem.js":33}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15291,7 +15307,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
 var upgradeSystem = new UpgradeSystem();
 var _default = exports["default"] = upgradeSystem;
 
-},{"../core/StateManager.js":6,"../data/upgrades.js":16,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeQueueSystem.js":32}],34:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/upgrades.js":16,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeQueueSystem.js":32}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15502,7 +15518,7 @@ window.claimAchievement = function (key) {
 };
 var _default = exports["default"] = AchievementsUI;
 
-},{"../core/StateManager.js":6,"../data/achievements.js":8,"../systems/AchievementSystem.js":18,"../utils/EventBus.js":56,"./MiniGameStatsUI.js":40}],35:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/achievements.js":8,"../systems/AchievementSystem.js":18,"../utils/EventBus.js":57,"./MiniGameStatsUI.js":41}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15573,7 +15589,7 @@ window.toggleAutomation = function (featureKey) {
 new AutomationUI();
 var _default = exports["default"] = AutomationUI;
 
-},{"../systems/AutomationSystem.js":20,"../utils/EventBus.js":56}],36:[function(require,module,exports){
+},{"../systems/AutomationSystem.js":20,"../utils/EventBus.js":57}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15738,7 +15754,7 @@ var BadgeManager = /*#__PURE__*/function () {
 var badgeManager = new BadgeManager();
 var _default = exports["default"] = badgeManager;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58}],37:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15900,7 +15916,87 @@ window.challengeBoss = function (bossKey) {
 };
 var _default = exports["default"] = BossesUI;
 
-},{"../core/StateManager.js":6,"../systems/BossSystem.js":21,"../utils/EventBus.js":56,"../utils/Formatters.js":57}],38:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/BossSystem.js":21,"../utils/EventBus.js":57,"../utils/Formatters.js":58}],38:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+/**
+ * ConfirmModal - Custom confirmation dialog
+ */
+var ConfirmModal = /*#__PURE__*/function () {
+  function ConfirmModal() {
+    _classCallCheck(this, ConfirmModal);
+    this.createModal();
+  }
+  return _createClass(ConfirmModal, [{
+    key: "createModal",
+    value: function createModal() {
+      var _this = this;
+      // Verifică dacă modalul există deja
+      if (document.getElementById('confirm-modal')) return;
+      var modal = document.createElement('div');
+      modal.id = 'confirm-modal';
+      modal.className = 'modal';
+      modal.innerHTML = "\n      <div class=\"modal-overlay\"></div>\n      <div class=\"modal-content\">\n        <div class=\"modal-header\">\n          <h2 id=\"confirm-title\">\u26A0\uFE0F Confirm</h2>\n        </div>\n        <div class=\"modal-body\">\n          <p id=\"confirm-message\"></p>\n          <div class=\"confirm-actions\">\n            <button class=\"btn btn-danger\" id=\"confirm-yes\">Yes, I'm sure</button>\n            <button class=\"btn btn-secondary\" id=\"confirm-no\">Cancel</button>\n          </div>\n        </div>\n      </div>\n    ";
+      document.body.appendChild(modal);
+
+      // Close handlers
+      modal.querySelector('.modal-overlay').addEventListener('click', function () {
+        return _this.hide();
+      });
+      modal.querySelector('#confirm-no').addEventListener('click', function () {
+        return _this.hide();
+      });
+    }
+  }, {
+    key: "show",
+    value: function show(_ref) {
+      var _this2 = this;
+      var _ref$title = _ref.title,
+        title = _ref$title === void 0 ? 'Confirm' : _ref$title,
+        _ref$message = _ref.message,
+        message = _ref$message === void 0 ? 'Are you sure? ' : _ref$message,
+        _ref$onConfirm = _ref.onConfirm,
+        onConfirm = _ref$onConfirm === void 0 ? function () {} : _ref$onConfirm,
+        _ref$danger = _ref.danger,
+        danger = _ref$danger === void 0 ? false : _ref$danger;
+      var modal = document.getElementById('confirm-modal');
+      document.getElementById('confirm-title').innerHTML = danger ? '⚠️ ' + title : title;
+      document.getElementById('confirm-message').textContent = message;
+
+      // Remove old listener
+      var yesBtn = document.getElementById('confirm-yes');
+      var newYesBtn = yesBtn.cloneNode(true);
+      yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+
+      // Add new listener
+      newYesBtn.addEventListener('click', function () {
+        _this2.hide();
+        onConfirm();
+      });
+      modal.classList.add('active');
+    }
+  }, {
+    key: "hide",
+    value: function hide() {
+      var modal = document.getElementById('confirm-modal');
+      modal.classList.remove('active');
+    }
+  }]);
+}();
+var confirmModal = new ConfirmModal();
+var _default = exports["default"] = confirmModal;
+
+},{}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15988,7 +16084,7 @@ var DailyRewardUI = /*#__PURE__*/function () {
 new DailyRewardUI();
 var _default = exports["default"] = DailyRewardUI;
 
-},{"../systems/DailyRewardSystem.js":22,"../utils/EventBus.js":56}],39:[function(require,module,exports){
+},{"../systems/DailyRewardSystem.js":22,"../utils/EventBus.js":57}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15999,6 +16095,7 @@ var _GuardianSystem = _interopRequireDefault(require("../systems/GuardianSystem.
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
+var _ConfirmModal = _interopRequireDefault(require("./ConfirmModal.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
@@ -16094,11 +16191,38 @@ var GuardiansUI = /*#__PURE__*/function () {
   }, {
     key: "createGuardianCard",
     value: function createGuardianCard(guardian) {
+      var _this4 = this;
       var card = document.createElement('div');
       card.className = "guardian-card rarity-".concat(guardian.rarity);
       var typeName = this.getTypeName(guardian.type);
-      card.innerHTML = "\n      <div class=\"guardian-header\">\n        <span class=\"guardian-emoji\">".concat(guardian.emoji, "</span>\n        <div class=\"guardian-info\">\n          <h4 class=\"guardian-name\">").concat(guardian.name, "</h4>\n          <span class=\"guardian-rarity ").concat(guardian.rarity, "\">\n            ").concat(_GuardianSystem["default"].getRarityName(guardian.rarity), "\n          </span>\n        </div>\n      </div>\n      \n      <div class=\"guardian-bonus\">\n        <div class=\"guardian-bonus-value\">+").concat(guardian.bonus, "%</div>\n        <div class=\"guardian-bonus-label\">").concat(typeName, " Production</div>\n      </div>\n      \n      <div class=\"guardian-meta\">\n        <small>Summoned: ").concat(new Date(guardian.summonedAt).toLocaleDateString(), "</small>\n      </div>\n      \n      <button class=\"btn btn-small btn-danger\" onclick=\"dismissGuardian('").concat(guardian.id, "')\">\n        Dismiss\n      </button>\n    ");
+      card.innerHTML = "\n    <div class=\"guardian-header\">\n      <span class=\"guardian-emoji\">".concat(guardian.emoji, "</span>\n      <div class=\"guardian-info\">\n        <h4 class=\"guardian-name\">").concat(guardian.name, "</h4>\n        <span class=\"guardian-rarity ").concat(guardian.rarity, "\">\n          ").concat(_GuardianSystem["default"].getRarityName(guardian.rarity), "\n        </span>\n      </div>\n    </div>\n    \n    <div class=\"guardian-bonus\">\n      <div class=\"guardian-bonus-value\">+").concat(guardian.bonus, "%</div>\n      <div class=\"guardian-bonus-label\">").concat(typeName, " Production</div>\n    </div>\n    \n    <div class=\"guardian-meta\">\n      <small>Summoned: ").concat(new Date(guardian.summonedAt).toLocaleDateString(), "</small>\n    </div>\n    \n    <button class=\"btn btn-small btn-danger guardian-dismiss-btn\" data-guardian-id=\"").concat(guardian.id, "\">\n      Dismiss\n    </button>\n  ");
+
+      // ===== ADAUGĂ EVENT LISTENER =====
+      var dismissBtn = card.querySelector('.guardian-dismiss-btn');
+      dismissBtn.addEventListener('click', function () {
+        _this4.dismissGuardian(guardian);
+      });
       return card;
+    }
+  }, {
+    key: "dismissGuardian",
+    value: function dismissGuardian(guardian) {
+      _ConfirmModal["default"].show({
+        title: 'Dismiss Guardian',
+        message: "Are you sure you want to dismiss ".concat(guardian.emoji, " ").concat(guardian.name, "?  This guardian provides +").concat(guardian.bonus, "% ").concat(this.getTypeName(guardian.type), " production and cannot be recovered! "),
+        danger: true,
+        onConfirm: function onConfirm() {
+          _GuardianSystem["default"].dismiss(guardian.id);
+
+          // Show notification
+          _EventBus["default"].emit('notification:show', {
+            type: 'info',
+            title: 'Guardian Dismissed',
+            message: "".concat(guardian.name, " has left your service"),
+            duration: 3000
+          });
+        }
+      });
     }
   }, {
     key: "summonGuardian",
@@ -16139,15 +16263,10 @@ var GuardiansUI = /*#__PURE__*/function () {
       return names[type] || type;
     }
   }]);
-}(); // Global dismiss function
-window.dismissGuardian = function (guardianId) {
-  if (confirm('Are you sure you want to dismiss this guardian? This cannot be undone!')) {
-    _GuardianSystem["default"].dismiss(guardianId);
-  }
-};
+}();
 var _default = exports["default"] = GuardiansUI;
 
-},{"../core/StateManager.js":6,"../systems/GuardianSystem.js":23,"../utils/EventBus.js":56,"../utils/Formatters.js":57}],40:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/GuardianSystem.js":23,"../utils/EventBus.js":57,"../utils/Formatters.js":58,"./ConfirmModal.js":38}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16278,7 +16397,7 @@ var MiniGameStatsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameStatsUI();
 
-},{"../data/miniGameAchievements.js":11,"../systems/MiniGameAchievementSystem.js":24,"../utils/Formatters.js":57}],41:[function(require,module,exports){
+},{"../data/miniGameAchievements.js":11,"../systems/MiniGameAchievementSystem.js":24,"../utils/Formatters.js":58}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16397,7 +16516,7 @@ var ModalManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ModalManager;
 
-},{"../utils/EventBus.js":56,"../utils/Logger.js":58}],42:[function(require,module,exports){
+},{"../utils/EventBus.js":57,"../utils/Logger.js":59}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16522,7 +16641,7 @@ var NotificationManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = NotificationManager;
 
-},{"../utils/EventBus.js":56,"../utils/Logger.js":58}],43:[function(require,module,exports){
+},{"../utils/EventBus.js":57,"../utils/Logger.js":59}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17156,7 +17275,7 @@ var PuzzleUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = PuzzleUI;
 
-},{"../core/Game.js":3,"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./games/DailySpinGame.js":53,"./games/Game2048.js":54,"./games/Match3Game.js":55}],44:[function(require,module,exports){
+},{"../core/Game.js":3,"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./games/DailySpinGame.js":54,"./games/Game2048.js":55,"./games/Match3Game.js":56}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17318,7 +17437,7 @@ window.claimQuest = function (questId) {
 };
 var _default = exports["default"] = QuestsUI;
 
-},{"../core/StateManager.js":6,"../systems/QuestSystem.js":26,"../utils/EventBus.js":56,"../utils/Formatters.js":57}],45:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/QuestSystem.js":26,"../utils/EventBus.js":57,"../utils/Formatters.js":58}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17450,7 +17569,7 @@ window.watchAd = function (adType) {
 };
 var _default = exports["default"] = ShopUI;
 
-},{"../systems/ShopSystem.js":28,"../utils/EventBus.js":56,"../utils/Formatters.js":57}],46:[function(require,module,exports){
+},{"../systems/ShopSystem.js":28,"../utils/EventBus.js":57,"../utils/Formatters.js":58}],47:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17567,7 +17686,7 @@ var StatisticsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StatisticsUI;
 
-},{"../systems/StatisticsSystem.js":29,"../utils/EventBus.js":56,"./MiniGameStatsUI.js":40}],47:[function(require,module,exports){
+},{"../systems/StatisticsSystem.js":29,"../utils/EventBus.js":57,"./MiniGameStatsUI.js":41}],48:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17771,7 +17890,7 @@ var StructuresUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructuresUI;
 
-},{"../core/StateManager.js":6,"../systems/StructureSystem.js":30,"../utils/EventBus.js":56,"../utils/Formatters.js":57,"./components/StructureCard.js":51}],48:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/StructureSystem.js":30,"../utils/EventBus.js":57,"../utils/Formatters.js":58,"./components/StructureCard.js":52}],49:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17868,7 +17987,7 @@ var TabManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = TabManager;
 
-},{"../utils/EventBus.js":56,"../utils/Logger.js":58}],49:[function(require,module,exports){
+},{"../utils/EventBus.js":57,"../utils/Logger.js":59}],50:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18110,7 +18229,7 @@ var UpgradesUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = UpgradesUI;
 
-},{"../core/StateManager.js":6,"../systems/UpgradeQueueSystem.js":32,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":56,"../utils/Formatters.js":57,"./components/UpgradeQueueDisplay.js":52}],50:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/UpgradeQueueSystem.js":32,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":57,"../utils/Formatters.js":58,"./components/UpgradeQueueDisplay.js":53}],51:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18256,7 +18375,7 @@ var ResourceDisplay = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ResourceDisplay;
 
-},{"../../core/StateManager.js":6,"../../utils/EventBus.js":56,"../../utils/Formatters.js":57}],51:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../utils/EventBus.js":57,"../../utils/Formatters.js":58}],52:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18542,7 +18661,7 @@ var StructureCard = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructureCard;
 
-},{"../../core/StateManager.js":6,"../../systems/StructureSystem.js":30,"../../utils/EventBus.js":56,"../../utils/Formatters.js":57}],52:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../systems/StructureSystem.js":30,"../../utils/EventBus.js":57,"../../utils/Formatters.js":58}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18686,7 +18805,7 @@ window.cancelQueuedUpgrade = function (upgradeKey) {
 };
 var _default = exports["default"] = UpgradeQueueDisplay;
 
-},{"../../systems/UpgradeQueueSystem.js":32,"../../systems/UpgradeSystem.js":33,"../../utils/EventBus.js":56,"../../utils/Formatters.js":57}],53:[function(require,module,exports){
+},{"../../systems/UpgradeQueueSystem.js":32,"../../systems/UpgradeSystem.js":33,"../../utils/EventBus.js":57,"../../utils/Formatters.js":58}],54:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19098,7 +19217,7 @@ var DailySpinGame = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new DailySpinGame();
 
-},{"../../core/StateManager.js":6,"../../utils/EventBus.js":56,"../../utils/Logger.js":58}],54:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../utils/EventBus.js":57,"../../utils/Logger.js":59}],55:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19438,7 +19557,7 @@ var Game2048 = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new Game2048();
 
-},{"../../core/StateManager.js":6,"../../utils/EventBus.js":56,"../../utils/Logger.js":58}],55:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../utils/EventBus.js":57,"../../utils/Logger.js":59}],56:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20254,7 +20373,7 @@ var Match3Game = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Match3Game;
 
-},{"../../utils/EventBus.js":56,"../../utils/Logger.js":58}],56:[function(require,module,exports){
+},{"../../utils/EventBus.js":57,"../../utils/Logger.js":59}],57:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20427,7 +20546,7 @@ var EventBus = /*#__PURE__*/function () {
 var eventBus = new EventBus();
 var _default = exports["default"] = eventBus;
 
-},{"../config.js":1}],57:[function(require,module,exports){
+},{"../config.js":1}],58:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20615,7 +20734,7 @@ var Formatters = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Formatters;
 
-},{}],58:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20798,7 +20917,7 @@ var Logger = /*#__PURE__*/function () {
 var logger = new Logger();
 var _default = exports["default"] = logger;
 
-},{"../config.js":1}],59:[function(require,module,exports){
+},{"../config.js":1}],60:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

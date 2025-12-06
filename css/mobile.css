@@ -92,3 +92,111 @@ input, textarea {
     padding-bottom: calc(12px + env(safe-area-inset-bottom));
   }
 }
+
+/* Tab navigation - mobile improvements */
+@media (max-width: 768px) {
+  .game-tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    padding: 8px 4px;
+    gap: 4px;
+    
+    /* Indicator că poți face scroll */
+    background: linear-gradient(
+      90deg,
+      var(--bg-primary) 0%,
+      transparent 5%,
+      transparent 95%,
+      var(--bg-primary) 100%
+    );
+  }
+  
+  .game-tabs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
+  }
+  
+  /* Tab buttons mai mici pe mobile */
+  .tab-btn {
+    min-width: auto;
+    padding: 8px 12px;
+    font-size: 13px;
+    white-space: nowrap;
+    flex-shrink: 0; /* Nu se comprimă */
+  }
+  
+  /* Badge positioning adjustment */
+  .tab-btn .tab-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+  }
+  
+  /* Scroll snap pentru feeling mai bun */
+  .game-tabs {
+    scroll-snap-type: x proximity;
+    scroll-padding: 8px;
+  }
+  
+  .tab-btn {
+    scroll-snap-align: start;
+  }
+}
+
+/* Landscape mode - tabs inline */
+@media (max-width: 768px) and (orientation: landscape) {
+  .tab-btn {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+  
+  .tab-btn span:not(.tab-badge) {
+    display: none; /* Ascunde emoji-urile în landscape */
+  }
+}
+
+/* Header improvements for mobile */
+@media (max-width: 768px) {
+  .game-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 8px;
+  }
+  
+  .header-left {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Centrează pe mobile */
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .game-title {
+    font-size: 18px;
+    text-align: center;
+    margin: 0;
+  }
+  
+  .version-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  
+  .header-resources {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .header-right {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+  }
+}

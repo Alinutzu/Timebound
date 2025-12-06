@@ -6,6 +6,7 @@ import guardianSystem from '../systems/GuardianSystem.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import Formatters from '../utils/Formatters.js';
+import confirmModal from './ConfirmModal.js';
 
 class GuardiansUI {
   constructor(containerId) {
@@ -108,38 +109,63 @@ class GuardiansUI {
   }
   
   createGuardianCard(guardian) {
-    const card = document.createElement('div');
-    card.className = `guardian-card rarity-${guardian.rarity}`;
+  const card = document.createElement('div');
+  card.className = `guardian-card rarity-${guardian.rarity}`;
+  
+  const typeName = this.getTypeName(guardian.type);
+  
+  card.innerHTML = `
+    <div class="guardian-header">
+      <span class="guardian-emoji">${guardian.emoji}</span>
+      <div class="guardian-info">
+        <h4 class="guardian-name">${guardian.name}</h4>
+        <span class="guardian-rarity ${guardian.rarity}">
+          ${guardianSystem.getRarityName(guardian.rarity)}
+        </span>
+      </div>
+    </div>
     
-    const typeName = this.getTypeName(guardian.type);
+    <div class="guardian-bonus">
+      <div class="guardian-bonus-value">+${guardian.bonus}%</div>
+      <div class="guardian-bonus-label">${typeName} Production</div>
+    </div>
     
-    card.innerHTML = `
-      <div class="guardian-header">
-        <span class="guardian-emoji">${guardian.emoji}</span>
-        <div class="guardian-info">
-          <h4 class="guardian-name">${guardian.name}</h4>
-          <span class="guardian-rarity ${guardian.rarity}">
-            ${guardianSystem.getRarityName(guardian.rarity)}
-          </span>
-        </div>
-      </div>
-      
-      <div class="guardian-bonus">
-        <div class="guardian-bonus-value">+${guardian.bonus}%</div>
-        <div class="guardian-bonus-label">${typeName} Production</div>
-      </div>
-      
-      <div class="guardian-meta">
-        <small>Summoned: ${new Date(guardian.summonedAt).toLocaleDateString()}</small>
-      </div>
-      
-      <button class="btn btn-small btn-danger" onclick="dismissGuardian('${guardian.id}')">
-        Dismiss
-      </button>
-    `;
+    <div class="guardian-meta">
+      <small>Summoned: ${new Date(guardian.summonedAt).toLocaleDateString()}</small>
+    </div>
+    
+    <button class="btn btn-small btn-danger guardian-dismiss-btn" data-guardian-id="${guardian.id}">
+      Dismiss
+    </button>
+  `;
+  
+  // ===== ADAUGĂ EVENT LISTENER =====
+  const dismissBtn = card.querySelector('.guardian-dismiss-btn');
+  dismissBtn.addEventListener('click', () => {
+    this.dismissGuardian(guardian);
+  });
     
     return card;
   }
+
+  dismissGuardian(guardian) {
+  confirmModal.show({
+    title: 'Dismiss Guardian',
+    message: `Are you sure you want to dismiss ${guardian.emoji} ${guardian.name}?  This guardian provides +${guardian.bonus}% ${this.getTypeName(guardian. type)} production and cannot be recovered! `,
+    danger: true,
+    onConfirm: () => {
+      guardianSystem.dismiss(guardian.id);
+      
+      // Show notification
+      eventBus.emit('notification:show', {
+        type: 'info',
+        title: 'Guardian Dismissed',
+        message: `${guardian.name} has left your service`,
+        duration: 3000
+      });
+    }
+  });
+}
   
   summonGuardian() {
     const success = guardianSystem.summon();
@@ -178,12 +204,5 @@ class GuardiansUI {
     return names[type] || type;
   }
 }
-
-// Global dismiss function
-window.dismissGuardian = (guardianId) => {
-  if (confirm('Are you sure you want to dismiss this guardian? This cannot be undone!')) {
-    guardianSystem.dismiss(guardianId);
-  }
-};
 
 export default GuardiansUI;

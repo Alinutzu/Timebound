@@ -2,7 +2,7 @@
  * NotificationManager - Smart notification filtering
  */
 
-import eventBus from '../utils/EventBus. js';
+import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 
 class NotificationManager {

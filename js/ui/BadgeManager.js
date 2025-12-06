@@ -51,17 +51,35 @@ class BadgeManager {
   }
   
   updateAchievementsBadge() {
-    const state = stateManager.getState();
-    let unclaimedCount = 0;
+  const state = stateManager. getState();
+  
+  // ===== FIX: Adaptare pentru structura de array =====
+  // Verifică dacă achievements sunt în formatul vechi (array-based)
+  if (Array.isArray(state.achievements?. unlocked)) {
+    // Formatul: { unlocked: [], claimed: [] }
+    const unlockedAchievements = state.achievements. unlocked || [];
+    const claimedAchievements = state.achievements. claimed || [];
     
-    for (let achievement of Object.values(state.achievements)) {
-      if (achievement.unlocked && !achievement.claimed) {
-        unclaimedCount++;
-      }
-    }
+    // Achievements unlocked dar NU claimed
+    const unclaimedCount = unlockedAchievements.filter(
+      key => !claimedAchievements.includes(key)
+    ).length;
     
     this.setBadge('achievements', unclaimedCount);
+    return;
   }
+  
+  // Fallback: format nou (object-based)
+  let unclaimedCount = 0;
+  for (let achievement of Object.values(state.achievements)) {
+    if (achievement. unlocked && !achievement.claimed) {
+      unclaimedCount++;
+    }
+  }
+  
+  this.setBadge('achievements', unclaimedCount);
+  // ===== SFÂRȘIT FIX =====
+}
   
   updateGuardiansBadge() {
     const state = stateManager.getState();

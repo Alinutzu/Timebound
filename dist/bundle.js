@@ -122,6 +122,109 @@ var _default = exports["default"] = CONFIG;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.NOTIFICATION_CONFIG = void 0;
+exports.shouldShowNotification = shouldShowNotification;
+/**
+ * Notification Configuration - ce notificări să apară
+ */
+
+var NOTIFICATION_CONFIG = exports.NOTIFICATION_CONFIG = {
+  // Achievements - ÎNTOTDEAUNA
+  achievement: {
+    enabled: true,
+    priority: 4,
+    duration: 5000,
+    showOnMobile: true
+  },
+  // Ascension - ÎNTOTDEAUNA
+  ascension: {
+    enabled: true,
+    priority: 4,
+    duration: 8000,
+    showOnMobile: true
+  },
+  // Quest completat - DA
+  questCompleted: {
+    enabled: true,
+    priority: 3,
+    duration: 3000,
+    showOnMobile: true
+  },
+  // Quest claimed - NU pe mobile (vezi în badge)
+  questClaimed: {
+    enabled: true,
+    priority: 2,
+    duration: 2000,
+    showOnMobile: false
+  },
+  // Daily Reward - DA
+  dailyReward: {
+    enabled: true,
+    priority: 3,
+    duration: 4000,
+    showOnMobile: true
+  },
+  // Upgrade completat - NU pe mobile (prea multe)
+  upgradeCompleted: {
+    enabled: true,
+    priority: 2,
+    duration: 2000,
+    showOnMobile: false
+  },
+  // Structure purchased - NU niciodată (prea des)
+  structurePurchased: {
+    enabled: false,
+    priority: 1,
+    duration: 1500,
+    showOnMobile: false
+  },
+  // Save game - NU niciodată
+  gameSaved: {
+    enabled: false,
+    priority: 0,
+    duration: 1000,
+    showOnMobile: false
+  },
+  // Offline progress - DA
+  offlineProgress: {
+    enabled: true,
+    priority: 3,
+    duration: 5000,
+    showOnMobile: true
+  },
+  // Critical hit - NU (prea des)
+  criticalHit: {
+    enabled: false,
+    priority: 1,
+    duration: 1500,
+    showOnMobile: false
+  },
+  // Lucky gems - DA (e rar)
+  luckyGems: {
+    enabled: true,
+    priority: 3,
+    duration: 3000,
+    showOnMobile: true
+  }
+};
+
+/**
+ * Check if notification should be shown
+ */
+function shouldShowNotification(notificationType) {
+  var config = NOTIFICATION_CONFIG[notificationType];
+  if (!config || !config.enabled) return false;
+  var isMobile = window.innerWidth <= 768;
+  if (isMobile && !config.showOnMobile) return false;
+  return true;
+}
+
+},{}],3:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports["default"] = void 0;
 var _config = _interopRequireDefault(require("../config.js"));
 var _StateManager = _interopRequireDefault(require("./StateManager.js"));
@@ -324,7 +427,7 @@ if (_config["default"].DEBUG_MODE) {
 }
 var _default = exports["default"] = game;
 
-},{"../config.js":1,"../systems/AchievementSystem.js":17,"../systems/AscensionSystem.js":18,"../systems/AutomationSystem.js":19,"../systems/BossSystem.js":20,"../systems/DailyRewardSystem.js":21,"../systems/GuardianSystem.js":22,"../systems/QuestSystem.js":24,"../systems/RealmSystem.js":25,"../systems/ShopSystem.js":26,"../systems/StatisticsSystem.js":27,"../systems/StructureSystem.js":28,"../systems/TutorialSystem.js":29,"../systems/UpgradeQueueSystem.js":30,"../systems/UpgradeSystem.js":31,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./SaveManager.js":4,"./StateManager.js":5,"./TickManager.js":6}],3:[function(require,module,exports){
+},{"../config.js":1,"../systems/AchievementSystem.js":18,"../systems/AscensionSystem.js":19,"../systems/AutomationSystem.js":20,"../systems/BossSystem.js":21,"../systems/DailyRewardSystem.js":22,"../systems/GuardianSystem.js":23,"../systems/QuestSystem.js":26,"../systems/RealmSystem.js":27,"../systems/ShopSystem.js":28,"../systems/StatisticsSystem.js":29,"../systems/StructureSystem.js":30,"../systems/TutorialSystem.js":31,"../systems/UpgradeQueueSystem.js":32,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./SaveManager.js":5,"./StateManager.js":6,"./TickManager.js":7}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -605,7 +708,7 @@ var ResourceManager = /*#__PURE__*/function () {
 var resourceManager = new ResourceManager();
 var _default = exports["default"] = resourceManager;
 
-},{"../utils/Logger.js":56}],4:[function(require,module,exports){
+},{"../utils/Logger.js":58}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1095,7 +1198,7 @@ var SaveManager = /*#__PURE__*/function () {
 var saveManager = new SaveManager();
 var _default = exports["default"] = saveManager;
 
-},{"../config.js":1,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./StateManager.js":5}],5:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./StateManager.js":6}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2067,7 +2170,7 @@ var StateManager = /*#__PURE__*/function () {
 var stateManager = new StateManager();
 var _default = exports["default"] = stateManager;
 
-},{"../config.js":1,"../utils/EventBus.js":54,"../utils/Logger.js":56}],6:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":56,"../utils/Logger.js":58}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2445,7 +2548,7 @@ var TickManager = /*#__PURE__*/function () {
 var tickManager = new TickManager();
 var _default = exports["default"] = tickManager;
 
-},{"../config.js":1,"../systems/UpgradeSystem.js":31,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./ResourceManager.js":3,"./StateManager.js":5}],7:[function(require,module,exports){
+},{"../config.js":1,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./ResourceManager.js":4,"./StateManager.js":6}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3256,7 +3359,7 @@ var ACHIEVEMENTS = {
 };
 var _default = exports["default"] = ACHIEVEMENTS;
 
-},{"../core/StateManager.js":5,"../systems/StructureSystem.js":28}],8:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/StructureSystem.js":30}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3643,7 +3746,7 @@ var BOSSES = {
 };
 var _default = exports["default"] = BOSSES;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3916,7 +4019,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
 var RARITIES = exports.RARITIES = _config["default"].BALANCING.GUARDIAN_RARITIES;
 var _default = exports["default"] = GUARDIAN_POOL;
 
-},{"../config.js":1}],10:[function(require,module,exports){
+},{"../config.js":1}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4575,7 +4678,7 @@ function getAllMiniGameAchievements() {
   return Object.values(MINI_GAME_ACHIEVEMENTS).flat();
 }
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5056,7 +5159,7 @@ var QUEST_TEMPLATES = {
 };
 var _default = exports["default"] = QUEST_TEMPLATES;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5360,7 +5463,7 @@ function canUnlockRealm(realmId, state) {
 }
 var _default = exports["default"] = REALMS;
 
-},{"../config.js":1}],13:[function(require,module,exports){
+},{"../config.js":1}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5866,7 +5969,7 @@ function isOfferAvailable(offer, playerState) {
 }
 var _default = exports["default"] = SHOP_ITEMS;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6232,7 +6335,7 @@ var STRUCTURES = {
 };
 var _default = exports["default"] = STRUCTURES;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6807,12 +6910,14 @@ var UPGRADES = {
 };
 var _default = exports["default"] = UPGRADES;
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 "use strict";
 
 var _config = _interopRequireDefault(require("./config.js"));
 var _Game = _interopRequireDefault(require("./core/Game.js"));
 var _EventBus = _interopRequireDefault(require("./utils/EventBus.js"));
+var _NotificationHelper = _interopRequireDefault(require("./utils/NotificationHelper.js"));
+require("./systems/NotificationManager.js");
 var _Logger = _interopRequireDefault(require("./utils/Logger.js"));
 var _StateManager = _interopRequireDefault(require("./core/StateManager.js"));
 var _Formatters = _interopRequireDefault(require("./utils/Formatters.js"));
@@ -6830,7 +6935,7 @@ var _DailyRewardUI = _interopRequireDefault(require("./ui/DailyRewardUI.js"));
 var _AutomationUI = _interopRequireDefault(require("./ui/AutomationUI.js"));
 var _PuzzleUI = _interopRequireDefault(require("./ui/PuzzleUI.js"));
 var _BadgeManager = _interopRequireDefault(require("./ui/BadgeManager.js"));
-var _NotificationManager = _interopRequireDefault(require("./ui/NotificationManager.js"));
+var _NotificationManager2 = _interopRequireDefault(require("./ui/NotificationManager.js"));
 var _ModalManager = _interopRequireDefault(require("./ui/ModalManager.js"));
 var _TabManager = _interopRequireDefault(require("./ui/TabManager.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
@@ -6846,7 +6951,9 @@ function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; } /**
  * Main Entry Point
  * Initializes the game and binds UI
- */ // ✅ ADĂUGAT
+ */ //import eventBus from './utils/EventBus.js';
+// Inițializează
+// ✅ ADĂUGAT
 // UI Managers
 // Component Managers
 // Register Service Worker for PWA
@@ -6970,7 +7077,7 @@ function initUI() {
   var modalManager = new _ModalManager["default"]();
 
   // Initialize notification manager
-  var notificationManager = new _NotificationManager["default"]();
+  var notificationManager = new _NotificationManager2["default"]();
 
   // Initialize tab content
   new _StructuresUI["default"]('structures-container');
@@ -7381,7 +7488,7 @@ document.addEventListener('click', function (e) {
 });
 // ===== SFÂRȘIT HAPTIC FEEDBACK =====
 
-},{"./config.js":1,"./core/Game.js":2,"./core/StateManager.js":5,"./systems/MiniGameAchievementSystem.js":23,"./ui/AchievementsUI.js":32,"./ui/AutomationUI.js":33,"./ui/BadgeManager.js":34,"./ui/BossesUI.js":35,"./ui/DailyRewardUI.js":36,"./ui/GuardiansUI.js":37,"./ui/ModalManager.js":39,"./ui/NotificationManager.js":40,"./ui/PuzzleUI.js":41,"./ui/QuestsUI.js":42,"./ui/ShopUI.js":43,"./ui/StatisticsUI.js":44,"./ui/StructuresUI.js":45,"./ui/TabManager.js":46,"./ui/UpgradesUI.js":47,"./ui/components/ResourceDisplay.js":48,"./utils/EventBus.js":54,"./utils/Formatters.js":55,"./utils/Logger.js":56}],17:[function(require,module,exports){
+},{"./config.js":1,"./core/Game.js":3,"./core/StateManager.js":6,"./systems/MiniGameAchievementSystem.js":24,"./systems/NotificationManager.js":25,"./ui/AchievementsUI.js":34,"./ui/AutomationUI.js":35,"./ui/BadgeManager.js":36,"./ui/BossesUI.js":37,"./ui/DailyRewardUI.js":38,"./ui/GuardiansUI.js":39,"./ui/ModalManager.js":41,"./ui/NotificationManager.js":42,"./ui/PuzzleUI.js":43,"./ui/QuestsUI.js":44,"./ui/ShopUI.js":45,"./ui/StatisticsUI.js":46,"./ui/StructuresUI.js":47,"./ui/TabManager.js":48,"./ui/UpgradesUI.js":49,"./ui/components/ResourceDisplay.js":50,"./utils/EventBus.js":56,"./utils/Formatters.js":57,"./utils/Logger.js":58,"./utils/NotificationHelper.js":59}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7891,7 +7998,7 @@ window.claimAchievement = function (achievementKey) {
 };
 var _default = exports["default"] = achievementSystem;
 
-},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../data/achievements.js":7,"../utils/EventBus.js":54,"../utils/Logger.js":56}],18:[function(require,module,exports){
+},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../data/achievements.js":8,"../utils/EventBus.js":56,"../utils/Logger.js":58}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8248,7 +8355,7 @@ var AscensionSystem = /*#__PURE__*/function () {
 var ascensionSystem = new AscensionSystem();
 var _default = exports["default"] = ascensionSystem;
 
-},{"../config.js":1,"../core/StateManager.js":5,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./UpgradeSystem.js":31}],19:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeSystem.js":33}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8791,7 +8898,7 @@ var AutomationSystem = /*#__PURE__*/function () {
 var automationSystem = new AutomationSystem();
 var _default = exports["default"] = automationSystem;
 
-},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./GuardianSystem.js":22,"./QuestSystem.js":24,"./StructureSystem.js":28,"./UpgradeQueueSystem.js":30,"./UpgradeSystem.js":31}],20:[function(require,module,exports){
+},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./GuardianSystem.js":23,"./QuestSystem.js":26,"./StructureSystem.js":30,"./UpgradeQueueSystem.js":32,"./UpgradeSystem.js":33}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9409,7 +9516,7 @@ var BossSystem = /*#__PURE__*/function () {
 var bossSystem = new BossSystem();
 var _default = exports["default"] = bossSystem;
 
-},{"../core/StateManager.js":5,"../data/bosses.js":8,"../data/guardians.js":9,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./GuardianSystem.js":22,"./StructureSystem.js":28}],21:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/bosses.js":9,"../data/guardians.js":10,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./GuardianSystem.js":23,"./StructureSystem.js":30}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9793,7 +9900,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
 var dailyRewardSystem = new DailyRewardSystem();
 var _default = exports["default"] = dailyRewardSystem;
 
-},{"../core/StateManager.js":5,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./GuardianSystem.js":22}],22:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./GuardianSystem.js":23}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10283,7 +10390,7 @@ var GuardianSystem = /*#__PURE__*/function () {
 var guardianSystem = new GuardianSystem();
 var _default = exports["default"] = guardianSystem;
 
-},{"../config.js":1,"../core/StateManager.js":5,"../data/guardians.js":9,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./UpgradeSystem.js":31}],23:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":6,"../data/guardians.js":10,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeSystem.js":33}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10642,7 +10749,204 @@ var MiniGameAchievementSystem = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameAchievementSystem();
 
-},{"../core/StateManager.js":5,"../data/miniGameAchievements.js":10,"../utils/EventBus.js":54,"../utils/Logger.js":56}],24:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/miniGameAchievements.js":11,"../utils/EventBus.js":56,"../utils/Logger.js":58}],25:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
+var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
+ * NotificationManager - Smart notification filtering
+ */
+var NotificationManager = /*#__PURE__*/function () {
+  function NotificationManager() {
+    _classCallCheck(this, NotificationManager);
+    this.container = document.getElementById('notification-container');
+    this.queue = [];
+    this.activeNotifications = [];
+    this.maxNotifications = window.innerWidth <= 768 ? 2 : 4; // Max 2 pe mobile, 4 pe desktop
+
+    // Prioritățile notificărilor
+    this.priorities = {
+      'critical': 5,
+      // Erori importante
+      'achievement': 4,
+      // Achievement-uri
+      'ascension': 4,
+      // Ascension
+      'quest': 3,
+      // Quest completat
+      'reward': 3,
+      // Daily reward
+      'upgrade': 2,
+      // Upgrade completat
+      'purchase': 1,
+      // Cumpărare structură
+      'info': 0 // Info generală
+    };
+
+    // Cooldown pentru același tip de notificare
+    this.cooldowns = {};
+    this.cooldownTime = 3000; // 3 secunde între același tip
+
+    this.subscribeToEvents();
+    _Logger["default"].info('NotificationManager', 'Initialized');
+  }
+  return _createClass(NotificationManager, [{
+    key: "subscribeToEvents",
+    value: function subscribeToEvents() {
+      var _this = this;
+      // Reascultă la resize pentru a ajusta maxNotifications
+      window.addEventListener('resize', function () {
+        _this.maxNotifications = window.innerWidth <= 768 ? 2 : 4;
+      });
+    }
+
+    /**
+     * Show notification with smart filtering
+     */
+  }, {
+    key: "show",
+    value: function show(_ref) {
+      var _ref$type = _ref.type,
+        type = _ref$type === void 0 ? 'info' : _ref$type,
+        title = _ref.title,
+        message = _ref.message,
+        _ref$description = _ref.description,
+        description = _ref$description === void 0 ? '' : _ref$description,
+        _ref$duration = _ref.duration,
+        duration = _ref$duration === void 0 ? 3000 : _ref$duration;
+      // Verifică cooldown
+      if (this.isOnCooldown(type)) {
+        _Logger["default"].debug('NotificationManager', "Notification ".concat(type, " on cooldown, skipping"));
+        return;
+      }
+      var notification = {
+        id: Date.now() + Math.random(),
+        type: type,
+        title: title,
+        message: message,
+        description: description,
+        duration: duration,
+        priority: this.priorities[type] || 0,
+        timestamp: Date.now()
+      };
+
+      // Adaugă în queue
+      this.queue.push(notification);
+      this.setCooldown(type);
+
+      // Procesează queue-ul
+      this.processQueue();
+    }
+
+    /**
+     * Process notification queue based on priority
+     */
+  }, {
+    key: "processQueue",
+    value: function processQueue() {
+      // Sortează după prioritate
+      this.queue.sort(function (a, b) {
+        return b.priority - a.priority;
+      });
+
+      // Afișează doar dacă avem loc
+      while (this.activeNotifications.length < this.maxNotifications && this.queue.length > 0) {
+        var notification = this.queue.shift();
+        this.displayNotification(notification);
+      }
+    }
+
+    /**
+     * Display notification DOM
+     */
+  }, {
+    key: "displayNotification",
+    value: function displayNotification(notification) {
+      var _this2 = this;
+      var el = document.createElement('div');
+      el.className = "notification ".concat(notification.type);
+      el.dataset.id = notification.id;
+
+      // Construiește conținutul - MAI COMPACT pe mobile
+      var isMobile = window.innerWidth <= 768;
+      el.innerHTML = "\n      <div class=\"notification-header\">\n        <h4 class=\"notification-title\">".concat(notification.title, "</h4>\n        <button class=\"notification-close\" aria-label=\"Close\">&times;</button>\n      </div>\n      <p class=\"notification-message\">").concat(notification.message, "</p>\n      ").concat(!isMobile && notification.description ? "<p class=\"notification-description\">".concat(notification.description, "</p>") : '', "\n    ");
+
+      // Close button
+      el.querySelector('.notification-close').addEventListener('click', function () {
+        _this2.closeNotification(notification.id);
+      });
+
+      // Auto-close
+      setTimeout(function () {
+        _this2.closeNotification(notification.id);
+      }, notification.duration);
+      this.container.appendChild(el);
+      this.activeNotifications.push(notification);
+      _Logger["default"].debug('NotificationManager', "Displayed: ".concat(notification.title));
+    }
+
+    /**
+     * Close notification
+     */
+  }, {
+    key: "closeNotification",
+    value: function closeNotification(id) {
+      var _this3 = this;
+      var el = this.container.querySelector("[data-id=\"".concat(id, "\"]"));
+      if (!el) return;
+      el.classList.add('closing');
+      setTimeout(function () {
+        el.remove();
+        _this3.activeNotifications = _this3.activeNotifications.filter(function (n) {
+          return n.id !== id;
+        });
+
+        // Procesează queue-ul din nou
+        _this3.processQueue();
+      }, 300);
+    }
+
+    /**
+     * Cooldown management
+     */
+  }, {
+    key: "isOnCooldown",
+    value: function isOnCooldown(type) {
+      return this.cooldowns[type] && Date.now() - this.cooldowns[type] < this.cooldownTime;
+    }
+  }, {
+    key: "setCooldown",
+    value: function setCooldown(type) {
+      this.cooldowns[type] = Date.now();
+    }
+
+    /**
+     * Clear all notifications
+     */
+  }, {
+    key: "clearAll",
+    value: function clearAll() {
+      this.container.innerHTML = '';
+      this.activeNotifications = [];
+      this.queue = [];
+    }
+  }]);
+}();
+var notificationManager = new NotificationManager();
+var _default = exports["default"] = notificationManager;
+
+},{"../utils/EventBus.js":56,"../utils/Logger.js":58}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11276,7 +11580,7 @@ var QuestSystem = /*#__PURE__*/function () {
 var questSystem = new QuestSystem();
 var _default = exports["default"] = questSystem;
 
-},{"../config.js":1,"../core/StateManager.js":5,"../data/quests.js":11,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./UpgradeSystem.js":31}],25:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":6,"../data/quests.js":12,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeSystem.js":33}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11618,7 +11922,7 @@ var RealmSystem = /*#__PURE__*/function () {
 var realmSystem = new RealmSystem();
 var _default = exports["default"] = realmSystem;
 
-},{"../core/StateManager.js":5,"../data/realms.js":12,"../utils/EventBus.js":54,"../utils/Logger.js":56}],26:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/realms.js":13,"../utils/EventBus.js":56,"../utils/Logger.js":58}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12231,7 +12535,7 @@ var ShopSystem = /*#__PURE__*/function () {
 var shopSystem = new ShopSystem();
 var _default = exports["default"] = shopSystem;
 
-},{"../core/StateManager.js":5,"../data/guardians.js":9,"../data/shop.js":13,"../ui/games/DailySpinGame.js":51,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./GuardianSystem.js":22}],27:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/guardians.js":10,"../data/shop.js":14,"../ui/games/DailySpinGame.js":53,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./GuardianSystem.js":23}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12746,7 +13050,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
 var statisticsSystem = new StatisticsSystem();
 var _default = exports["default"] = statisticsSystem;
 
-},{"../core/StateManager.js":5,"../utils/EventBus.js":54,"../utils/Formatters.js":55,"../utils/Logger.js":56,"./AchievementSystem.js":17,"./BossSystem.js":20,"./GuardianSystem.js":22,"./StructureSystem.js":28,"./UpgradeSystem.js":31}],28:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Formatters.js":57,"../utils/Logger.js":58,"./AchievementSystem.js":18,"./BossSystem.js":21,"./GuardianSystem.js":23,"./StructureSystem.js":30,"./UpgradeSystem.js":33}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13251,7 +13555,7 @@ var StructureSystem = /*#__PURE__*/function () {
 var structureSystem = new StructureSystem();
 var _default = exports["default"] = structureSystem;
 
-},{"../core/StateManager.js":5,"../data/structures.js":14,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./GuardianSystem.js":22,"./UpgradeSystem.js":31}],29:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/structures.js":15,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./GuardianSystem.js":23,"./UpgradeSystem.js":33}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13851,7 +14155,7 @@ var TutorialSystem = /*#__PURE__*/function () {
 var tutorialSystem = new TutorialSystem();
 var _default = exports["default"] = tutorialSystem;
 
-},{"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./UpgradeSystem.js":31}],30:[function(require,module,exports){
+},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeSystem.js":33}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14383,7 +14687,7 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
 var upgradeQueueSystem = new UpgradeQueueSystem();
 var _default = exports["default"] = upgradeQueueSystem;
 
-},{"../config.js":1,"../core/ResourceManager.js":3,"../core/StateManager.js":5,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./UpgradeSystem.js":31}],31:[function(require,module,exports){
+},{"../config.js":1,"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeSystem.js":33}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14987,7 +15291,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
 var upgradeSystem = new UpgradeSystem();
 var _default = exports["default"] = upgradeSystem;
 
-},{"../core/StateManager.js":5,"../data/upgrades.js":15,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./UpgradeQueueSystem.js":30}],32:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/upgrades.js":16,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./UpgradeQueueSystem.js":32}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15198,7 +15502,7 @@ window.claimAchievement = function (key) {
 };
 var _default = exports["default"] = AchievementsUI;
 
-},{"../core/StateManager.js":5,"../data/achievements.js":7,"../systems/AchievementSystem.js":17,"../utils/EventBus.js":54,"./MiniGameStatsUI.js":38}],33:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/achievements.js":8,"../systems/AchievementSystem.js":18,"../utils/EventBus.js":56,"./MiniGameStatsUI.js":40}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15269,7 +15573,7 @@ window.toggleAutomation = function (featureKey) {
 new AutomationUI();
 var _default = exports["default"] = AutomationUI;
 
-},{"../systems/AutomationSystem.js":19,"../utils/EventBus.js":54}],34:[function(require,module,exports){
+},{"../systems/AutomationSystem.js":20,"../utils/EventBus.js":56}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15346,7 +15650,25 @@ var BadgeManager = /*#__PURE__*/function () {
   }, {
     key: "updateAchievementsBadge",
     value: function updateAchievementsBadge() {
+      var _state$achievements;
       var state = _StateManager["default"].getState();
+
+      // ===== FIX: Adaptare pentru structura de array =====
+      // Verifică dacă achievements sunt în formatul vechi (array-based)
+      if (Array.isArray((_state$achievements = state.achievements) === null || _state$achievements === void 0 ? void 0 : _state$achievements.unlocked)) {
+        // Formatul: { unlocked: [], claimed: [] }
+        var unlockedAchievements = state.achievements.unlocked || [];
+        var claimedAchievements = state.achievements.claimed || [];
+
+        // Achievements unlocked dar NU claimed
+        var _unclaimedCount = unlockedAchievements.filter(function (key) {
+          return !claimedAchievements.includes(key);
+        }).length;
+        this.setBadge('achievements', _unclaimedCount);
+        return;
+      }
+
+      // Fallback: format nou (object-based)
       var unclaimedCount = 0;
       for (var _i = 0, _Object$values = Object.values(state.achievements); _i < _Object$values.length; _i++) {
         var achievement = _Object$values[_i];
@@ -15355,6 +15677,7 @@ var BadgeManager = /*#__PURE__*/function () {
         }
       }
       this.setBadge('achievements', unclaimedCount);
+      // ===== SFÂRȘIT FIX =====
     }
   }, {
     key: "updateGuardiansBadge",
@@ -15415,7 +15738,7 @@ var BadgeManager = /*#__PURE__*/function () {
 var badgeManager = new BadgeManager();
 var _default = exports["default"] = badgeManager;
 
-},{"../core/StateManager.js":5,"../utils/EventBus.js":54,"../utils/Logger.js":56}],35:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15577,7 +15900,7 @@ window.challengeBoss = function (bossKey) {
 };
 var _default = exports["default"] = BossesUI;
 
-},{"../core/StateManager.js":5,"../systems/BossSystem.js":20,"../utils/EventBus.js":54,"../utils/Formatters.js":55}],36:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/BossSystem.js":21,"../utils/EventBus.js":56,"../utils/Formatters.js":57}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15665,7 +15988,7 @@ var DailyRewardUI = /*#__PURE__*/function () {
 new DailyRewardUI();
 var _default = exports["default"] = DailyRewardUI;
 
-},{"../systems/DailyRewardSystem.js":21,"../utils/EventBus.js":54}],37:[function(require,module,exports){
+},{"../systems/DailyRewardSystem.js":22,"../utils/EventBus.js":56}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15824,7 +16147,7 @@ window.dismissGuardian = function (guardianId) {
 };
 var _default = exports["default"] = GuardiansUI;
 
-},{"../core/StateManager.js":5,"../systems/GuardianSystem.js":22,"../utils/EventBus.js":54,"../utils/Formatters.js":55}],38:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/GuardianSystem.js":23,"../utils/EventBus.js":56,"../utils/Formatters.js":57}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15955,7 +16278,7 @@ var MiniGameStatsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameStatsUI();
 
-},{"../data/miniGameAchievements.js":10,"../systems/MiniGameAchievementSystem.js":23,"../utils/Formatters.js":55}],39:[function(require,module,exports){
+},{"../data/miniGameAchievements.js":11,"../systems/MiniGameAchievementSystem.js":24,"../utils/Formatters.js":57}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16074,7 +16397,7 @@ var ModalManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ModalManager;
 
-},{"../utils/EventBus.js":54,"../utils/Logger.js":56}],40:[function(require,module,exports){
+},{"../utils/EventBus.js":56,"../utils/Logger.js":58}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16199,7 +16522,7 @@ var NotificationManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = NotificationManager;
 
-},{"../utils/EventBus.js":54,"../utils/Logger.js":56}],41:[function(require,module,exports){
+},{"../utils/EventBus.js":56,"../utils/Logger.js":58}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16833,7 +17156,7 @@ var PuzzleUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = PuzzleUI;
 
-},{"../core/Game.js":2,"../core/StateManager.js":5,"../utils/EventBus.js":54,"../utils/Logger.js":56,"./games/DailySpinGame.js":51,"./games/Game2048.js":52,"./games/Match3Game.js":53}],42:[function(require,module,exports){
+},{"../core/Game.js":3,"../core/StateManager.js":6,"../utils/EventBus.js":56,"../utils/Logger.js":58,"./games/DailySpinGame.js":53,"./games/Game2048.js":54,"./games/Match3Game.js":55}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16995,7 +17318,7 @@ window.claimQuest = function (questId) {
 };
 var _default = exports["default"] = QuestsUI;
 
-},{"../core/StateManager.js":5,"../systems/QuestSystem.js":24,"../utils/EventBus.js":54,"../utils/Formatters.js":55}],43:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/QuestSystem.js":26,"../utils/EventBus.js":56,"../utils/Formatters.js":57}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17127,7 +17450,7 @@ window.watchAd = function (adType) {
 };
 var _default = exports["default"] = ShopUI;
 
-},{"../systems/ShopSystem.js":26,"../utils/EventBus.js":54,"../utils/Formatters.js":55}],44:[function(require,module,exports){
+},{"../systems/ShopSystem.js":28,"../utils/EventBus.js":56,"../utils/Formatters.js":57}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17244,7 +17567,7 @@ var StatisticsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StatisticsUI;
 
-},{"../systems/StatisticsSystem.js":27,"../utils/EventBus.js":54,"./MiniGameStatsUI.js":38}],45:[function(require,module,exports){
+},{"../systems/StatisticsSystem.js":29,"../utils/EventBus.js":56,"./MiniGameStatsUI.js":40}],47:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17448,7 +17771,7 @@ var StructuresUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructuresUI;
 
-},{"../core/StateManager.js":5,"../systems/StructureSystem.js":28,"../utils/EventBus.js":54,"../utils/Formatters.js":55,"./components/StructureCard.js":49}],46:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/StructureSystem.js":30,"../utils/EventBus.js":56,"../utils/Formatters.js":57,"./components/StructureCard.js":51}],48:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17545,7 +17868,7 @@ var TabManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = TabManager;
 
-},{"../utils/EventBus.js":54,"../utils/Logger.js":56}],47:[function(require,module,exports){
+},{"../utils/EventBus.js":56,"../utils/Logger.js":58}],49:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17787,7 +18110,7 @@ var UpgradesUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = UpgradesUI;
 
-},{"../core/StateManager.js":5,"../systems/UpgradeQueueSystem.js":30,"../systems/UpgradeSystem.js":31,"../utils/EventBus.js":54,"../utils/Formatters.js":55,"./components/UpgradeQueueDisplay.js":50}],48:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/UpgradeQueueSystem.js":32,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":56,"../utils/Formatters.js":57,"./components/UpgradeQueueDisplay.js":52}],50:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17933,7 +18256,7 @@ var ResourceDisplay = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ResourceDisplay;
 
-},{"../../core/StateManager.js":5,"../../utils/EventBus.js":54,"../../utils/Formatters.js":55}],49:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../utils/EventBus.js":56,"../../utils/Formatters.js":57}],51:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18219,7 +18542,7 @@ var StructureCard = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructureCard;
 
-},{"../../core/StateManager.js":5,"../../systems/StructureSystem.js":28,"../../utils/EventBus.js":54,"../../utils/Formatters.js":55}],50:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../systems/StructureSystem.js":30,"../../utils/EventBus.js":56,"../../utils/Formatters.js":57}],52:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18363,7 +18686,7 @@ window.cancelQueuedUpgrade = function (upgradeKey) {
 };
 var _default = exports["default"] = UpgradeQueueDisplay;
 
-},{"../../systems/UpgradeQueueSystem.js":30,"../../systems/UpgradeSystem.js":31,"../../utils/EventBus.js":54,"../../utils/Formatters.js":55}],51:[function(require,module,exports){
+},{"../../systems/UpgradeQueueSystem.js":32,"../../systems/UpgradeSystem.js":33,"../../utils/EventBus.js":56,"../../utils/Formatters.js":57}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18775,7 +19098,7 @@ var DailySpinGame = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new DailySpinGame();
 
-},{"../../core/StateManager.js":5,"../../utils/EventBus.js":54,"../../utils/Logger.js":56}],52:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../utils/EventBus.js":56,"../../utils/Logger.js":58}],54:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19115,7 +19438,7 @@ var Game2048 = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new Game2048();
 
-},{"../../core/StateManager.js":5,"../../utils/EventBus.js":54,"../../utils/Logger.js":56}],53:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../utils/EventBus.js":56,"../../utils/Logger.js":58}],55:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19931,7 +20254,7 @@ var Match3Game = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Match3Game;
 
-},{"../../utils/EventBus.js":54,"../../utils/Logger.js":56}],54:[function(require,module,exports){
+},{"../../utils/EventBus.js":56,"../../utils/Logger.js":58}],56:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20104,7 +20427,7 @@ var EventBus = /*#__PURE__*/function () {
 var eventBus = new EventBus();
 var _default = exports["default"] = eventBus;
 
-},{"../config.js":1}],55:[function(require,module,exports){
+},{"../config.js":1}],57:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20292,7 +20615,7 @@ var Formatters = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Formatters;
 
-},{}],56:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20475,4 +20798,46 @@ var Logger = /*#__PURE__*/function () {
 var logger = new Logger();
 var _default = exports["default"] = logger;
 
-},{"../config.js":1}]},{},[16]);
+},{"../config.js":1}],59:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+exports.showNotification = showNotification;
+var _NotificationManager = _interopRequireDefault(require("../systems/NotificationManager.js"));
+var _NotificationConfig = require("../config/NotificationConfig.js");
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+/**
+ * Wrapper pentru notificări - folosește configurarea
+ */
+
+function showNotification(type, _ref) {
+  var title = _ref.title,
+    message = _ref.message,
+    _ref$description = _ref.description,
+    description = _ref$description === void 0 ? '' : _ref$description;
+  // Verifică dacă ar trebui să apară
+  if (!(0, _NotificationConfig.shouldShowNotification)(type)) {
+    return;
+  }
+  var config = _NotificationConfig.NOTIFICATION_CONFIG[type];
+  _NotificationManager["default"].show({
+    type: config.priority >= 3 ? type : 'info',
+    title: title,
+    message: message,
+    description: description,
+    duration: config.duration
+  });
+}
+
+// Export pentru compatibilitate
+var _default = exports["default"] = {
+  show: showNotification,
+  clear: function clear() {
+    return _NotificationManager["default"].clearAll();
+  }
+};
+
+},{"../config/NotificationConfig.js":2,"../systems/NotificationManager.js":25}]},{},[17]);

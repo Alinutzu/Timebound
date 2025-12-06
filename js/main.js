@@ -7,7 +7,7 @@ import CONFIG from './config.js';
 import game from './core/Game.js';
 //import eventBus from './utils/EventBus.js';
 import eventBus from './utils/EventBus.js';
-import notificationHelper from './utils/NotificationHelper. js';
+import notificationHelper from './utils/NotificationHelper.js';
 import './systems/NotificationManager.js'; // Inițializează
 import logger from './utils/Logger.js';
 import stateManager from './core/StateManager.js';

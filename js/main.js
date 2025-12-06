@@ -24,12 +24,26 @@ import StatisticsUI from './ui/StatisticsUI.js';
 import DailyRewardUI from './ui/DailyRewardUI.js';
 import AutomationUI from './ui/AutomationUI.js';
 import PuzzleUI from './ui/PuzzleUI.js';
+import badgeManager from './ui/BadgeManager.js';
 
 
 // Component Managers
 import NotificationManager from './ui/NotificationManager.js';
 import ModalManager from './ui/ModalManager.js';
 import TabManager from './ui/TabManager.js';
+
+// Register Service Worker for PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker. register('/service-worker.js')
+      .then((registration) => {
+        console.log('ServiceWorker registered:', registration);
+      })
+      . catch((error) => {
+        console.log('ServiceWorker registration failed:', error);
+      });
+  });
+}
 
 /**
  * Initialize application
@@ -186,6 +200,13 @@ function bindGlobalEvents() {
         eventBus.emit('modal:show', { modalId: 'daily-reward-modal' });
     });
     
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+     btn.addEventListener('click', () => {
+    const tabName = btn.dataset.tab;
+    badgeManager.clearBadgeOnTabClick(tabName);
+     });
+    });
+
     // Settings modal bindings
     bindSettingsModal();
     
@@ -459,3 +480,48 @@ if (CONFIG.DEBUG_MODE) {
     console.log('    cheat.ascend()');
 }
 
+// ===== MOBILE SWIPE GESTURES (OPȚIONAL) =====
+let touchStartX = 0;
+let touchEndX = 0;
+
+document.addEventListener('touchstart', e => {
+  touchStartX = e.changedTouches[0].screenX;
+});
+
+document.addEventListener('touchend', e => {
+  touchEndX = e.changedTouches[0].screenX;
+  handleSwipe();
+});
+
+function handleSwipe() {
+  const diff = touchEndX - touchStartX;
+  if (Math.abs(diff) < 50) return; // Minimum swipe distance
+  
+  const activeTab = document.querySelector('.tab-btn. active');
+  const allTabs = Array.from(document.querySelectorAll('.tab-btn'));
+  const currentIndex = allTabs.indexOf(activeTab);
+  
+  if (diff < 0 && currentIndex < allTabs.length - 1) {
+    // Swipe left - next tab
+    allTabs[currentIndex + 1]. click();
+  } else if (diff > 0 && currentIndex > 0) {
+    // Swipe right - previous tab
+    allTabs[currentIndex - 1].click();
+  }
+}
+// ===== SFÂRȘIT SWIPE GESTURES =====
+
+// ===== HAPTIC FEEDBACK (OPȚIONAL) =====
+function vibrate(pattern = 10) {
+  if (navigator.vibrate) {
+    navigator.vibrate(pattern);
+  }
+}
+
+// Vibrație la click pe buttons
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.btn') || e.target.closest('.tab-btn')) {
+    vibrate(10);
+  }
+});
+// ===== SFÂRȘIT HAPTIC FEEDBACK =====

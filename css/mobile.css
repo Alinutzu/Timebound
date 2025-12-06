@@ -1,0 +1,94 @@
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Larger touch targets */
+  .btn {
+    min-height: 44px;
+    padding: 12px 20px;
+    font-size: 16px;
+  }
+  
+  .tab-btn {
+    min-height: 48px;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  /* Reduce header size */
+  .game-header {
+    padding: 8px 12px;
+    flex-wrap: wrap;
+  }
+  
+  .game-title {
+    font-size: 18px;
+  }
+  
+  /* Stack resources vertically on small screens */
+  .header-resources {
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+  }
+  
+  /* Card spacing */
+  .structure-card,
+  .upgrade-card,
+  .guardian-card {
+    margin-bottom: 12px;
+  }
+  
+  /* Modal improvements */
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  /* Tab navigation scrollable */
+  .game-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  
+  .game-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Footer buttons stack on mobile */
+  .game-footer {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+  
+  .footer-left,
+  .footer-center,
+  .footer-right {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Prevent accidental text selection during gameplay */
+* {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Safe area for notched devices (iPhone X+) */
+@supports (padding: env(safe-area-inset-top)) {
+  .game-header {
+    padding-top: calc(8px + env(safe-area-inset-top));
+  }
+  
+  .game-footer {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+}

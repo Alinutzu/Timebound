@@ -112,59 +112,67 @@ class TickManager {
    * Production tick - generate resources
    */
   productionTick() {
-    const state = stateManager.getState();
+  const state = stateManager.getState();
 
-    // ===== FIX: Apply critical energy chance =====
+  // ===== FIX: Apply critical energy chance =====
   const upgradeSystem = require('../systems/UpgradeSystem.js').default;
   const criticalChance = upgradeSystem.getCriticalChance(); // Returns 0-0.20 (0-20%)
   const isCritical = Math.random() < criticalChance;
   const criticalMultiplier = isCritical ? 2 : 1;
   // ===== END FIX =====
-    
-    // Energy production
-    const energyPerTick = state.production.energy * this.deltaTime;
-    if (energyPerTick > 0) {
-      stateManager.dispatch({
-        type: 'ADD_RESOURCE',
-        payload: {
-          resource: 'energy',
-          amount: energyPerTick
-        }
-      });
-      
-      // Update lifetime energy
-      stateManager.dispatch({
-        type: 'UPDATE_LIFETIME_ENERGY',
-        payload: { amount: energyPerTick }
-      });
-    }
-    
-    // Mana production
-    const manaPerTick = state.production.mana * this.deltaTime;
-    if (manaPerTick > 0) {
-      stateManager.dispatch({
-        type: 'ADD_RESOURCE',
-        payload: {
-          resource: 'mana',
-          amount: manaPerTick
-        }
-      });
-    }
-    
-    // Volcanic energy production
-    if (state.realms.unlocked.includes('volcano')) {
-      const volcanicPerTick = state.production.volcanicEnergy * this.deltaTime;
-      if (volcanicPerTick > 0) {
-        stateManager.dispatch({
-          type: 'ADD_RESOURCE',
-          payload: {
-            resource: 'volcanicEnergy',
-            amount: volcanicPerTick
-          }
-        });
+  
+  // Energy production
+  let energyPerTick = state. production.energy * this.deltaTime;
+  
+  // ✅ Apply critical multiplier
+  if (isCritical && energyPerTick > 0) {
+    energyPerTick *= criticalMultiplier;
+    // Optional: emit event for visual effect
+    eventBus.emit('production:critical', { resource: 'energy', amount: energyPerTick });
+  }
+  
+  if (energyPerTick > 0) {
+    stateManager.dispatch({
+      type: 'ADD_RESOURCE',
+      payload: {
+        resource: 'energy',
+        amount: energyPerTick  // ✅ Acum include critical! 
       }
+    });
+    
+    // Update lifetime energy
+    stateManager.dispatch({
+      type: 'UPDATE_LIFETIME_ENERGY',
+      payload: { amount: energyPerTick }
+    });
+  }
+  
+  // Mana production (same as before)
+  const manaPerTick = state.production.mana * this.deltaTime;
+  if (manaPerTick > 0) {
+    stateManager.dispatch({
+      type: 'ADD_RESOURCE',
+      payload: {
+        resource: 'mana',
+        amount: manaPerTick
+      }
+    });
+  }
+  
+  // Volcanic energy production (same as before)
+  if (state.realms.unlocked.includes('volcano')) {
+    const volcanicPerTick = state.production.volcanicEnergy * this.deltaTime;
+    if (volcanicPerTick > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: {
+          resource: 'volcanicEnergy',
+          amount: volcanicPerTick
+        }
+      });
     }
   }
+}
   
   /**
    * Update play time statistics

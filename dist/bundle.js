@@ -2207,12 +2207,22 @@ var TickManager = /*#__PURE__*/function () {
 
       // Energy production
       var energyPerTick = state.production.energy * this.deltaTime;
+
+      // ✅ Apply critical multiplier
+      if (isCritical && energyPerTick > 0) {
+        energyPerTick *= criticalMultiplier;
+        // Optional: emit event for visual effect
+        _EventBus["default"].emit('production:critical', {
+          resource: 'energy',
+          amount: energyPerTick
+        });
+      }
       if (energyPerTick > 0) {
         _StateManager["default"].dispatch({
           type: 'ADD_RESOURCE',
           payload: {
             resource: 'energy',
-            amount: energyPerTick
+            amount: energyPerTick // ✅ Acum include critical! 
           }
         });
 
@@ -2225,7 +2235,7 @@ var TickManager = /*#__PURE__*/function () {
         });
       }
 
-      // Mana production
+      // Mana production (same as before)
       var manaPerTick = state.production.mana * this.deltaTime;
       if (manaPerTick > 0) {
         _StateManager["default"].dispatch({
@@ -2237,7 +2247,7 @@ var TickManager = /*#__PURE__*/function () {
         });
       }
 
-      // Volcanic energy production
+      // Volcanic energy production (same as before)
       if (state.realms.unlocked.includes('volcano')) {
         var volcanicPerTick = state.production.volcanicEnergy * this.deltaTime;
         if (volcanicPerTick > 0) {

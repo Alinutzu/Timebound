@@ -11083,32 +11083,49 @@ var QuestSystem = /*#__PURE__*/function () {
         return;
       }
       var generated = [];
+      var attempts = 0;
+      var maxAttempts = count * 3; // Evită infinite loop
       var _loop = function _loop() {
-        // Weighted random selection
+        attempts++;
         var template = _this2.weightedRandom(availableTemplates);
         var quest = _this2.createQuestFromTemplate(template);
-        if (quest) {
-          _StateManager["default"].dispatch({
-            type: 'ADD_QUEST',
-            payload: {
-              quest: quest
-            }
-          });
-          generated.push(quest);
 
-          // Remove template from available pool to avoid duplicates
-          var index = availableTemplates.findIndex(function (t) {
+        // ===== FIX: Skip quest-uri null =====
+        if (!quest) {
+          _Logger["default"].warn('QuestSystem', "Failed to create quest from template ".concat(template.id, ", skipping"));
+
+          // Remove problematic template
+          var _index = availableTemplates.findIndex(function (t) {
             return t.id === template.id;
           });
-          if (index !== -1) {
-            availableTemplates.splice(index, 1);
+          if (_index !== -1) {
+            availableTemplates.splice(_index, 1);
           }
+          return 1; // continue
+          // Try again
+        }
+        // ===== SFÂRȘIT FIX =====
+
+        _StateManager["default"].dispatch({
+          type: 'ADD_QUEST',
+          payload: {
+            quest: quest
+          }
+        });
+        generated.push(quest);
+
+        // Remove template from pool
+        var index = availableTemplates.findIndex(function (t) {
+          return t.id === template.id;
+        });
+        if (index !== -1) {
+          availableTemplates.splice(index, 1);
         }
       };
-      for (var i = 0; i < count && availableTemplates.length > 0; i++) {
-        _loop();
+      while (generated.length < count && attempts < maxAttempts && availableTemplates.length > 0) {
+        if (_loop()) continue;
       }
-      _Logger["default"].info('QuestSystem', "Generated ".concat(generated.length, " quests"));
+      _Logger["default"].info('QuestSystem', "Generated ".concat(generated.length, "/").concat(count, " quests (").concat(attempts, " attempts)"));
       _EventBus["default"].emit('quests:generated', {
         quests: generated
       });
@@ -11207,92 +11224,115 @@ var QuestSystem = /*#__PURE__*/function () {
     value: function createQuestFromTemplate(template) {
       var state = _StateManager["default"].getState();
 
-      // Determine amount/target based on player progress
+      // Validare initială
+      if (!template) return null;
       var progressLevel = this.getPlayerProgressLevel();
       var amount, target, description;
-      switch (template.type) {
-        case 'produce':
-          amount = this.selectScaledValue(template.amounts, progressLevel);
-          description = template.description.replace('{amount}', amount.toLocaleString());
-          break;
-        case 'buy':
-          amount = this.selectScaledValue(template.amounts, progressLevel);
-          target = template.target || 'any';
-          if (template.targets) {
-            // Select random specific target
-            target = template.targets[Math.floor(Math.random() * template.targets.length)];
-            var structureName = target; // You'd get actual name from structures.js
-            description = template.description.replace('{amount}', amount).replace('{structure}', structureName);
-          } else {
+      try {
+        switch (template.type) {
+          case 'produce':
+            if (!template.amounts || template.amounts.length === 0) {
+              _Logger["default"].error('QuestSystem', "Produce quest ".concat(template.id, " missing amounts"));
+              return null;
+            }
+            amount = this.selectScaledValue(template.amounts, progressLevel);
+            description = template.description.replace('{amount}', amount.toLocaleString());
+            break;
+          case 'buy':
+            if (!template.amounts || template.amounts.length === 0) return null;
+            amount = this.selectScaledValue(template.amounts, progressLevel);
+            target = template.target || 'any';
+            if (template.targets && template.targets.length > 0) {
+              target = template.targets[Math.floor(Math.random() * template.targets.length)];
+              var structureName = target;
+              description = template.description.replace('{amount}', amount).replace('{structure}', structureName);
+            } else {
+              description = template.description.replace('{amount}', amount);
+            }
+            break;
+          case 'upgrade':
+            if (!template.amounts || template.amounts.length === 0) return null;
+            amount = this.selectScaledValue(template.amounts, progressLevel);
             description = template.description.replace('{amount}', amount);
-          }
-          break;
-        case 'upgrade':
-          amount = this.selectScaledValue(template.amounts, progressLevel);
-          description = template.description.replace('{amount}', amount);
-          break;
-        case 'milestone':
-          amount = this.selectScaledValue(template.amounts, progressLevel);
-          description = template.description.replace('{amount}', amount.toLocaleString());
-          break;
-        case 'puzzle':
-          if (template.counts) {
+            break;
+          case 'milestone':
+            if (!template.amounts || template.amounts.length === 0) return null;
+            amount = this.selectScaledValue(template.amounts, progressLevel);
+            description = template.description.replace('{amount}', amount.toLocaleString());
+            break;
+          case 'puzzle':
+            if (template.counts && template.counts.length > 0) {
+              amount = this.selectScaledValue(template.counts, progressLevel);
+              description = template.description.replace('{amount}', amount);
+            } else if (template.scores && template.scores.length > 0) {
+              amount = this.selectScaledValue(template.scores, progressLevel);
+              description = template.description.replace('{amount}', amount.toLocaleString());
+            } else {
+              return null;
+            }
+            break;
+          case 'summon':
+            if (!template.counts || template.counts.length === 0) return null;
             amount = this.selectScaledValue(template.counts, progressLevel);
             description = template.description.replace('{amount}', amount);
-          } else if (template.scores) {
-            amount = this.selectScaledValue(template.scores, progressLevel);
-            description = template.description.replace('{amount}', amount.toLocaleString());
-          }
-          break;
-        case 'summon':
-          amount = this.selectScaledValue(template.counts, progressLevel);
-          description = template.description.replace('{amount}', amount);
-          break;
-        case 'collect':
-          target = template.rarities[Math.floor(Math.random() * template.rarities.length)];
-          description = template.description.replace('{rarity}', target);
-          amount = 1;
-          break;
-        case 'boss':
-          target = template.bosses[Math.floor(Math.random() * template.bosses.length)];
-          var bossName = target; // You'd get actual boss name
-          description = template.description.replace('{boss}', bossName);
-          amount = 1;
-          break;
-        case 'realm':
-          target = template.realms[Math.floor(Math.random() * template.realms.length)];
-          description = template.description.replace('{realm}', target);
-          amount = 1;
-          break;
-        case 'ascension':
-          description = template.description;
-          amount = 1;
-          break;
-        default:
-          _Logger["default"].error('QuestSystem', "Unknown quest type: ".concat(template.type));
-          return null;
+            break;
+          case 'collect':
+            if (!template.rarities || template.rarities.length === 0) return null;
+            target = template.rarities[Math.floor(Math.random() * template.rarities.length)];
+            description = template.description.replace('{rarity}', target);
+            amount = 1;
+            break;
+          case 'boss':
+            if (!template.bosses || template.bosses.length === 0) return null;
+            target = template.bosses[Math.floor(Math.random() * template.bosses.length)];
+            var bossName = target;
+            description = template.description.replace('{boss}', bossName);
+            amount = 1;
+            break;
+          case 'realm':
+            if (!template.realms || template.realms.length === 0) return null;
+            target = template.realms[Math.floor(Math.random() * template.realms.length)];
+            description = template.description.replace('{realm}', target);
+            amount = 1;
+            break;
+          case 'ascension':
+            description = template.description;
+            amount = 1;
+            break;
+          default:
+            _Logger["default"].error('QuestSystem', "Unknown quest type: ".concat(template.type));
+            return null;
+        }
+      } catch (error) {
+        _Logger["default"].error('QuestSystem', "Error creating quest from template ".concat(template.id, ":"), error);
+        return null;
       }
 
       // Calculate rewards
-      var rewards = template.rewards(amount, target);
+      try {
+        var rewards = template.rewards(amount, target);
 
-      // Create quest object
-      var quest = {
-        id: "quest_".concat(Date.now(), "_").concat(Math.random()),
-        templateId: template.id,
-        name: template.name,
-        description: description,
-        emoji: template.emoji,
-        type: template.type,
-        target: target,
-        amount: amount,
-        progress: 0,
-        completed: false,
-        rewards: rewards,
-        difficulty: template.difficulty,
-        createdAt: Date.now()
-      };
-      return quest;
+        // Create quest object
+        var quest = {
+          id: "quest_".concat(Date.now(), "_").concat(Math.random()),
+          templateId: template.id,
+          name: template.name,
+          description: description,
+          emoji: template.emoji,
+          type: template.type,
+          target: target,
+          amount: amount,
+          progress: 0,
+          completed: false,
+          rewards: rewards,
+          difficulty: template.difficulty,
+          createdAt: Date.now()
+        };
+        return quest;
+      } catch (error) {
+        _Logger["default"].error('QuestSystem', "Error calculating rewards for ".concat(template.id, ":"), error);
+        return null;
+      }
     }
 
     /**

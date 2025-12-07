@@ -83,42 +83,57 @@ class QuestSystem {
    * Generate random quests
    */
   generateQuests(count) {
-    const state = stateManager.getState();
-    const availableTemplates = this.getAvailableTemplates();
-    
-    if (availableTemplates.length === 0) {
-      logger.warn('QuestSystem', 'No available quest templates');
-      return;
-    }
-    
-    const generated = [];
-    
-    for (let i = 0; i < count && availableTemplates.length > 0; i++) {
-      // Weighted random selection
-      const template = this.weightedRandom(availableTemplates);
-      const quest = this.createQuestFromTemplate(template);
-      
-      if (quest) {
-        stateManager.dispatch({
-          type: 'ADD_QUEST',
-          payload: { quest }
-        });
-        
-        generated.push(quest);
-        
-        // Remove template from available pool to avoid duplicates
-        const index = availableTemplates.findIndex(t => t.id === template.id);
-        if (index !== -1) {
-          availableTemplates.splice(index, 1);
-        }
-      }
-    }
-    
-    logger.info('QuestSystem', `Generated ${generated.length} quests`);
-    eventBus.emit('quests:generated', { quests: generated });
-    
-    return generated;
+  const state = stateManager.getState();
+  const availableTemplates = this.getAvailableTemplates();
+  
+  if (availableTemplates.length === 0) {
+    logger. warn('QuestSystem', 'No available quest templates');
+    return;
   }
+  
+  const generated = [];
+  let attempts = 0;
+  const maxAttempts = count * 3; // Evită infinite loop
+  
+  while (generated.length < count && attempts < maxAttempts && availableTemplates.length > 0) {
+    attempts++;
+    
+    const template = this.weightedRandom(availableTemplates);
+    const quest = this.createQuestFromTemplate(template);
+    
+    // ===== FIX: Skip quest-uri null =====
+    if (! quest) {
+      logger.warn('QuestSystem', `Failed to create quest from template ${template.id}, skipping`);
+      
+      // Remove problematic template
+      const index = availableTemplates.findIndex(t => t.id === template.id);
+      if (index !== -1) {
+        availableTemplates.splice(index, 1);
+      }
+      
+      continue; // Try again
+    }
+    // ===== SFÂRȘIT FIX =====
+    
+    stateManager.dispatch({
+      type: 'ADD_QUEST',
+      payload: { quest }
+    });
+    
+    generated.push(quest);
+    
+    // Remove template from pool
+    const index = availableTemplates.findIndex(t => t.id === template.id);
+    if (index !== -1) {
+      availableTemplates.splice(index, 1);
+    }
+  }
+  
+  logger.info('QuestSystem', `Generated ${generated.length}/${count} quests (${attempts} attempts)`);
+  eventBus.emit('quests:generated', { quests: generated });
+  
+  return generated;
+}
   
   /**
    * Get available quest templates (unlocked)
@@ -196,87 +211,110 @@ class QuestSystem {
    * Create quest instance from template
    */
   createQuestFromTemplate(template) {
-    const state = stateManager.getState();
-    
-    // Determine amount/target based on player progress
-    const progressLevel = this.getPlayerProgressLevel();
-    let amount, target, description;
-    
+  const state = stateManager.getState();
+  
+  // Validare initială
+  if (!template) return null;
+  
+  const progressLevel = this.getPlayerProgressLevel();
+  let amount, target, description;
+  
+  try {
     switch (template.type) {
       case 'produce':
+        if (!template.amounts || template.amounts.length === 0) {
+          logger.error('QuestSystem', `Produce quest ${template.id} missing amounts`);
+          return null;
+        }
         amount = this.selectScaledValue(template.amounts, progressLevel);
-        description = template.description.replace('{amount}', amount.toLocaleString());
+        description = template.description.replace('{amount}', amount. toLocaleString());
         break;
-        
+      
       case 'buy':
+        if (!template.amounts || template.amounts.length === 0) return null;
+        
         amount = this.selectScaledValue(template.amounts, progressLevel);
         target = template.target || 'any';
         
-        if (template.targets) {
-          // Select random specific target
-          target = template.targets[Math.floor(Math.random() * template.targets.length)];
-          const structureName = target; // You'd get actual name from structures.js
-          description = template.description.replace('{amount}', amount).replace('{structure}', structureName);
+        if (template.targets && template.targets.length > 0) {
+          target = template.targets[Math.floor(Math.random() * template.targets. length)];
+          const structureName = target;
+          description = template.description
+            .replace('{amount}', amount)
+            .replace('{structure}', structureName);
         } else {
-          description = template.description.replace('{amount}', amount);
+          description = template.description. replace('{amount}', amount);
         }
         break;
-        
+      
       case 'upgrade':
+        if (!template.amounts || template.amounts.length === 0) return null;
         amount = this.selectScaledValue(template.amounts, progressLevel);
-        description = template.description.replace('{amount}', amount);
+        description = template.description. replace('{amount}', amount);
         break;
-        
+      
       case 'milestone':
+        if (!template.amounts || template.amounts.length === 0) return null;
         amount = this.selectScaledValue(template.amounts, progressLevel);
-        description = template.description.replace('{amount}', amount.toLocaleString());
+        description = template.description.replace('{amount}', amount. toLocaleString());
         break;
-        
+      
       case 'puzzle':
-        if (template.counts) {
+        if (template.counts && template.counts. length > 0) {
           amount = this.selectScaledValue(template.counts, progressLevel);
           description = template.description.replace('{amount}', amount);
-        } else if (template.scores) {
+        } else if (template.scores && template.scores.length > 0) {
           amount = this.selectScaledValue(template.scores, progressLevel);
-          description = template.description.replace('{amount}', amount.toLocaleString());
+          description = template.description.replace('{amount}', amount. toLocaleString());
+        } else {
+          return null;
         }
         break;
-        
+      
       case 'summon':
+        if (!template. counts || template.counts.length === 0) return null;
         amount = this.selectScaledValue(template.counts, progressLevel);
         description = template.description.replace('{amount}', amount);
         break;
-        
+      
       case 'collect':
-        target = template.rarities[Math.floor(Math.random() * template.rarities.length)];
+        if (!template.rarities || template.rarities.length === 0) return null;
+        target = template.rarities[Math. floor(Math.random() * template.rarities.length)];
         description = template.description.replace('{rarity}', target);
         amount = 1;
         break;
-        
+      
       case 'boss':
-        target = template.bosses[Math.floor(Math.random() * template.bosses.length)];
-        const bossName = target; // You'd get actual boss name
-        description = template.description.replace('{boss}', bossName);
+        if (!template.bosses || template.bosses.length === 0) return null;
+        target = template.bosses[Math. floor(Math.random() * template.bosses.length)];
+        const bossName = target;
+        description = template.description. replace('{boss}', bossName);
         amount = 1;
         break;
-        
+      
       case 'realm':
-        target = template.realms[Math.floor(Math.random() * template.realms.length)];
+        if (!template.realms || template.realms.length === 0) return null;
+        target = template.realms[Math.floor(Math.random() * template. realms.length)];
         description = template.description.replace('{realm}', target);
         amount = 1;
         break;
-        
+      
       case 'ascension':
         description = template.description;
         amount = 1;
         break;
-        
+      
       default:
         logger.error('QuestSystem', `Unknown quest type: ${template.type}`);
         return null;
     }
-    
-    // Calculate rewards
+  } catch (error) {
+    logger.error('QuestSystem', `Error creating quest from template ${template.id}:`, error);
+    return null;
+  }
+  
+  // Calculate rewards
+  try {
     const rewards = template.rewards(amount, target);
     
     // Create quest object
@@ -285,8 +323,8 @@ class QuestSystem {
       templateId: template.id,
       name: template.name,
       description: description,
-      emoji: template.emoji,
-      type: template.type,
+      emoji: template. emoji,
+      type: template. type,
       target: target,
       amount: amount,
       progress: 0,
@@ -297,7 +335,11 @@ class QuestSystem {
     };
     
     return quest;
+  } catch (error) {
+    logger.error('QuestSystem', `Error calculating rewards for ${template.id}:`, error);
+    return null;
   }
+}
   
   /**
    * Get player progress level (0-4) for quest scaling

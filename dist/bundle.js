@@ -18758,14 +18758,16 @@ function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = 
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
- * DailySpinGame - Logică Corectată pentru Aliniere Perfectă
+ * DailySpinGame - Wheel of Fortune mini-game
+ * Resets daily at midnight (00:00)
  */
 var DailySpinGame = /*#__PURE__*/function () {
   function DailySpinGame() {
     _classCallCheck(this, DailySpinGame);
-    this.currentRotation = 0; // Memorează rotația totală
+    this.spinning = false;
+    this.currentRotation = 0; // ✅ CRUCIAL: Ține minte rotația ca să nu sară
 
-    // Configurația segmentelor - FIXATE cu ID-uri 0-7
+    // ✅ SEGMENTE CORECTE: ID-urile trebuie să fie 0, 1, 2... 7 (nu 1-8)
     this.segments = [{
       id: 0,
       label: '50💎',
@@ -18831,139 +18833,329 @@ var DailySpinGame = /*#__PURE__*/function () {
       color: '#8B5CF6',
       weight: 3
     }];
-    this.segmentAngle = 360 / this.segments.length; // 45 grade
+    this.segmentAngle = 360 / this.segments.length;
   }
+
+  /**
+   * Get time until midnight reset
+   */
   return _createClass(DailySpinGame, [{
+    key: "getTimeUntilMidnight",
+    value: function getTimeUntilMidnight() {
+      var now = new Date();
+      var midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0); // Next midnight
+
+      return midnight.getTime() - now.getTime();
+    }
+
+    /**
+     * Get today's date string for comparison
+     */
+  }, {
+    key: "getTodayDateString",
+    value: function getTodayDateString() {
+      return new Date().toDateString(); // "Sat Nov 09 2025"
+    }
+
+    /**
+     * Check if player can spin (FREE - resets at midnight)
+     */
+  }, {
     key: "canSpin",
     value: function canSpin() {
       var _state$miniGames, _state$miniGames2;
       var state = _StateManager["default"].getState();
-      var lastSpin = ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 || (_state$miniGames = _state$miniGames.dailySpin) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames.lastSpinDate) || '';
-      var today = new Date().toDateString();
-      var purchased = ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 || (_state$miniGames2 = _state$miniGames2.dailySpin) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2.purchasedSpins) || 0;
-      if (lastSpin !== today) return {
-        can: true,
-        type: 'free',
-        nextFreeIn: 0
-      };
-      if (purchased > 0) return {
-        can: true,
-        type: 'purchased',
-        spinsRemaining: purchased
-      };
-      var now = new Date();
-      var midnight = new Date(now).setHours(24, 0, 0, 0);
+      var lastSpinDate = ((_state$miniGames = state.miniGames) === null || _state$miniGames === void 0 || (_state$miniGames = _state$miniGames.dailySpin) === null || _state$miniGames === void 0 ? void 0 : _state$miniGames.lastSpinDate) || '';
+      var today = this.getTodayDateString();
+
+      // Check if already spun today (FREE spin)
+      var hasSpunToday = lastSpinDate === today;
+
+      // Check purchased spins
+      var purchasedSpins = ((_state$miniGames2 = state.miniGames) === null || _state$miniGames2 === void 0 || (_state$miniGames2 = _state$miniGames2.dailySpin) === null || _state$miniGames2 === void 0 ? void 0 : _state$miniGames2.purchasedSpins) || 0;
+      if (!hasSpunToday) {
+        // Free spin available
+        return {
+          can: true,
+          type: 'free',
+          nextFreeIn: 0,
+          purchasedSpins: purchasedSpins
+        };
+      }
+      if (purchasedSpins > 0) {
+        // Has purchased spins
+        return {
+          can: true,
+          type: 'purchased',
+          spinsRemaining: purchasedSpins,
+          nextFreeIn: this.getTimeUntilMidnight()
+        };
+      }
+
+      // No spins available
       return {
         can: false,
         type: 'none',
-        nextFreeIn: midnight - now.getTime()
+        nextFreeIn: this.getTimeUntilMidnight(),
+        reason: 'already_spun_today'
       };
     }
+
+    /**
+     * Use a spin (free or purchased)
+     */
   }, {
     key: "useSpin",
     value: function useSpin() {
-      var check = this.canSpin();
-      if (!check.can) return null;
-      if (check.type === 'free') {
+      var canSpinResult = this.canSpin();
+      if (!canSpinResult.can) {
+        return null;
+      }
+      if (canSpinResult.type === 'free') {
+        // Mark today as spun
         _StateManager["default"].dispatch({
           type: 'UPDATE_MINI_GAME',
           payload: {
             game: 'dailySpin',
             data: {
-              lastSpinDate: new Date().toDateString()
+              lastSpinDate: this.getTodayDateString(),
+              lastSpin: Date.now()
             }
           }
         });
-      } else {
+        _Logger["default"].info('DailySpinGame', 'Used FREE spin');
+      } else if (canSpinResult.type === 'purchased') {
+        // Consume purchased spin
         _StateManager["default"].dispatch({
           type: 'DECREMENT_PURCHASED_SPINS',
           payload: {
             game: 'dailySpin'
           }
         });
+        _Logger["default"].info('DailySpinGame', 'Used PURCHASED spin', {
+          remaining: canSpinResult.spinsRemaining - 1
+        });
       }
-      return this.calculateSpin();
+      return this.spin();
     }
+
+    /**
+     * Spin the wheel (internal logic)
+     */
   }, {
-    key: "calculateSpin",
-    value: function calculateSpin() {
-      var selected = this.selectRandomSegment();
+    key: "spin",
+    value: function spin() {
+      // 1. Alegem segmentul random (folosind funcția ta existentă)
+      var selectedSegment = this.selectRandomSegment();
 
-      // 1. Calculăm unghiul țintă invers
-      // ID 0 este la 0 grade. ID 1 este la 45 grade.
-      // Ca ID 1 să ajungă la pointer (0 grade), roata trebuie rotită -45 (sau 315) grade.
-      var targetBase = (360 - selected.id * this.segmentAngle) % 360;
+      // 2. Calculăm unde este segmentul fizic (ex: ID 1 e la 45 grade)
+      var segmentPos = selectedSegment.id * this.segmentAngle;
 
-      // 2. Calculăm diferența față de rotația curentă
+      // 3. Calculăm cât trebuie rotit INVERS ca să ajungă la 0 (sus)
+      var targetBase = (360 - segmentPos) % 360;
+
+      // 4. Calculăm distanța față de unde a rămas roata ultima dată (currentRotation)
       var currentMod = this.currentRotation % 360;
       var distance = targetBase - currentMod;
-      if (distance < 0) distance += 360;
 
-      // 3. Adăugăm ture complete (5 ture)
+      // Mergem doar înainte (sensul ceasului)
+      if (distance < 0) {
+        distance += 360;
+      }
+
+      // 5. Adăugăm 5 ture complete pentru suspans
       var spins = 5 * 360;
 
-      // 4. Actualizăm rotația totală
+      // 6. Actualizăm memoria rotației totale
       this.currentRotation += spins + distance;
-
-      // 5. IMPORTANT: Adăugăm un mic offset de 22.5 grade la final în UI
-      // pentru a centra segmentul sub pointer (vezi PuzzleUI.js)
-
+      _Logger["default"].info('DailySpinGame', 'Spin calculated', {
+        target: selectedSegment.label,
+        rotation: this.currentRotation
+      });
       return {
-        segment: selected,
+        segment: selectedSegment,
         rotation: this.currentRotation,
         duration: 4000
       };
     }
+
+    /**
+     * Select random segment based on weights
+     */
   }, {
     key: "selectRandomSegment",
     value: function selectRandomSegment() {
-      var totalWeight = this.segments.reduce(function (sum, s) {
-        return sum + s.weight;
+      var totalWeight = this.segments.reduce(function (sum, seg) {
+        return sum + seg.weight;
       }, 0);
-      var r = Math.random() * totalWeight;
+      var random = Math.random() * totalWeight;
       var _iterator = _createForOfIteratorHelper(this.segments),
         _step;
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var s = _step.value;
-          r -= s.weight;
-          if (r <= 0) return s;
+          var segment = _step.value;
+          random -= segment.weight;
+          if (random <= 0) {
+            return segment;
+          }
         }
       } catch (err) {
         _iterator.e(err);
       } finally {
         _iterator.f();
       }
-      return this.segments[0];
+      return this.segments[0]; // Fallback
     }
+
+    /**
+     * Grant reward after spin completes
+     */
   }, {
     key: "grantReward",
     value: function grantReward(segment) {
       var reward = segment.reward;
-      Object.entries(reward).forEach(function (_ref) {
-        var _ref2 = _slicedToArray(_ref, 2),
-          res = _ref2[0],
-          amt = _ref2[1];
-        if (res === 'guardian') _EventBus["default"].emit('guardian:summon', {
-          amount: amt,
-          source: 'spin',
-          guaranteed: true
-        });else _StateManager["default"].dispatch({
-          type: 'ADD_RESOURCE',
-          payload: {
-            resource: res,
-            amount: amt
-          }
-        });
+
+      // Add rewards
+      for (var _i = 0, _Object$entries = Object.entries(reward); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          resource = _Object$entries$_i[0],
+          amount = _Object$entries$_i[1];
+        if (resource === 'guardian') {
+          // Trigger guardian summon
+          _EventBus["default"].emit('guardian:summon', {
+            amount: amount,
+            source: 'daily-spin',
+            guaranteed: true
+          });
+        } else {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: resource,
+              amount: amount
+            }
+          });
+        }
+      }
+
+      // Track stats
+      _StateManager["default"].dispatch({
+        type: 'INCREMENT_MINI_GAME_STAT',
+        payload: {
+          game: 'dailySpin',
+          stat: 'totalSpins'
+        }
       });
+      _Logger["default"].info('DailySpinGame', 'Reward granted', reward);
+
+      // Track rewards for achievements
+      var gemAmount = reward.gems || 0;
+      var hasGuardian = reward.guardian ? true : false;
+      _StateManager["default"].dispatch({
+        type: 'TRACK_SPIN_REWARD',
+        payload: {
+          gemAmount: gemAmount,
+          hasGuardian: hasGuardian
+        }
+      });
+      _EventBus["default"].emit('daily-spin:reward-granted', {
+        reward: reward,
+        segment: segment
+      });
+
+      // Show notification
+      this.showRewardNotification(reward);
       return reward;
     }
+
+    /**
+     * Show reward notification
+     */
+  }, {
+    key: "showRewardNotification",
+    value: function showRewardNotification(reward) {
+      var parts = [];
+      for (var _i2 = 0, _Object$entries2 = Object.entries(reward); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+          resource = _Object$entries2$_i[0],
+          amount = _Object$entries2$_i[1];
+        var icons = {
+          gems: '💎',
+          energy: '⚡',
+          crystals: '💠',
+          guardian: '🛡️'
+        };
+        if (resource === 'guardian') {
+          parts.push('Guardian!');
+        } else {
+          parts.push("".concat(amount, " ").concat(icons[resource]));
+        }
+      }
+      _EventBus["default"].emit('notification:show', {
+        type: 'reward',
+        title: '🎡 Spin Reward!',
+        message: parts.join(', '),
+        duration: 5000
+      });
+    }
+
+    /**
+     * Add purchased spins (called from shop)
+     */
+  }, {
+    key: "addPurchasedSpins",
+    value: function addPurchasedSpins(count) {
+      _StateManager["default"].dispatch({
+        type: 'ADD_PURCHASED_SPINS',
+        payload: {
+          game: 'dailySpin',
+          count: count
+        }
+      });
+      _Logger["default"].info('DailySpinGame', "Added ".concat(count, " purchased spins"));
+      _EventBus["default"].emit('notification:show', {
+        type: 'purchase',
+        title: 'Spins Added!',
+        message: "+".concat(count, " Extra Spins! \uD83C\uDFA1"),
+        duration: 3000
+      });
+    }
+
+    /**
+     * Get stats
+     */
+  }, {
+    key: "getStats",
+    value: function getStats() {
+      var _state$miniGames3;
+      var state = _StateManager["default"].getState();
+      var spinData = ((_state$miniGames3 = state.miniGames) === null || _state$miniGames3 === void 0 ? void 0 : _state$miniGames3.dailySpin) || {};
+      return {
+        lastSpinDate: spinData.lastSpinDate || '',
+        lastSpin: spinData.lastSpin || 0,
+        totalSpins: spinData.totalSpins || 0,
+        purchasedSpins: spinData.purchasedSpins || 0,
+        canSpin: this.canSpin()
+      };
+    }
+
+    /**
+     * Format time remaining (for display)
+     */
   }, {
     key: "formatTimeRemaining",
-    value: function formatTimeRemaining(ms) {
-      var h = Math.floor(ms / 3600000);
-      var m = Math.floor(ms % 3600000 / 60000);
-      return "".concat(h, "h ").concat(m, "m");
+    value: function formatTimeRemaining(milliseconds) {
+      var hours = Math.floor(milliseconds / 3600000);
+      var minutes = Math.floor(milliseconds % 3600000 / 60000);
+      var seconds = Math.floor(milliseconds % 60000 / 1000);
+      if (hours > 0) {
+        return "".concat(hours, "h ").concat(minutes, "m");
+      } else if (minutes > 0) {
+        return "".concat(minutes, "m ").concat(seconds, "s");
+      } else {
+        return "".concat(seconds, "s");
+      }
     }
   }]);
 }();

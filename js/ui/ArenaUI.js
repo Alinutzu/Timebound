@@ -19,10 +19,6 @@ class ArenaUI {
 
   render() {
     const token = api.getToken();
-    if (!token && !this.connecting) {
-      this.autoGuest();
-      return;
-    }
     this.container.innerHTML = `
       <div class="arena-container">
         ${this.connecting ? this.renderConnecting() : (token ? this.renderDashboard() : this.renderLogin())}
@@ -86,6 +82,10 @@ class ArenaUI {
           <button type="submit" class="btn btn-primary btn-large">Connect</button>
         </form>
         <p class="arena-error" id="arena-error"></p>
+        <div class="arena-guest-option">
+          <hr style="border-color:#30363d;margin:16px 0">
+          <button class="btn btn-secondary btn-large" id="arena-guest-btn">👤 Continue as Guest</button>
+        </div>
       </div>
     `;
   }
@@ -160,6 +160,10 @@ class ArenaUI {
       });
     });
 
+    document.getElementById('arena-guest-btn')?.addEventListener('click', () => {
+      this.autoGuest();
+    });
+
     document.getElementById('arena-auth-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('arena-username').value;
@@ -176,6 +180,7 @@ class ArenaUI {
           data = await api.login(username, password);
         }
         api.setToken(data.token);
+        this.isGuest = false;
         this.render();
       } catch (err) {
         errorEl.textContent = err.message;
@@ -187,6 +192,7 @@ class ArenaUI {
     document.getElementById('arena-logout')?.addEventListener('click', () => {
       api.clearToken();
       this.isGuest = false;
+      this.connecting = false;
       this.render();
     });
 

@@ -4,3 +4,5 @@ server/*.db-wal
 server/*.db-shm
 server/admin-config.json
 server/TIMEBOUND_CONTEXT.md
+server/.env
+server/.jwt-secret

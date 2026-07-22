@@ -2,7 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('./auth');
 const db = require('./db');
+
+require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const guardianRoutes = require('./routes/guardians');
@@ -13,13 +17,31 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 const server = http.createServer(app);
+
+const ALLOWED_ORIGINS = [
+  'https://alinutzu.github.io',
+  'http://localhost:3000',
+  'http://localhost:5000',
+];
+
 const io = new Server(server, {
-  cors: { origin: '*', methods: ['GET', 'POST'] }
+  cors: {
+    origin: (origin, cb) => {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) cb(null, true);
+      else cb(new Error('Not allowed by CORS'));
+    },
+    methods: ['GET', 'POST']
+  }
 });
 
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) cb(null, true);
+    else cb(new Error('Not allowed by CORS'));
+  }
+}));
 app.use(express.json({ limit: '1mb' }));
 
 app.use('/api/auth', authRoutes);
@@ -40,8 +62,6 @@ io.on('connection', (socket) => {
 
   socket.on('auth', (data) => {
     try {
-      const jwt = require('jsonwebtoken');
-      const { JWT_SECRET } = require('./auth');
       const decoded = jwt.verify(data.token, JWT_SECRET);
       socket.userId = decoded.id;
       socket.username = decoded.username;
@@ -54,6 +74,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('challenge', (data) => {
+    if (!socket.userId) {
+      return socket.emit('auth_error', { error: 'Not authenticated' });
+    }
     const target = onlineUsers.get(data.targetUserId);
     if (target) {
       io.to(target.socketId).emit('challenge_received', {
@@ -65,6 +88,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('challenge_accept', (data) => {
+    if (!socket.userId) {
+      return socket.emit('auth_error', { error: 'Not authenticated' });
+    }
     const challenger = onlineUsers.get(data.challengerId);
     if (challenger) {
       io.to(challenger.socketId).emit('battle_start', {

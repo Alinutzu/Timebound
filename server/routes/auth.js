@@ -5,7 +5,38 @@ const { generateToken } = require('../auth');
 
 const router = express.Router();
 
-router.post('/register', (req, res) => {
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW = 60 * 1000;
+const RATE_LIMIT_MAX = 10;
+
+function authRateLimit(req, res, next) {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.socket.remoteAddress;
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+
+  if (!record || now - record.windowStart > RATE_LIMIT_WINDOW) {
+    rateLimitMap.set(ip, { windowStart: now, count: 1 });
+    return next();
+  }
+
+  record.count++;
+  if (record.count > RATE_LIMIT_MAX) {
+    return res.status(429).json({ error: 'Too many requests. Try again later.' });
+  }
+
+  next();
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of rateLimitMap) {
+    if (now - record.windowStart > RATE_LIMIT_WINDOW * 2) {
+      rateLimitMap.delete(ip);
+    }
+  }
+}, 60000);
+
+router.post('/register', authRateLimit, (req, res) => {
   try {
     const { username, email, password } = req.body;
 
@@ -41,7 +72,7 @@ router.post('/register', (req, res) => {
   }
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', authRateLimit, (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -58,14 +89,14 @@ router.post('/login', (req, res) => {
 
     const token = generateToken({ id: user.id, username: user.username });
 
-    res.json({ token, user: { id: user.id, username: user.username } });
+    res.json({ token, user: { id: user.id, username: user.username, energy: user.energy || 10000 } });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-router.post('/guest', (req, res) => {
+router.post('/guest', authRateLimit, (req, res) => {
   try {
     const guestId = Math.random().toString(36).slice(2, 10);
     const username = `guest_${guestId}`;
@@ -88,6 +119,16 @@ router.post('/guest', (req, res) => {
 });
 
 const { authMiddleware } = require('../auth');
+
+router.get('/me', authMiddleware, (req, res) => {
+  try {
+    const user = db.prepare('SELECT id, username, energy FROM users WHERE id = ?').get(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 router.post('/convert', authMiddleware, (req, res) => {
   try {

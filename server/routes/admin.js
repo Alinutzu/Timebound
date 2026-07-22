@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const db = require('../db');
 
 const CONFIG_PATH = path.resolve(__dirname, '../admin-config.json');
@@ -11,11 +12,17 @@ const router = express.Router();
 function loadConfig() {
   try {
     const data = fs.readFileSync(CONFIG_PATH, 'utf-8');
-    return JSON.parse(data);
+    const config = JSON.parse(data);
+    if (!config.password_hash && config.password) {
+      config.password_hash = bcrypt.hashSync(config.password, 10);
+      delete config.password;
+      saveConfig(config);
+    }
+    return config;
   } catch {
     const defaults = {
       username: process.env.ADMIN_USER || 'admin',
-      password: process.env.ADMIN_PASS || 'admin123',
+      password_hash: bcrypt.hashSync(process.env.ADMIN_PASS || 'admin123', 10),
     };
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaults, null, 2));
     return defaults;
@@ -98,7 +105,13 @@ function basicAuth(req, res, next) {
 
   const config = loadConfig();
 
-  if (user !== config.username || pass !== config.password) {
+  const userMatch = crypto.timingSafeEqual(
+    Buffer.from(user || ''),
+    Buffer.from(config.username || '')
+  );
+  const passMatch = bcrypt.compareSync(pass || '', config.password_hash || '');
+
+  if (!userMatch || !passMatch) {
     recordFailedAttempt(ip);
     const remaining = MAX_ATTEMPTS - (loginAttempts.get(ip)?.count || 0);
     return res.status(403).json({
@@ -128,11 +141,11 @@ router.post('/change-password', basicAuth, (req, res) => {
   }
 
   const config = loadConfig();
-  if (currentPassword !== config.password) {
+  if (!bcrypt.compareSync(currentPassword, config.password_hash)) {
     return res.status(403).json({ error: 'Current password is incorrect' });
   }
 
-  config.password = newPassword;
+  config.password_hash = bcrypt.hashSync(newPassword, 10);
   saveConfig(config);
   res.json({ success: true, message: 'Password changed successfully' });
 });
@@ -261,7 +274,7 @@ router.get('/battles', basicAuth, (req, res) => {
   }
 });
 
-router.get('/leaderboard/reset', basicAuth, (req, res) => {
+router.post('/leaderboard/reset', basicAuth, (req, res) => {
   try {
     db.prepare('UPDATE leaderboard SET wins = 0, losses = 0, rating = 1000').run();
     res.json({ success: true, message: 'Leaderboard reset to default values' });

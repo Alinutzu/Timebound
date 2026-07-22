@@ -1,6 +1,23 @@
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'timebound-secret-change-in-production';
+function getJWTSecret() {
+  const envSecret = process.env.JWT_SECRET;
+  if (envSecret && envSecret !== 'CHANGE_ME_TO_RANDOM_SECRET') return envSecret;
+
+  const secretPath = path.resolve(__dirname, '.jwt-secret');
+  try {
+    return fs.readFileSync(secretPath, 'utf-8').trim();
+  } catch {
+    const newSecret = crypto.randomBytes(64).toString('hex');
+    fs.writeFileSync(secretPath, newSecret, { mode: 0o600 });
+    return newSecret;
+  }
+}
+
+const JWT_SECRET = getJWTSecret();
 
 function generateToken(user) {
   return jwt.sign(

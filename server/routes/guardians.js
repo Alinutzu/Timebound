@@ -19,6 +19,9 @@ const GUARDIAN_NAMES = [
   'Pyra', 'Quinn', 'Rhea', 'Sylas', 'Theron'
 ];
 
+const BASE_LEVELUP_COST = 10000;
+const MAX_GUARDIAN_LEVEL = 50;
+
 router.get('/', authMiddleware, (req, res) => {
   try {
     const guardians = db.prepare('SELECT * FROM guardians WHERE user_id = ? ORDER BY rarity DESC, level DESC').all(req.user.id);
@@ -71,9 +74,22 @@ router.post('/:id/levelup', authMiddleware, (req, res) => {
     const guardian = db.prepare('SELECT * FROM guardians WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
     if (!guardian) return res.status(404).json({ error: 'Guardian not found' });
 
+    if (guardian.level >= MAX_GUARDIAN_LEVEL) {
+      return res.status(400).json({ error: `Guardian already at max level (${MAX_GUARDIAN_LEVEL})` });
+    }
+
+    const cost = Math.floor(BASE_LEVELUP_COST * Math.pow(1.5, guardian.level));
+
+    const user = db.prepare('SELECT energy FROM users WHERE id = ?').get(req.user.id);
+    if (user.energy < cost) {
+      return res.status(400).json({ error: 'Not enough energy', required: cost, current: user.energy });
+    }
+
     const hpGain = Math.floor(guardian.max_hp * 0.1);
     const atkGain = Math.floor(guardian.attack * 0.08) + 1;
     const defGain = Math.floor(guardian.defense * 0.06) + 1;
+
+    db.prepare('UPDATE users SET energy = energy - ? WHERE id = ?').run(cost, req.user.id);
 
     db.prepare(`
       UPDATE guardians SET
@@ -86,10 +102,11 @@ router.post('/:id/levelup', authMiddleware, (req, res) => {
     `).run(atkGain, defGain, hpGain, hpGain, req.params.id);
 
     const updated = db.prepare('SELECT * FROM guardians WHERE id = ?').get(req.params.id);
+    const updatedUser = db.prepare('SELECT energy FROM users WHERE id = ?').get(req.user.id);
 
     updateLeaderboardPower(req.user.id);
 
-    res.json(updated);
+    res.json({ guardian: updated, energy: updatedUser.energy, cost });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }

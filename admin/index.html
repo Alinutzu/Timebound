@@ -99,6 +99,12 @@ let auth = sessionStorage.getItem('admin_auth');
 let sessionTimer = null;
 let sessionInterval = null;
 let lastActivity = Date.now();
+let adminUsername = 'admin';
+
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
 
 function resetSessionTimer() {
   lastActivity = Date.now();
@@ -201,6 +207,10 @@ function api(path) {
       logout();
       throw new Error('unauthorized');
     }
+    if (!r.ok) {
+      const data = await r.json().catch(() => ({}));
+      throw new Error(data.error || 'Request failed');
+    }
     return r.json();
   });
 }
@@ -233,11 +243,11 @@ async function loadDashboard() {
   const el = document.getElementById('tab-dashboard');
   el.innerHTML = `
     <div class="stats">
-      <div class="stat"><div class="value">${data.totalUsers}</div><div class="label">Total Users</div></div>
-      <div class="stat"><div class="value">${data.guestUsers}</div><div class="label">Guest Accounts</div></div>
-      <div class="stat"><div class="value">${data.totalGuardians}</div><div class="label">Guardians</div></div>
-      <div class="stat"><div class="value">${data.totalBattles}</div><div class="label">Total Battles</div></div>
-      <div class="stat"><div class="value">${data.pvpBattles}</div><div class="label">PvP Battles</div></div>
+      <div class="stat"><div class="value">${escapeHtml(data.totalUsers)}</div><div class="label">Total Users</div></div>
+      <div class="stat"><div class="value">${escapeHtml(data.guestUsers)}</div><div class="label">Guest Accounts</div></div>
+      <div class="stat"><div class="value">${escapeHtml(data.totalGuardians)}</div><div class="label">Guardians</div></div>
+      <div class="stat"><div class="value">${escapeHtml(data.totalBattles)}</div><div class="label">Total Battles</div></div>
+      <div class="stat"><div class="value">${escapeHtml(data.pvpBattles)}</div><div class="label">PvP Battles</div></div>
     </div>
     <h2>Top Players</h2>
     <table>
@@ -245,10 +255,10 @@ async function loadDashboard() {
       ${data.topUsers.map((u, i) => `
         <tr>
           <td>${i + 1}</td>
-          <td>${u.username}</td>
-          <td>${u.rating}</td>
-          <td>${u.wins}</td>
-          <td>${u.losses}</td>
+          <td>${escapeHtml(u.username)}</td>
+          <td>${escapeHtml(u.rating)}</td>
+          <td>${escapeHtml(u.wins)}</td>
+          <td>${escapeHtml(u.losses)}</td>
           <td>${(u.wins + u.losses) ? Math.round(u.wins / (u.wins + u.losses) * 100) + '%' : '-'}</td>
         </tr>
       `).join('')}
@@ -256,11 +266,12 @@ async function loadDashboard() {
     <h2>New Users (last 7 days)</h2>
     <div class="chart-bars">
       ${(() => {
-        const max = Math.max(...data.userGrowth.map(d => d.count), 1);
-        return data.userGrowth.reverse().map(d => `
+        const growth = data.userGrowth ? [...data.userGrowth].reverse() : [];
+        const max = Math.max(...growth.map(d => d.count), 1);
+        return growth.map(d => `
           <div class="chart-bar" style="height:${d.count / max * 80 + 4}%">
-            <div class="clabel">${d.count}</div>
-            <div class="cvalue">${d.date.slice(5)}</div>
+            <div class="clabel">${escapeHtml(d.count)}</div>
+            <div class="cvalue">${escapeHtml(d.date.slice(5))}</div>
           </div>
         `).join('');
       })()}
@@ -275,22 +286,22 @@ async function loadUsers(search) {
   const data = await api(`/users?page=${usersPage}&search=${encodeURIComponent(q)}`);
   el.innerHTML = `
     <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
-      <input class="search" id="user-search" placeholder="Search username or email..." value="${q}">
-      <button class="btn secondary" onclick="loadUsers(false)">Search</button>
+      <input class="search" id="user-search" placeholder="Search username or email..." value="${escapeHtml(q)}">
+      <button class="btn secondary" onclick="loadUsers(true)">Search</button>
       <span style="font-size:12px;color:#8b949e;margin-left:auto">Page ${data.page}/${data.pages} (${data.total} total)</span>
     </div>
     <table>
       <tr><th>ID</th><th>Username</th><th>Email</th><th>Created</th><th>Last Login</th><th>Rating</th><th>W/L</th><th></th></tr>
       ${data.users.map(u => `
         <tr>
-          <td>${u.id}</td>
-          <td>${u.username} ${u.username.startsWith('guest_') ? '<span class="badge guest">guest</span>' : '<span class="badge registered">user</span>'}</td>
-          <td>${u.email || '-'}</td>
-          <td>${u.created_at}</td>
-          <td>${u.last_login || '-'}</td>
-          <td>${u.rating}</td>
-          <td>${u.wins} / ${u.losses}</td>
-          <td>${u.username.startsWith('guest_') ? `<button class="btn danger" onclick="deleteUser(${u.id})">Delete</button>` : '-'}</td>
+          <td>${escapeHtml(u.id)}</td>
+          <td>${escapeHtml(u.username)} ${u.username.startsWith('guest_') ? '<span class="badge guest">guest</span>' : '<span class="badge registered">user</span>'}</td>
+          <td>${escapeHtml(u.email) || '-'}</td>
+          <td>${escapeHtml(u.created_at)}</td>
+          <td>${escapeHtml(u.last_login) || '-'}</td>
+          <td>${escapeHtml(u.rating)}</td>
+          <td>${escapeHtml(u.wins)} / ${escapeHtml(u.losses)}</td>
+          <td>${u.username.startsWith('guest_') ? `<button class="btn danger" onclick="deleteUser(${escapeHtml(u.id)})">Delete</button>` : '-'}</td>
         </tr>
       `).join('')}
     </table>
@@ -305,8 +316,20 @@ async function loadUsers(search) {
 
 async function deleteUser(id) {
   if (!confirm('Delete this guest user?')) return;
-  await fetch(API + '/users/' + id, { method: 'DELETE', headers: { Authorization: 'Basic ' + auth } });
-  loadUsers(true);
+  try {
+    const r = await fetch(API + '/users/' + id, {
+      method: 'DELETE',
+      headers: { Authorization: 'Basic ' + auth }
+    });
+    if (!r.ok) {
+      const data = await r.json().catch(() => ({}));
+      alert(data.error || 'Failed to delete user');
+      return;
+    }
+    loadUsers(true);
+  } catch (err) {
+    alert('Connection error');
+  }
 }
 
 async function loadGuardians() {
@@ -317,8 +340,8 @@ async function loadGuardians() {
     <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
       ${data.rarityStats.map(r => `
         <div class="stat">
-          <div class="value" style="color:${rarityColors[r.rarity] || '#8b949e'}">${r.count}</div>
-          <div class="label">${r.rarity}</div>
+          <div class="value" style="color:${rarityColors[r.rarity] || '#8b949e'}">${escapeHtml(r.count)}</div>
+          <div class="label">${escapeHtml(r.rarity)}</div>
         </div>
       `).join('')}
     </div>
@@ -326,14 +349,14 @@ async function loadGuardians() {
       <tr><th>ID</th><th>User</th><th>Name</th><th>Rarity</th><th>Level</th><th>ATK</th><th>DEF</th><th>HP</th></tr>
       ${data.guardians.map(g => `
         <tr>
-          <td>${g.id}</td>
-          <td>${g.username}</td>
-          <td>${g.name}</td>
-          <td><span class="badge" style="background:${rarityColors[g.rarity] || '#1b2838'};color:#fff">${g.rarity}</span></td>
-          <td>${g.level}</td>
-          <td>${g.attack}</td>
-          <td>${g.defense}</td>
-          <td>${g.hp}</td>
+          <td>${escapeHtml(g.id)}</td>
+          <td>${escapeHtml(g.username)}</td>
+          <td>${escapeHtml(g.name)}</td>
+          <td><span class="badge" style="background:${rarityColors[g.rarity] || '#1b2838'};color:#fff">${escapeHtml(g.rarity)}</span></td>
+          <td>${escapeHtml(g.level)}</td>
+          <td>${escapeHtml(g.attack)}</td>
+          <td>${escapeHtml(g.defense)}</td>
+          <td>${escapeHtml(g.hp)}</td>
         </tr>
       `).join('')}
     </table>
@@ -347,8 +370,8 @@ async function loadBattles() {
     <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
       ${data.winRate.map(w => `
         <div class="stat">
-          <div class="value ${w.result === 'win' ? 'badge win' : w.result === 'loss' ? 'badge loss' : ''}">${w.result}</div>
-          <div class="label">${w.count} battles</div>
+          <div class="value ${w.result === 'win' ? 'badge win' : w.result === 'loss' ? 'badge loss' : ''}">${escapeHtml(w.result)}</div>
+          <div class="label">${escapeHtml(w.count)} battles</div>
         </div>
       `).join('')}
     </div>
@@ -356,13 +379,13 @@ async function loadBattles() {
       <tr><th>ID</th><th>Type</th><th>Attacker</th><th>Defender</th><th>Result</th><th>Rating Δ</th><th>Date</th></tr>
       ${data.battles.map(b => `
         <tr>
-          <td>${b.id}</td>
+          <td>${escapeHtml(b.id)}</td>
           <td>${b.defender_id ? 'PvP' : 'PvE'}</td>
-          <td>${b.attacker}</td>
-          <td>${b.defender || 'AI'}</td>
-          <td><span class="badge ${b.result === 'win' ? 'win' : b.result === 'loss' ? 'loss' : ''}">${b.result}</span></td>
-          <td>${b.rating_change ?? '-'}</td>
-          <td>${b.created_at}</td>
+          <td>${escapeHtml(b.attacker)}</td>
+          <td>${escapeHtml(b.defender) || 'AI'}</td>
+          <td><span class="badge ${b.result === 'win' ? 'win' : b.result === 'loss' ? 'loss' : ''}">${escapeHtml(b.result)}</span></td>
+          <td>${b.rating_change != null ? escapeHtml(b.rating_change) : '-'}</td>
+          <td>${escapeHtml(b.created_at)}</td>
         </tr>
       `).join('')}
     </table>
@@ -426,7 +449,8 @@ async function changePassword() {
     document.getElementById('current-pass').value = '';
     document.getElementById('new-pass').value = '';
     document.getElementById('confirm-pass').value = '';
-    auth = btoa('admin' + ':' + newPass);
+    const parts = atob(auth).split(':');
+    auth = btoa(parts[0] + ':' + newPass);
     sessionStorage.setItem('admin_auth', auth);
   } catch (err) {
     document.getElementById('pass-error').textContent = 'Connection error';
@@ -457,7 +481,10 @@ async function loadActions() {
 async function resetLeaderboard() {
   if (!confirm('Are you sure? This will reset ALL ratings to 1000.')) return;
   if (!confirm('Last chance. Really proceed?')) return;
-  await fetch(API + '/leaderboard/reset', { headers: { Authorization: 'Basic ' + auth } });
+  await fetch(API + '/leaderboard/reset', {
+    method: 'POST',
+    headers: { Authorization: 'Basic ' + auth }
+  });
   alert('Leaderboard reset!');
 }
 

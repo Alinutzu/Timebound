@@ -70,4 +70,9 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_guardians_user ON guardians(user_id);
 `);
 
+const userCols = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
+if (!userCols.includes('energy')) {
+  db.exec("ALTER TABLE users ADD COLUMN energy INTEGER DEFAULT 10000");
+}
+
 module.exports = db;

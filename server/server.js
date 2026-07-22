@@ -20,6 +20,7 @@ const server = http.createServer(app);
 
 const ALLOWED_ORIGINS = [
   'https://alinutzu.github.io',
+  'http://localhost',
   'http://localhost:3000',
   'http://localhost:5000',
 ];

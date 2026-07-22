@@ -15,6 +15,9 @@ class ArenaUI {
     this.isGuest = false;
     this.connecting = false;
     this.energy = 0;
+    this.pveCooldown = 0;
+    this.pvpCooldown = 0;
+    this.cooldownTimer = null;
     this.render();
   }
 
@@ -23,6 +26,40 @@ class ArenaUI {
 
   static calculateLevelUpCost(level) {
     return Math.floor(ArenaUI.LEVELUP_BASE_COST * Math.pow(ArenaUI.LEVELUP_COST_MULTIPLIER, level));
+  }
+
+  startCooldownTimer() {
+    if (this.cooldownTimer) clearInterval(this.cooldownTimer);
+    this.cooldownTimer = setInterval(() => {
+      const pveBtn = document.getElementById('arena-pve-btn');
+      const pvpBtn = document.getElementById('arena-pvp-btn');
+      let updated = false;
+
+      if (this.pveCooldown > 0) {
+        this.pveCooldown--;
+        if (pveBtn) pveBtn.textContent = `⏳ ${this.pveCooldown}s`;
+        updated = true;
+      } else if (pveBtn) {
+        pveBtn.textContent = '⚔️ Train (PvE)';
+        pveBtn.disabled = false;
+        pveBtn.classList.remove('btn-disabled');
+      }
+
+      if (this.pvpCooldown > 0) {
+        this.pvpCooldown--;
+        if (pvpBtn) pvpBtn.textContent = `⏳ ${this.pvpCooldown}s`;
+        updated = true;
+      } else if (pvpBtn) {
+        pvpBtn.textContent = '🔥 Find Opponent (PvP)';
+        pvpBtn.disabled = false;
+        pvpBtn.classList.remove('btn-disabled');
+      }
+
+      if (!updated) {
+        clearInterval(this.cooldownTimer);
+        this.cooldownTimer = null;
+      }
+    }, 1000);
   }
 
   render() {
@@ -223,11 +260,23 @@ class ArenaUI {
       if (selected.length === 0) {
         return this.showNotification('Select at least one guardian', 'warning');
       }
+      const btn = document.getElementById('arena-pve-btn');
+      btn.disabled = true;
+      btn.classList.add('btn-disabled');
       try {
         const result = await api.battlePvE(selected);
+        if (result.cooldown) this.pveCooldown = result.cooldown;
         this.showBattleResult(result);
         this.loadGuardians();
+        this.startCooldownTimer();
       } catch (err) {
+        btn.disabled = false;
+        btn.classList.remove('btn-disabled');
+        const data = err.message.match(/\d+/);
+        if (data) {
+          this.pveCooldown = parseInt(data[0]);
+          this.startCooldownTimer();
+        }
         this.showNotification(err.message, 'warning');
       }
     });
@@ -386,12 +435,20 @@ class ArenaUI {
 
     list.querySelectorAll('.challenge-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
+        btn.disabled = true;
         try {
           const result = await api.battlePvP(selectedGuardianIds, parseInt(btn.dataset.defender));
+          if (result.cooldown) this.pvpCooldown = result.cooldown;
           this.showBattleResult(result);
           this.loadGuardians();
           this.loadLeaderboard();
+          this.startCooldownTimer();
         } catch (err) {
+          const data = err.message.match(/\d+/);
+          if (data) {
+            this.pvpCooldown = parseInt(data[0]);
+            this.startCooldownTimer();
+          }
           this.showNotification(err.message, 'warning');
         }
       });
@@ -479,19 +536,58 @@ class ArenaUI {
   showBattleResult(result) {
     const el = document.getElementById('arena-battle-result');
     const won = result.result === 'win';
+    const ratingChange = result.attackerChange || result.ratingChange || 0;
+    const playerPower = result.playerPower || result.attackerPower || 0;
+    const enemyPower = result.enemyPower || result.defenderPower || 0;
+    const diff = playerPower - enemyPower;
+    const closeCall = Math.abs(diff) < 50;
+
     el.innerHTML = `
-      <div class="arena-battle-result ${won ? 'victory' : 'defeat'}">
-        <h3>${won ? '🎉 Victory!' : '💀 Defeat...'}</h3>
-        <p>${result.message || ''}</p>
-        <div class="arena-battle-stats">
-          <span>⚔️ Your power: ${result.playerPower || result.attackerPower}</span>
-          <span>👹 Enemy power: ${result.enemyPower || result.defenderPower}</span>
-          ${result.expReward ? `<span>⭐ EXP gained: +${result.expReward}</span>` : ''}
-          ${result.gemsReward ? `<span>💎 Gems: +${result.gemsReward}</span>` : ''}
-          ${result.ratingChange ? `<span>📊 Rating: ${result.ratingChange > 0 ? '+' : ''}${result.ratingChange}</span>` : ''}
+      <div class="arena-battle-result ${won ? 'victory' : 'defeat'} ${closeCall ? 'close-call' : ''}">
+        <div class="battle-animation">
+          <div class="battle-emblem">${won ? '🏆' : '💀'}</div>
+          ${closeCall ? '<div class="battle-close-call">⚡ CLOSE CALL!</div>' : ''}
+        </div>
+        <h3 class="battle-title ${won ? 'victory-title' : 'defeat-title'}">
+          ${won ? 'VICTORY' : 'DEFEAT'}
+        </h3>
+        <p class="battle-message">${result.message || (won ? 'Your guardians prevailed!' : 'Your guardians have fallen...')}</p>
+        <div class="battle-stats-grid">
+          <div class="battle-stat-card ${won ? 'win' : ''}">
+            <span class="stat-label">⚔️ Your Power</span>
+            <span class="stat-value">${playerPower.toLocaleString()}</span>
+          </div>
+          <div class="battle-stat-card vs-divider">
+            <span class="stat-label">⚡</span>
+            <span class="stat-value">VS</span>
+          </div>
+          <div class="battle-stat-card ${won ? '' : 'win'}">
+            <span class="stat-label">👹 Enemy Power</span>
+            <span class="stat-value">${enemyPower.toLocaleString()}</span>
+          </div>
+        </div>
+        <div class="battle-rewards">
+          ${result.expReward ? `<span class="reward-badge">⭐ +${result.expReward} EXP</span>` : ''}
+          ${result.gemsReward ? `<span class="reward-badge">💎 +${result.gemsReward} Gems</span>` : ''}
+          ${ratingChange ? `<span class="reward-badge ${ratingChange > 0 ? 'rating-up' : 'rating-down'}">📊 ${ratingChange > 0 ? '+' : ''}${ratingChange} Rating</span>` : ''}
+          ${result.cooldown ? `<span class="reward-badge cooldown-badge">⏳ ${result.cooldown}s cooldown</span>` : ''}
         </div>
       </div>
     `;
+
+    if (won) {
+      el.querySelector('.battle-emblem')?.animate([
+        { transform: 'scale(0) rotate(-180deg)', opacity: 0 },
+        { transform: 'scale(1.2) rotate(10deg)', opacity: 1, offset: 0.5 },
+        { transform: 'scale(1) rotate(0deg)', opacity: 1 }
+      ], { duration: 600, easing: 'ease-out' });
+    } else {
+      el.querySelector('.battle-emblem')?.animate([
+        { transform: 'translateY(-20px)', opacity: 0 },
+        { transform: 'translateY(0)', opacity: 1 }
+      ], { duration: 400, easing: 'ease-out' });
+    }
+
     el.scrollIntoView({ behavior: 'smooth' });
   }
 

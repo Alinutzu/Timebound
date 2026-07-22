@@ -74,5 +74,11 @@ const userCols = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
 if (!userCols.includes('energy')) {
   db.exec("ALTER TABLE users ADD COLUMN energy INTEGER DEFAULT 10000");
 }
+if (!userCols.includes('last_pve_at')) {
+  db.exec("ALTER TABLE users ADD COLUMN last_pve_at INTEGER DEFAULT 0");
+}
+if (!userCols.includes('last_pvp_at')) {
+  db.exec("ALTER TABLE users ADD COLUMN last_pvp_at INTEGER DEFAULT 0");
+}
 
 module.exports = db;

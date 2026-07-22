@@ -16620,9 +16620,45 @@ var ArenaUI = /*#__PURE__*/function () {
     this.isGuest = false;
     this.connecting = false;
     this.energy = 0;
+    this.pveCooldown = 0;
+    this.pvpCooldown = 0;
+    this.cooldownTimer = null;
     this.render();
   }
   return _createClass(ArenaUI, [{
+    key: "startCooldownTimer",
+    value: function startCooldownTimer() {
+      var _this = this;
+      if (this.cooldownTimer) clearInterval(this.cooldownTimer);
+      this.cooldownTimer = setInterval(function () {
+        var pveBtn = document.getElementById('arena-pve-btn');
+        var pvpBtn = document.getElementById('arena-pvp-btn');
+        var updated = false;
+        if (_this.pveCooldown > 0) {
+          _this.pveCooldown--;
+          if (pveBtn) pveBtn.textContent = "\u23F3 ".concat(_this.pveCooldown, "s");
+          updated = true;
+        } else if (pveBtn) {
+          pveBtn.textContent = '⚔️ Train (PvE)';
+          pveBtn.disabled = false;
+          pveBtn.classList.remove('btn-disabled');
+        }
+        if (_this.pvpCooldown > 0) {
+          _this.pvpCooldown--;
+          if (pvpBtn) pvpBtn.textContent = "\u23F3 ".concat(_this.pvpCooldown, "s");
+          updated = true;
+        } else if (pvpBtn) {
+          pvpBtn.textContent = '🔥 Find Opponent (PvP)';
+          pvpBtn.disabled = false;
+          pvpBtn.classList.remove('btn-disabled');
+        }
+        if (!updated) {
+          clearInterval(_this.cooldownTimer);
+          _this.cooldownTimer = null;
+        }
+      }, 1000);
+    }
+  }, {
     key: "render",
     value: function render() {
       var token = _api["default"].getToken();
@@ -16696,7 +16732,7 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "bindAuthEvents",
     value: function bindAuthEvents() {
       var _document$getElementB,
-        _this = this;
+        _this2 = this;
       var tabs = this.container.querySelectorAll('.arena-auth-btn');
       var emailField = document.getElementById('arena-email');
       tabs.forEach(function (tab) {
@@ -16709,7 +16745,7 @@ var ArenaUI = /*#__PURE__*/function () {
         });
       });
       (_document$getElementB = document.getElementById('arena-guest-btn')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
-        _this.autoGuest();
+        _this2.autoGuest();
       });
       document.getElementById('arena-auth-form').addEventListener('submit', /*#__PURE__*/function () {
         var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(e) {
@@ -16721,7 +16757,7 @@ var ArenaUI = /*#__PURE__*/function () {
                 username = document.getElementById('arena-username').value;
                 password = document.getElementById('arena-password').value;
                 errorEl = document.getElementById('arena-error');
-                active = _this.container.querySelector('.arena-auth-btn.active');
+                active = _this2.container.querySelector('.arena-auth-btn.active');
                 _context2.p = 1;
                 if (!(active.dataset.auth === 'register')) {
                   _context2.n = 3;
@@ -16741,8 +16777,8 @@ var ArenaUI = /*#__PURE__*/function () {
                 data = _context2.v;
               case 5:
                 _api["default"].setToken(data.token);
-                _this.isGuest = false;
-                _this.render();
+                _this2.isGuest = false;
+                _this2.render();
                 _context2.n = 7;
                 break;
               case 6:
@@ -16763,7 +16799,7 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "bindDashboardEvents",
     value: function bindDashboardEvents() {
       var _document$getElementB2,
-        _this2 = this,
+        _this3 = this,
         _document$getElementB3,
         _document$getElementB4,
         _document$getElementB5,
@@ -16771,13 +16807,13 @@ var ArenaUI = /*#__PURE__*/function () {
         _document$getElementB7;
       (_document$getElementB2 = document.getElementById('arena-logout')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', function () {
         _api["default"].clearToken();
-        _this2.isGuest = false;
-        _this2.connecting = false;
-        _this2.render();
+        _this3.isGuest = false;
+        _this3.connecting = false;
+        _this3.render();
       });
       var registerBtn = document.getElementById('arena-register-btn') || document.getElementById('arena-register-btn-banner');
       registerBtn === null || registerBtn === void 0 || registerBtn.addEventListener('click', function () {
-        return _this2.showRegisterForm();
+        return _this3.showRegisterForm();
       });
       (_document$getElementB3 = document.getElementById('arena-summon-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
         var guardian, _t3;
@@ -16789,74 +16825,86 @@ var ArenaUI = /*#__PURE__*/function () {
               return _api["default"].summonGuardian();
             case 1:
               guardian = _context3.v;
-              _this2.showNotification("\u2728 Summoned ".concat(guardian.name, " (").concat(guardian.rarity, ")"), 'success');
-              _this2.loadGuardians();
+              _this3.showNotification("\u2728 Summoned ".concat(guardian.name, " (").concat(guardian.rarity, ")"), 'success');
+              _this3.loadGuardians();
               _context3.n = 3;
               break;
             case 2:
               _context3.p = 2;
               _t3 = _context3.v;
-              _this2.showNotification(_t3.message, 'warning');
+              _this3.showNotification(_t3.message, 'warning');
             case 3:
               return _context3.a(2);
           }
         }, _callee3, null, [[0, 2]]);
       })));
       (_document$getElementB4 = document.getElementById('arena-pve-btn')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
-        var selected, result, _t4;
+        var selected, btn, result, data, _t4;
         return _regenerator().w(function (_context4) {
           while (1) switch (_context4.p = _context4.n) {
             case 0:
-              selected = _this2.getSelectedGuardianIds();
+              selected = _this3.getSelectedGuardianIds();
               if (!(selected.length === 0)) {
                 _context4.n = 1;
                 break;
               }
-              return _context4.a(2, _this2.showNotification('Select at least one guardian', 'warning'));
+              return _context4.a(2, _this3.showNotification('Select at least one guardian', 'warning'));
             case 1:
-              _context4.p = 1;
-              _context4.n = 2;
+              btn = document.getElementById('arena-pve-btn');
+              btn.disabled = true;
+              btn.classList.add('btn-disabled');
+              _context4.p = 2;
+              _context4.n = 3;
               return _api["default"].battlePvE(selected);
-            case 2:
-              result = _context4.v;
-              _this2.showBattleResult(result);
-              _this2.loadGuardians();
-              _context4.n = 4;
-              break;
             case 3:
-              _context4.p = 3;
-              _t4 = _context4.v;
-              _this2.showNotification(_t4.message, 'warning');
+              result = _context4.v;
+              if (result.cooldown) _this3.pveCooldown = result.cooldown;
+              _this3.showBattleResult(result);
+              _this3.loadGuardians();
+              _this3.startCooldownTimer();
+              _context4.n = 5;
+              break;
             case 4:
+              _context4.p = 4;
+              _t4 = _context4.v;
+              btn.disabled = false;
+              btn.classList.remove('btn-disabled');
+              data = _t4.message.match(/\d+/);
+              if (data) {
+                _this3.pveCooldown = parseInt(data[0]);
+                _this3.startCooldownTimer();
+              }
+              _this3.showNotification(_t4.message, 'warning');
+            case 5:
               return _context4.a(2);
           }
-        }, _callee4, null, [[1, 3]]);
+        }, _callee4, null, [[2, 4]]);
       })));
       (_document$getElementB5 = document.getElementById('arena-pvp-btn')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
         var selected, opponents, _t5;
         return _regenerator().w(function (_context5) {
           while (1) switch (_context5.p = _context5.n) {
             case 0:
-              selected = _this2.getSelectedGuardianIds();
+              selected = _this3.getSelectedGuardianIds();
               if (!(selected.length === 0)) {
                 _context5.n = 1;
                 break;
               }
-              return _context5.a(2, _this2.showNotification('Select at least one guardian', 'warning'));
+              return _context5.a(2, _this3.showNotification('Select at least one guardian', 'warning'));
             case 1:
               _context5.p = 1;
-              _this2.showNotification('Searching for opponent...', 'info');
+              _this3.showNotification('Searching for opponent...', 'info');
               _context5.n = 2;
               return _api["default"].getOpponents();
             case 2:
               opponents = _context5.v;
-              _this2.renderOpponents(opponents, selected);
+              _this3.renderOpponents(opponents, selected);
               _context5.n = 4;
               break;
             case 3:
               _context5.p = 3;
               _t5 = _context5.v;
-              _this2.showNotification(_t5.message, 'warning');
+              _this3.showNotification(_t5.message, 'warning');
             case 4:
               return _context5.a(2);
           }
@@ -16872,13 +16920,13 @@ var ArenaUI = /*#__PURE__*/function () {
               _context6.n = 1;
               return _api["default"].saveCloud(state);
             case 1:
-              _this2.showNotification('Game saved to cloud!', 'success');
+              _this3.showNotification('Game saved to cloud!', 'success');
               _context6.n = 3;
               break;
             case 2:
               _context6.p = 2;
               _t6 = _context6.v;
-              _this2.showNotification(_t6.message, 'warning');
+              _this3.showNotification(_t6.message, 'warning');
             case 3:
               return _context6.a(2);
           }
@@ -16901,14 +16949,14 @@ var ArenaUI = /*#__PURE__*/function () {
                     state: data.state
                   }
                 });
-                _this2.showNotification('Game loaded from cloud!', 'success');
+                _this3.showNotification('Game loaded from cloud!', 'success');
               }
               _context7.n = 3;
               break;
             case 2:
               _context7.p = 2;
               _t7 = _context7.v;
-              _this2.showNotification(_t7.message, 'warning');
+              _this3.showNotification(_t7.message, 'warning');
             case 3:
               return _context7.a(2);
           }
@@ -16989,7 +17037,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "renderGuardians",
     value: function renderGuardians() {
-      var _this3 = this;
+      var _this4 = this;
       var list = document.getElementById('arena-guardians-list');
       if (this.guardians.length === 0) {
         list.innerHTML = "<p class=\"arena-empty\">No guardians yet. Summon one!</p>";
@@ -16997,7 +17045,7 @@ var ArenaUI = /*#__PURE__*/function () {
       }
       list.innerHTML = this.guardians.map(function (g) {
         var cost = ArenaUI.calculateLevelUpCost(g.level);
-        var canAfford = _this3.energy >= cost;
+        var canAfford = _this4.energy >= cost;
         var maxLevel = g.level >= 50;
         return "\n      <div class=\"arena-guardian-card ".concat(g.rarity, "\" data-id=\"").concat(g.id, "\">\n        <div class=\"arena-guardian-info\">\n          <span class=\"arena-guardian-name\">").concat(g.name, "</span>\n          <span class=\"arena-guardian-rarity ").concat(g.rarity, "\">").concat(g.rarity, "</span>\n        </div>\n        <div class=\"arena-guardian-stats\">\n          <span>\u2764\uFE0F ").concat(g.hp, "/").concat(g.max_hp, "</span>\n          <span>\u2694\uFE0F ").concat(g.attack, "</span>\n          <span>\uD83D\uDEE1\uFE0F ").concat(g.defense, "</span>\n          <span>\u2B06\uFE0F Lv.").concat(g.level, "</span>\n        </div>\n        <div class=\"arena-guardian-actions\">\n          <input type=\"checkbox\" class=\"arena-guardian-select\" data-id=\"").concat(g.id, "\">\n          ").concat(maxLevel ? '<button class="btn btn-small btn-secondary" disabled>MAX</button>' : "<button class=\"btn btn-small btn-primary levelup-btn ".concat(canAfford ? '' : 'btn-disabled', "\" data-id=\"").concat(g.id, "\" ").concat(canAfford ? '' : 'disabled', ">\u26A1").concat(cost.toLocaleString(), "</button>"), "\n          <button class=\"btn btn-small btn-danger release-btn\" data-id=\"").concat(g.id, "\">Release</button>\n        </div>\n      </div>\n    ");
       }).join('');
@@ -17012,16 +17060,16 @@ var ArenaUI = /*#__PURE__*/function () {
                 return _api["default"].levelUpGuardian(parseInt(btn.dataset.id));
               case 1:
                 result = _context0.v;
-                _this3.energy = result.energy;
-                _this3.updateEnergyDisplay();
-                _this3.showNotification("".concat(result.guardian.name, " \u2192 Lv.").concat(result.guardian.level, "! (-\u26A1").concat(result.cost.toLocaleString(), ")"), 'success');
-                _this3.loadGuardians();
+                _this4.energy = result.energy;
+                _this4.updateEnergyDisplay();
+                _this4.showNotification("".concat(result.guardian.name, " \u2192 Lv.").concat(result.guardian.level, "! (-\u26A1").concat(result.cost.toLocaleString(), ")"), 'success');
+                _this4.loadGuardians();
                 _context0.n = 3;
                 break;
               case 2:
                 _context0.p = 2;
                 _t0 = _context0.v;
-                _this3.showNotification(_t0.message, 'warning');
+                _this4.showNotification(_t0.message, 'warning');
               case 3:
                 return _context0.a(2);
             }
@@ -17038,14 +17086,14 @@ var ArenaUI = /*#__PURE__*/function () {
                 _context1.n = 1;
                 return _api["default"].releaseGuardian(parseInt(btn.dataset.id));
               case 1:
-                _this3.showNotification('Guardian released', 'info');
-                _this3.loadGuardians();
+                _this4.showNotification('Guardian released', 'info');
+                _this4.loadGuardians();
                 _context1.n = 3;
                 break;
               case 2:
                 _context1.p = 2;
                 _t1 = _context1.v;
-                _this3.showNotification(_t1.message, 'warning');
+                _this4.showNotification(_t1.message, 'warning');
               case 3:
                 return _context1.a(2);
             }
@@ -17063,7 +17111,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "renderOpponents",
     value: function renderOpponents(opponents, selectedGuardianIds) {
-      var _this4 = this;
+      var _this5 = this;
       var list = document.getElementById('arena-opponents-list');
       if (opponents.length === 0) {
         list.innerHTML = "<p class=\"arena-empty\">No opponents found. Try again later!</p>";
@@ -17074,28 +17122,36 @@ var ArenaUI = /*#__PURE__*/function () {
       }).join(''), "\n      </div>\n    ");
       list.querySelectorAll('.challenge-btn').forEach(function (btn) {
         btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
-          var result, _t10;
+          var result, data, _t10;
           return _regenerator().w(function (_context10) {
             while (1) switch (_context10.p = _context10.n) {
               case 0:
-                _context10.p = 0;
-                _context10.n = 1;
+                btn.disabled = true;
+                _context10.p = 1;
+                _context10.n = 2;
                 return _api["default"].battlePvP(selectedGuardianIds, parseInt(btn.dataset.defender));
-              case 1:
-                result = _context10.v;
-                _this4.showBattleResult(result);
-                _this4.loadGuardians();
-                _this4.loadLeaderboard();
-                _context10.n = 3;
-                break;
               case 2:
-                _context10.p = 2;
-                _t10 = _context10.v;
-                _this4.showNotification(_t10.message, 'warning');
+                result = _context10.v;
+                if (result.cooldown) _this5.pvpCooldown = result.cooldown;
+                _this5.showBattleResult(result);
+                _this5.loadGuardians();
+                _this5.loadLeaderboard();
+                _this5.startCooldownTimer();
+                _context10.n = 4;
+                break;
               case 3:
+                _context10.p = 3;
+                _t10 = _context10.v;
+                data = _t10.message.match(/\d+/);
+                if (data) {
+                  _this5.pvpCooldown = parseInt(data[0]);
+                  _this5.startCooldownTimer();
+                }
+                _this5.showNotification(_t10.message, 'warning');
+              case 4:
                 return _context10.a(2);
             }
-          }, _callee10, null, [[0, 2]]);
+          }, _callee10, null, [[1, 3]]);
         })));
       });
     }
@@ -17144,7 +17200,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "showRegisterForm",
     value: function showRegisterForm() {
-      var _this5 = this;
+      var _this6 = this;
       var overlay = document.createElement('div');
       overlay.className = 'modal-overlay';
       overlay.innerHTML = "\n      <div class=\"modal-content arena-register-modal\">\n        <h2>\uD83D\uDCDD Register Your Account</h2>\n        <p>Convert your guest progress to a permanent account!</p>\n        <form id=\"arena-convert-form\">\n          <input type=\"text\" id=\"arena-convert-username\" placeholder=\"Username\" required>\n          <input type=\"email\" id=\"arena-convert-email\" placeholder=\"Email\" required>\n          <input type=\"password\" id=\"arena-convert-password\" placeholder=\"Password (min 6 chars)\" required>\n          <div class=\"arena-convert-actions\">\n            <button type=\"submit\" class=\"btn btn-primary\">Register</button>\n            <button type=\"button\" class=\"btn btn-secondary\" id=\"arena-convert-cancel\">Cancel</button>\n          </div>\n        </form>\n        <p class=\"arena-error\" id=\"arena-convert-error\"></p>\n      </div>\n    ";
@@ -17169,10 +17225,10 @@ var ArenaUI = /*#__PURE__*/function () {
               case 2:
                 data = _context12.v;
                 _api["default"].setToken(data.token);
-                _this5.isGuest = false;
+                _this6.isGuest = false;
                 overlay.remove();
-                _this5.showNotification('Account created! Progress saved permanently.', 'success');
-                _this5.render();
+                _this6.showNotification('Account created! Progress saved permanently.', 'success');
+                _this6.render();
                 _context12.n = 4;
                 break;
               case 3:
@@ -17194,7 +17250,41 @@ var ArenaUI = /*#__PURE__*/function () {
     value: function showBattleResult(result) {
       var el = document.getElementById('arena-battle-result');
       var won = result.result === 'win';
-      el.innerHTML = "\n      <div class=\"arena-battle-result ".concat(won ? 'victory' : 'defeat', "\">\n        <h3>").concat(won ? '🎉 Victory!' : '💀 Defeat...', "</h3>\n        <p>").concat(result.message || '', "</p>\n        <div class=\"arena-battle-stats\">\n          <span>\u2694\uFE0F Your power: ").concat(result.playerPower || result.attackerPower, "</span>\n          <span>\uD83D\uDC79 Enemy power: ").concat(result.enemyPower || result.defenderPower, "</span>\n          ").concat(result.expReward ? "<span>\u2B50 EXP gained: +".concat(result.expReward, "</span>") : '', "\n          ").concat(result.gemsReward ? "<span>\uD83D\uDC8E Gems: +".concat(result.gemsReward, "</span>") : '', "\n          ").concat(result.ratingChange ? "<span>\uD83D\uDCCA Rating: ".concat(result.ratingChange > 0 ? '+' : '').concat(result.ratingChange, "</span>") : '', "\n        </div>\n      </div>\n    ");
+      var ratingChange = result.attackerChange || result.ratingChange || 0;
+      var playerPower = result.playerPower || result.attackerPower || 0;
+      var enemyPower = result.enemyPower || result.defenderPower || 0;
+      var diff = playerPower - enemyPower;
+      var closeCall = Math.abs(diff) < 50;
+      el.innerHTML = "\n      <div class=\"arena-battle-result ".concat(won ? 'victory' : 'defeat', " ").concat(closeCall ? 'close-call' : '', "\">\n        <div class=\"battle-animation\">\n          <div class=\"battle-emblem\">").concat(won ? '🏆' : '💀', "</div>\n          ").concat(closeCall ? '<div class="battle-close-call">⚡ CLOSE CALL!</div>' : '', "\n        </div>\n        <h3 class=\"battle-title ").concat(won ? 'victory-title' : 'defeat-title', "\">\n          ").concat(won ? 'VICTORY' : 'DEFEAT', "\n        </h3>\n        <p class=\"battle-message\">").concat(result.message || (won ? 'Your guardians prevailed!' : 'Your guardians have fallen...'), "</p>\n        <div class=\"battle-stats-grid\">\n          <div class=\"battle-stat-card ").concat(won ? 'win' : '', "\">\n            <span class=\"stat-label\">\u2694\uFE0F Your Power</span>\n            <span class=\"stat-value\">").concat(playerPower.toLocaleString(), "</span>\n          </div>\n          <div class=\"battle-stat-card vs-divider\">\n            <span class=\"stat-label\">\u26A1</span>\n            <span class=\"stat-value\">VS</span>\n          </div>\n          <div class=\"battle-stat-card ").concat(won ? '' : 'win', "\">\n            <span class=\"stat-label\">\uD83D\uDC79 Enemy Power</span>\n            <span class=\"stat-value\">").concat(enemyPower.toLocaleString(), "</span>\n          </div>\n        </div>\n        <div class=\"battle-rewards\">\n          ").concat(result.expReward ? "<span class=\"reward-badge\">\u2B50 +".concat(result.expReward, " EXP</span>") : '', "\n          ").concat(result.gemsReward ? "<span class=\"reward-badge\">\uD83D\uDC8E +".concat(result.gemsReward, " Gems</span>") : '', "\n          ").concat(ratingChange ? "<span class=\"reward-badge ".concat(ratingChange > 0 ? 'rating-up' : 'rating-down', "\">\uD83D\uDCCA ").concat(ratingChange > 0 ? '+' : '').concat(ratingChange, " Rating</span>") : '', "\n          ").concat(result.cooldown ? "<span class=\"reward-badge cooldown-badge\">\u23F3 ".concat(result.cooldown, "s cooldown</span>") : '', "\n        </div>\n      </div>\n    ");
+      if (won) {
+        var _el$querySelector;
+        (_el$querySelector = el.querySelector('.battle-emblem')) === null || _el$querySelector === void 0 || _el$querySelector.animate([{
+          transform: 'scale(0) rotate(-180deg)',
+          opacity: 0
+        }, {
+          transform: 'scale(1.2) rotate(10deg)',
+          opacity: 1,
+          offset: 0.5
+        }, {
+          transform: 'scale(1) rotate(0deg)',
+          opacity: 1
+        }], {
+          duration: 600,
+          easing: 'ease-out'
+        });
+      } else {
+        var _el$querySelector2;
+        (_el$querySelector2 = el.querySelector('.battle-emblem')) === null || _el$querySelector2 === void 0 || _el$querySelector2.animate([{
+          transform: 'translateY(-20px)',
+          opacity: 0
+        }, {
+          transform: 'translateY(0)',
+          opacity: 1
+        }], {
+          duration: 400,
+          easing: 'ease-out'
+        });
+      }
       el.scrollIntoView({
         behavior: 'smooth'
       });

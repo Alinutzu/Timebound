@@ -6,6 +6,25 @@ const router = express.Router();
 
 const MAX_PVP_GUARDIANS = 5;
 
+const PVE_COOLDOWN_BASE = 15;
+const PVE_COOLDOWN_PER_LEVEL = 2;
+const PVE_COOLDOWN_MAX = 60;
+
+const PVP_COOLDOWN_BASE = 30;
+const PVP_COOLDOWN_PER_LEVEL = 5;
+const PVP_COOLDOWN_MAX = 180;
+
+function getAvgGuardianLevel(userId) {
+  const row = db.prepare('SELECT AVG(level) as avg FROM guardians WHERE user_id = ?').get(userId);
+  return Math.floor(row?.avg || 0);
+}
+
+function getCooldownRemaining(lastTime, cooldownSec) {
+  if (!lastTime) return 0;
+  const elapsed = Math.floor(Date.now() / 1000) - lastTime;
+  return Math.max(0, cooldownSec - elapsed);
+}
+
 router.post('/pve', authMiddleware, (req, res) => {
   try {
     const { guardianIds } = req.body;
@@ -15,6 +34,14 @@ router.post('/pve', authMiddleware, (req, res) => {
 
     if (guardianIds.length > MAX_PVP_GUARDIANS) {
       return res.status(400).json({ error: `Max ${MAX_PVP_GUARDIANS} guardians per battle` });
+    }
+
+    const avgLevel = getAvgGuardianLevel(req.user.id);
+    const cooldownSec = Math.min(PVE_COOLDOWN_BASE + avgLevel * PVE_COOLDOWN_PER_LEVEL, PVE_COOLDOWN_MAX);
+    const user = db.prepare('SELECT last_pve_at FROM users WHERE id = ?').get(req.user.id);
+    const remaining = getCooldownRemaining(user?.last_pve_at, cooldownSec);
+    if (remaining > 0) {
+      return res.status(429).json({ error: `Train again in ${remaining}s`, cooldown: remaining });
     }
 
     const placeholders = guardianIds.map(() => '?').join(',');
@@ -39,6 +66,8 @@ router.post('/pve', authMiddleware, (req, res) => {
     const gemsReward = won ? Math.floor(Math.random() * 5) + 3 : Math.floor(Math.random() * 2);
 
     const battleOps = db.transaction(() => {
+      db.prepare('UPDATE users SET last_pve_at = ? WHERE id = ?').run(Math.floor(Date.now() / 1000), req.user.id);
+
       if (won) {
         guardians.forEach(g => {
           const hpGain = Math.floor(g.max_hp * 0.02);
@@ -64,6 +93,7 @@ router.post('/pve', authMiddleware, (req, res) => {
       expReward,
       gemsReward,
       guardians: updatedGuardians,
+      cooldown: cooldownSec,
       message: won ? 'Victory! Your guardians grew stronger.' : 'Defeat... Train your guardians harder.'
     });
   } catch (err) {
@@ -85,6 +115,14 @@ router.post('/pvp/challenge', authMiddleware, (req, res) => {
 
     if (!defenderId) {
       return res.status(400).json({ error: 'Defender required' });
+    }
+
+    const avgLevel = getAvgGuardianLevel(req.user.id);
+    const cooldownSec = Math.min(PVP_COOLDOWN_BASE + avgLevel * PVP_COOLDOWN_PER_LEVEL, PVP_COOLDOWN_MAX);
+    const user = db.prepare('SELECT last_pvp_at FROM users WHERE id = ?').get(req.user.id);
+    const remaining = getCooldownRemaining(user?.last_pvp_at, cooldownSec);
+    if (remaining > 0) {
+      return res.status(429).json({ error: `Battle again in ${remaining}s`, cooldown: remaining });
     }
 
     const defender = db.prepare('SELECT * FROM leaderboard WHERE user_id = ?').get(defenderId);
@@ -109,6 +147,8 @@ router.post('/pvp/challenge', authMiddleware, (req, res) => {
     const defenderChange = attackerWon ? -Math.floor(5 + Math.random() * 10) : Math.floor(8 + Math.random() * 12);
 
     const battleOps = db.transaction(() => {
+      db.prepare('UPDATE users SET last_pvp_at = ? WHERE id = ?').run(Math.floor(Date.now() / 1000), req.user.id);
+
       db.prepare('UPDATE leaderboard SET wins = wins + ?, losses = losses + ?, rating = MAX(0, rating + ?) WHERE user_id = ?')
         .run(attackerWon ? 1 : 0, attackerWon ? 0 : 1, attackerChange, req.user.id);
 
@@ -133,7 +173,8 @@ router.post('/pvp/challenge', authMiddleware, (req, res) => {
       attackerChange,
       defenderChange,
       attackerRating,
-      defenderRating
+      defenderRating,
+      cooldown: cooldownSec
     });
   } catch (err) {
     console.error('PvP error:', err);

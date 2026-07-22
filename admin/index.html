@@ -283,10 +283,9 @@ async function loadDashboard() {
 }
 
 let usersPage = 1;
-async function loadUsers(search) {
+async function loadUsers(fromSearch) {
   const el = document.getElementById('tab-users');
-  const q = search || (document.getElementById('user-search')?.value || '');
-  const data = await api(`/users?page=${usersPage}&search=${encodeURIComponent(q)}`);
+  const q = fromSearch ? (document.getElementById('user-search')?.value || '') : '';
   el.innerHTML = `
     <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
       <input class="search" id="user-search" placeholder="Search username or email..." value="${escapeHtml(q)}">

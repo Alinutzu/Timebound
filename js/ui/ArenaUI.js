@@ -541,6 +541,7 @@ class ArenaUI {
     const enemyPower = result.enemyPower || result.defenderPower || 0;
     const diff = playerPower - enemyPower;
     const closeCall = Math.abs(diff) < 50;
+    const enemyName = result.enemyName || (result.defender ? `@${result.defender}` : 'Enemy');
 
     el.innerHTML = `
       <div class="arena-battle-result ${won ? 'victory' : 'defeat'} ${closeCall ? 'close-call' : ''}">
@@ -551,7 +552,8 @@ class ArenaUI {
         <h3 class="battle-title ${won ? 'victory-title' : 'defeat-title'}">
           ${won ? 'VICTORY' : 'DEFEAT'}
         </h3>
-        <p class="battle-message">${result.message || (won ? 'Your guardians prevailed!' : 'Your guardians have fallen...')}</p>
+        <div class="battle-vs">${won ? 'You beat' : 'You lost to'} <strong>${enemyName}</strong></div>
+        <p class="battle-message">${result.message || ''}</p>
         <div class="battle-stats-grid">
           <div class="battle-stat-card ${won ? 'win' : ''}">
             <span class="stat-label">⚔️ Your Power</span>
@@ -562,7 +564,7 @@ class ArenaUI {
             <span class="stat-value">VS</span>
           </div>
           <div class="battle-stat-card ${won ? '' : 'win'}">
-            <span class="stat-label">👹 Enemy Power</span>
+            <span class="stat-label">👹 ${enemyName}</span>
             <span class="stat-value">${enemyPower.toLocaleString()}</span>
           </div>
         </div>

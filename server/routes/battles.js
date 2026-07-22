@@ -52,11 +52,39 @@ router.post('/pve', authMiddleware, (req, res) => {
       return res.status(400).json({ error: 'Some guardians not found' });
     }
 
-    const enemyPower = Math.floor(
-      guardians.reduce((sum, g) => sum + g.attack + g.defense + g.hp, 0) * (0.8 + Math.random() * 0.6)
-    );
-
     const playerPower = guardians.reduce((sum, g) => sum + g.attack + g.defense + g.hp, 0);
+
+    // Find real opponent guardians from another user
+    const me = db.prepare('SELECT rating FROM leaderboard WHERE user_id = ?').get(req.user.id);
+    let enemyGuardians = [];
+    let enemyUsername = null;
+
+    if (me) {
+      const opponent = db.prepare(`
+        SELECT l.user_id, l.username, l.rating FROM leaderboard l
+        WHERE l.user_id != ? AND l.rating BETWEEN ? AND ? AND l.guardian_power > 0
+        ORDER BY ABS(l.rating - ?) ASC
+        LIMIT 20
+      `).all(req.user.id, me.rating - 300, me.rating + 300, me.rating);
+
+      if (opponent.length > 0) {
+        const pick = opponent[Math.floor(Math.random() * opponent.length)];
+        enemyUsername = pick.username;
+        enemyGuardians = db.prepare(`
+          SELECT attack, defense, hp FROM guardians WHERE user_id = ? ORDER BY RANDOM() LIMIT ?
+        `).all(pick.user_id, guardianIds.length);
+      }
+    }
+
+    // Fallback to AI if no real opponent found
+    let enemyPower, enemyName;
+    if (enemyGuardians.length > 0) {
+      enemyPower = enemyGuardians.reduce((sum, g) => sum + g.attack + g.defense + g.hp, 0);
+      enemyName = enemyUsername;
+    } else {
+      enemyPower = Math.floor(playerPower * (0.8 + Math.random() * 0.6));
+      enemyName = 'AI Sparring Bot';
+    }
 
     const playerRoll = playerPower * (0.8 + Math.random() * 0.4);
     const enemyRoll = enemyPower * (0.8 + Math.random() * 0.4);
@@ -90,11 +118,14 @@ router.post('/pve', authMiddleware, (req, res) => {
       result: won ? 'win' : 'loss',
       playerPower: Math.floor(playerRoll),
       enemyPower: Math.floor(enemyRoll),
+      enemyName,
       expReward,
       gemsReward,
       guardians: updatedGuardians,
       cooldown: cooldownSec,
-      message: won ? 'Victory! Your guardians grew stronger.' : 'Defeat... Train your guardians harder.'
+      message: won
+        ? `Victory over ${enemyName}! Your guardians grew stronger.`
+        : `Defeated by ${enemyName}... Train harder.`
     });
   } catch (err) {
     console.error('PvE error:', err);

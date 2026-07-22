@@ -255,6 +255,16 @@
   margin-bottom: var(--spacing-lg);
 }
 
+.battle-vs {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+}
+
+.battle-vs strong {
+  color: var(--text-primary);
+}
+
 .battle-stats-grid {
   display: flex;
   align-items: center;

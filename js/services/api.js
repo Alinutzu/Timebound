@@ -1,4 +1,4 @@
-const API_BASE = 'http://familyhub.go.ro:3000/api';
+const API_BASE = 'https://familyhub.go.ro/api';
 
 function getToken() {
   return localStorage.getItem('arena_token');

@@ -3,16 +3,25 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
+require('dotenv').config();
+
 function getJWTSecret() {
   const envSecret = process.env.JWT_SECRET;
   if (envSecret && envSecret !== 'CHANGE_ME_TO_RANDOM_SECRET') return envSecret;
 
+  if (envSecret === 'CHANGE_ME_TO_RANDOM_SECRET') {
+    console.warn('WARNING: JWT_SECRET in .env is still the default value. Generate a random one!');
+  }
+
   const secretPath = path.resolve(__dirname, '.jwt-secret');
   try {
-    return fs.readFileSync(secretPath, 'utf-8').trim();
+    const secret = fs.readFileSync(secretPath, 'utf-8').trim();
+    if (!secret || secret.length < 32) throw new Error('Secret too short');
+    return secret;
   } catch {
     const newSecret = crypto.randomBytes(64).toString('hex');
     fs.writeFileSync(secretPath, newSecret, { mode: 0o600 });
+    console.log('Generated new JWT secret: ' + secretPath);
     return newSecret;
   }
 }

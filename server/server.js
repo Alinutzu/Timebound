@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
@@ -5,8 +7,6 @@ const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('./auth');
 const db = require('./db');
-
-require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const guardianRoutes = require('./routes/guardians');
@@ -43,6 +43,15 @@ app.use(cors({
   }
 }));
 app.use(express.json({ limit: '1mb' }));
+
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '0');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', '');
+  next();
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/guardians', guardianRoutes);

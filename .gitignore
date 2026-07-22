@@ -6,3 +6,7 @@ server/admin-config.json
 server/TIMEBOUND_CONTEXT.md
 server/.env
 server/.jwt-secret
+server/admin-audit.log
+
+# Internal reports
+js/COMPREHENSIVE_REPORT.md

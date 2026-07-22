@@ -17166,7 +17166,7 @@ var ArenaUI = /*#__PURE__*/function () {
               case 1:
                 result = _context10.v;
                 _this5.energy = result.energy;
-                _this5.updateEnergyDisplay();
+                _this5.updateResourceDisplay();
                 _this5.showNotification("".concat(result.guardian.name, " \u2192 Lv.").concat(result.guardian.level, "! (-\u26A1").concat(result.cost.toLocaleString(), ")"), 'success');
                 _this5.loadGuardians();
                 _context10.n = 3;

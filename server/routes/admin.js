@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const db = require('../db');
 
 const CONFIG_PATH = path.resolve(__dirname, '../admin-config.json');
+const AUDIT_LOG_PATH = path.resolve(__dirname, '../admin-audit.log');
 
 const router = express.Router();
 
@@ -36,12 +37,33 @@ function saveConfig(config) {
 const loginAttempts = new Map();
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
+const LOCKOUT_MS = LOCKOUT_MINUTES * 60 * 1000;
+const CLEANUP_INTERVAL_MS = 60000;
+const CHECK_LOCK_RATE_MAX = 10;
+const CHECK_LOCK_RATE_WINDOW = 60000;
 
 function getClientIP(req) {
   return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.socket.remoteAddress;
 }
 
+let lastCleanup = Date.now();
+function cleanupStaleRecords() {
+  const now = Date.now();
+  if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
+  lastCleanup = now;
+  for (const [ip, record] of loginAttempts) {
+    if (!record.lockedUntil && now - record.firstAttempt > LOCKOUT_MS) {
+      loginAttempts.delete(ip);
+    } else if (record.lockedUntil && now >= record.lockedUntil) {
+      loginAttempts.delete(ip);
+    }
+  }
+}
+
+setInterval(cleanupStaleRecords, CLEANUP_INTERVAL_MS);
+
 function checkRateLimit(ip) {
+  cleanupStaleRecords();
   const now = Date.now();
   const record = loginAttempts.get(ip);
   if (!record) return { allowed: true, remaining: MAX_ATTEMPTS };
@@ -62,28 +84,101 @@ function checkRateLimit(ip) {
 function recordFailedAttempt(ip) {
   const now = Date.now();
   const record = loginAttempts.get(ip) || { count: 0, firstAttempt: now };
+  if (record.lockedUntil) return;
   record.count++;
   record.lastAttempt = now;
 
   if (record.count >= MAX_ATTEMPTS) {
-    record.lockedUntil = now + LOCKOUT_MINUTES * 60 * 1000;
+    record.lockedUntil = now + LOCKOUT_MS;
+    auditLog('system', 'IP locked', { ip, attempts: record.count, duration: LOCKOUT_MINUTES });
   }
 
   loginAttempts.set(ip, record);
-
-  setTimeout(() => {
-    const current = loginAttempts.get(ip);
-    if (current && now >= current.firstAttempt + LOCKOUT_MINUTES * 60 * 1000) {
-      loginAttempts.delete(ip);
-    }
-  }, LOCKOUT_MINUTES * 60 * 1000);
 }
 
 function recordSuccessfulAttempt(ip) {
   loginAttempts.delete(ip);
 }
 
+const checkLockRateMap = new Map();
+function checkLockRateLimit(ip) {
+  const now = Date.now();
+  const record = checkLockRateMap.get(ip);
+  if (!record || now - record.windowStart > CHECK_LOCK_RATE_WINDOW) {
+    checkLockRateMap.set(ip, { windowStart: now, count: 1 });
+    return true;
+  }
+  record.count++;
+  return record.count <= CHECK_LOCK_RATE_MAX;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of checkLockRateMap) {
+    if (now - record.windowStart > CHECK_LOCK_RATE_WINDOW * 2) {
+      checkLockRateMap.delete(ip);
+    }
+  }
+}, CLEANUP_INTERVAL_MS);
+
+function getAdminIPWhitelist() {
+  const raw = process.env.ADMIN_IP_WHITELIST || '';
+  if (!raw) return null;
+  return raw.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function checkIPWhitelist(req) {
+  const whitelist = getAdminIPWhitelist();
+  if (!whitelist || whitelist.length === 0) return { allowed: true };
+  const ip = getClientIP(req);
+  const allowed = whitelist.includes(ip) || whitelist.includes('::1') || whitelist.includes('127.0.0.1');
+  if (!allowed) {
+    auditLog('system', 'IP denied by whitelist', { ip, whitelist });
+  }
+  return { allowed };
+}
+
+function checkCSRF(req) {
+  if (req.method === 'GET') return { allowed: true };
+  const origin = req.headers['origin'];
+  const referer = req.headers['referer'];
+  const ALLOWED_ORIGINS = [
+    'https://alinutzu.github.io',
+    'http://localhost:3000',
+    'http://localhost:5000',
+  ];
+  if (!origin && !referer) return { allowed: true };
+  const check = origin || referer || '';
+  const allowed = ALLOWED_ORIGINS.some(o => check.startsWith(o));
+  if (!allowed) {
+    auditLog('system', 'CSRF check failed', { origin, referer });
+  }
+  return { allowed };
+}
+
+function auditLog(action, detail, extra = {}) {
+  try {
+    const entry = {
+      timestamp: new Date().toISOString(),
+      action,
+      detail,
+      ...extra,
+    };
+    fs.appendFileSync(AUDIT_LOG_PATH, JSON.stringify(entry) + '\n');
+  } catch {}
+}
+
 function basicAuth(req, res, next) {
+  const ipCheck = checkIPWhitelist(req);
+  if (!ipCheck.allowed) {
+    return res.status(403).json({ error: 'Access denied by IP whitelist' });
+  }
+
+  const csrfCheck = checkCSRF(req);
+  if (!csrfCheck.allowed) {
+    return res.status(403).json({ error: 'CSRF validation failed' });
+  }
+
   const ip = getClientIP(req);
   const rateCheck = checkRateLimit(ip);
   if (!rateCheck.allowed) {
@@ -114,6 +209,7 @@ function basicAuth(req, res, next) {
   if (!userMatch || !passMatch) {
     recordFailedAttempt(ip);
     const remaining = MAX_ATTEMPTS - (loginAttempts.get(ip)?.count || 0);
+    auditLog('auth', 'Failed login attempt', { ip, user, remaining: Math.max(0, remaining) });
     return res.status(403).json({
       error: 'Invalid credentials',
       remaining: Math.max(0, remaining),
@@ -127,6 +223,13 @@ function basicAuth(req, res, next) {
 
 router.get('/check-lock', (req, res) => {
   const ip = getClientIP(req);
+  if (!checkLockRateLimit(ip)) {
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+  const ipCheck = checkIPWhitelist(req);
+  if (!ipCheck.allowed) {
+    return res.json({ locked: false, whitelistDenied: true });
+  }
   const rateCheck = checkRateLimit(ip);
   res.json(rateCheck);
 });
@@ -142,11 +245,13 @@ router.post('/change-password', basicAuth, (req, res) => {
 
   const config = loadConfig();
   if (!bcrypt.compareSync(currentPassword, config.password_hash)) {
+    auditLog('auth', 'Failed password change', { user: req.adminUser, ip: getClientIP(req) });
     return res.status(403).json({ error: 'Current password is incorrect' });
   }
 
   config.password_hash = bcrypt.hashSync(newPassword, 10);
   saveConfig(config);
+  auditLog('auth', 'Password changed', { user: req.adminUser, ip: getClientIP(req) });
   res.json({ success: true, message: 'Password changed successfully' });
 });
 
@@ -164,6 +269,7 @@ router.get('/dashboard', basicAuth, (req, res) => {
       FROM users GROUP BY DATE(created_at) ORDER BY date DESC LIMIT 7
     `).all();
 
+    auditLog('view', 'Dashboard viewed', { user: req.adminUser, ip: getClientIP(req) });
     res.json({ totalUsers, guestUsers, totalGuardians, totalBattles, pvpBattles, topUsers, userGrowth });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -221,6 +327,7 @@ router.delete('/users/:id', basicAuth, (req, res) => {
     }
 
     db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
+    auditLog('delete', 'Guest user deleted', { user: req.adminUser, targetId: req.params.id, targetUser: user.username });
     res.json({ success: true, message: `Deleted guest user #${req.params.id}` });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -277,7 +384,21 @@ router.get('/battles', basicAuth, (req, res) => {
 router.post('/leaderboard/reset', basicAuth, (req, res) => {
   try {
     db.prepare('UPDATE leaderboard SET wins = 0, losses = 0, rating = 1000').run();
+    auditLog('reset', 'Leaderboard reset', { user: req.adminUser, ip: getClientIP(req) });
     res.json({ success: true, message: 'Leaderboard reset to default values' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/audit-log', basicAuth, (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+    if (!fs.existsSync(AUDIT_LOG_PATH)) return res.json({ entries: [] });
+    const data = fs.readFileSync(AUDIT_LOG_PATH, 'utf-8');
+    const lines = data.trim().split('\n').filter(Boolean);
+    const entries = lines.slice(-limit).map(line => JSON.parse(line)).reverse();
+    res.json({ entries, total: lines.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

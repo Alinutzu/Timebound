@@ -29,8 +29,9 @@ function authRateLimit(req, res, next) {
 
 setInterval(() => {
   const now = Date.now();
+  const limit = RATE_LIMIT_WINDOW * 2;
   for (const [ip, record] of rateLimitMap) {
-    if (now - record.windowStart > RATE_LIMIT_WINDOW * 2) {
+    if (now - record.windowStart > limit) {
       rateLimitMap.delete(ip);
     }
   }

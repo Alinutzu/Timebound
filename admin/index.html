@@ -79,6 +79,7 @@ tr:hover td{background:#1c2128}
   <div class="tab" data-tab="guardians">Guardians</div>
   <div class="tab" data-tab="battles">Battles</div>
   <div class="tab" data-tab="security">🔒 Security</div>
+  <div class="tab" data-tab="audit">Audit Log</div>
   <div class="tab" data-tab="actions">Actions</div>
 </div>
 
@@ -87,6 +88,7 @@ tr:hover td{background:#1c2128}
 <div id="tab-guardians" class="tab-content"></div>
 <div id="tab-battles" class="tab-content"></div>
 <div id="tab-security" class="tab-content"></div>
+<div id="tab-audit" class="tab-content"></div>
 <div id="tab-actions" class="tab-content"></div>
 
 <script>
@@ -232,6 +234,7 @@ function init() {
     else if (name === 'guardians') loadGuardians();
     else if (name === 'battles') loadBattles();
     else if (name === 'security') loadSecurity();
+    else if (name === 'audit') loadAudit();
     else if (name === 'actions') loadActions();
   }
   startSessionMonitor();
@@ -454,6 +457,35 @@ async function changePassword() {
     sessionStorage.setItem('admin_auth', auth);
   } catch (err) {
     document.getElementById('pass-error').textContent = 'Connection error';
+  }
+}
+
+async function loadAudit() {
+  const el = document.getElementById('tab-audit');
+  el.innerHTML = `<p style="color:#8b949e">Loading audit log...</p>`;
+  try {
+    const data = await api('/audit-log?limit=50');
+    el.innerHTML = `
+      <h2>Audit Log <span style="font-size:13px;color:#8b949e;font-weight:normal">(last ${data.entries.length} of ${data.total} entries)</span></h2>
+      <table>
+        <tr><th>Time</th><th>Action</th><th>Detail</th><th>IP</th></tr>
+        ${data.entries.map(e => {
+          const extra = e.ip ? e.ip : (e.targetUser ? e.targetUser : '');
+          const color = e.action === 'auth' && e.detail === 'Failed login attempt' ? '#f85149'
+            : e.action === 'reset' ? '#d29922'
+            : e.action === 'delete' ? '#f85149'
+            : '#8b949e';
+          return `<tr>
+            <td style="font-size:11px;color:#8b949e">${escapeHtml(e.timestamp)}</td>
+            <td style="color:${color}">${escapeHtml(e.action)}</td>
+            <td>${escapeHtml(e.detail)}</td>
+            <td style="font-size:11px;color:#8b949e">${escapeHtml(extra)}</td>
+          </tr>`;
+        }).join('')}
+      </table>
+    `;
+  } catch {
+    el.innerHTML = `<p style="color:#f85149">Failed to load audit log</p>`;
   }
 }
 

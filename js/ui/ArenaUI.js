@@ -427,7 +427,7 @@ class ArenaUI {
         try {
           const result = await api.levelUpGuardian(parseInt(btn.dataset.id));
           this.energy = result.energy;
-          this.updateEnergyDisplay();
+          this.updateResourceDisplay();
           this.showNotification(`${result.guardian.name} → Lv.${result.guardian.level}! (-⚡${result.cost.toLocaleString()})`, 'success');
           this.loadGuardians();
         } catch (err) {

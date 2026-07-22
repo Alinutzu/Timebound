@@ -27,7 +27,7 @@ app.use('/api/guardians', guardianRoutes);
 app.use('/api/battles', battleRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/save', saveRoutes);
-app.use('/admin', adminRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });

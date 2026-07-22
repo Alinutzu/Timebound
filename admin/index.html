@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timebound Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0d1117;color:#c9d1d9;padding:20px}
+h1{color:#58a6ff;margin-bottom:16px}
+h2{color:#f0f6fc;margin:24px 0 12px;font-size:18px;border-bottom:1px solid #30363d;padding-bottom:6px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;text-align:center}
+.stat .value{font-size:28px;font-weight:700;color:#f0f6fc}
+.stat .label{font-size:12px;color:#8b949e;margin-top:4px}
+table{width:100%;border-collapse:collapse;background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden;margin-bottom:16px}
+th{background:#1c2128;color:#8b949e;font-size:12px;text-transform:uppercase;padding:10px 12px;text-align:left;border-bottom:1px solid #30363d}
+td{padding:10px 12px;border-bottom:1px solid #21262d;font-size:13px;color:#c9d1d9}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#1c2128}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.badge.guest{background:#1b2838;color:#58a6ff;border:1px solid #58a6ff}
+.badge.registered{background:#1b3828;color:#3fb950;border:1px solid #3fb950}
+.badge.win{background:#1b3828;color:#3fb950}
+.badge.loss{background:#381b1b;color:#f85149}
+.btn{padding:6px 14px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
+.btn.primary{background:#1f6feb;color:#fff}
+.btn.primary:hover{background:#388bfd}
+.btn.danger{background:#f85149;color:#fff}
+.btn.danger:hover{background:#da3633}
+.btn.warning{background:#d29922;color:#fff}
+.btn.warning:hover{background:#bb8009}
+.btn.secondary{background:#21262d;color:#c9d1d9;border:1px solid #30363d}
+.btn.secondary:hover{background:#30363d}
+.pagination{display:flex;gap:6px;margin-bottom:16px}
+.pagination .btn.active{background:#1f6feb;color:#fff}
+.search{background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:8px 12px;color:#c9d1d9;width:260px;font-size:13px}
+.search:focus{outline:none;border-color:#58a6ff}
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid #30363d;padding-bottom:0}
+.tabs .tab{padding:8px 18px;border-radius:6px 6px 0 0;cursor:pointer;font-size:13px;color:#8b949e;border:1px solid transparent;border-bottom:none}
+.tabs .tab:hover{color:#c9d1d9;background:#161b22}
+.tabs .tab.active{color:#f0f6fc;background:#161b22;border-color:#30363d}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.chart-bars{display:flex;align-items:end;gap:8px;height:100px;padding:10px 0}
+.chart-bar{flex:1;background:#1f6feb;border-radius:4px 4px 0 0;min-height:4px;position:relative;transition:height .3s}
+.chart-bar .clabel{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;color:#8b949e;white-space:nowrap}
+.chart-bar .cvalue{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:10px;color:#8b949e}
+.actions{display:flex;gap:6px}
+.login-overlay{position:fixed;inset:0;background:#0d1117;display:flex;align-items:center;justify-content:center;z-index:100}
+.login-box{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:32px;width:360px;text-align:center}
+.login-box h2{margin-bottom:20px;border:none}
+.login-box input{width:100%;padding:10px 12px;margin-bottom:12px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-size:14px}
+.login-box input:focus{outline:none;border-color:#58a6ff}
+.login-box .error{color:#f85149;font-size:13px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div id="login-overlay" class="login-overlay">
+  <div class="login-box">
+    <h2>⚙ Admin Login</h2>
+    <div id="login-error" class="error"></div>
+    <input id="login-user" type="text" placeholder="Username" value="admin">
+    <input id="login-pass" type="password" placeholder="Password" value="admin123" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn primary" onclick="doLogin()" style="width:100%;padding:10px;font-size:14px">Login</button>
+  </div>
+</div>
+<h1>⚙ Timebound Admin Panel</h1>
+<div class="tabs" id="tabs">
+  <div class="tab active" data-tab="dashboard">Dashboard</div>
+  <div class="tab" data-tab="users">Users</div>
+  <div class="tab" data-tab="guardians">Guardians</div>
+  <div class="tab" data-tab="battles">Battles</div>
+  <div class="tab" data-tab="actions">Actions</div>
+</div>
+
+<div id="tab-dashboard" class="tab-content active"></div>
+<div id="tab-users" class="tab-content"></div>
+<div id="tab-guardians" class="tab-content"></div>
+<div id="tab-battles" class="tab-content"></div>
+<div id="tab-actions" class="tab-content"></div>
+
+<script>
+const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? '/api/admin'
+  : 'https://familyhub.go.ro/api/admin';
+
+let auth = sessionStorage.getItem('admin_auth');
+
+function doLogin() {
+  const user = document.getElementById('login-user').value;
+  const pass = document.getElementById('login-pass').value;
+  auth = btoa(user + ':' + pass);
+  sessionStorage.setItem('admin_auth', auth);
+  fetch(API + '/dashboard', { headers: { Authorization: 'Basic ' + auth } })
+    .then(r => {
+      if (!r.ok) throw new Error('Invalid credentials');
+      document.getElementById('login-overlay').style.display = 'none';
+      init();
+    })
+    .catch(() => {
+      document.getElementById('login-error').textContent = 'Invalid credentials';
+      sessionStorage.removeItem('admin_auth');
+      auth = null;
+    });
+}
+
+function api(path) {
+  return fetch(API + path, { headers: { Authorization: 'Basic ' + auth } }).then(r => {
+    if (r.status === 401 || r.status === 403) {
+      sessionStorage.removeItem('admin_auth');
+      auth = null;
+      location.reload();
+    }
+    return r.json();
+  });
+}
+
+function init() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const name = tab.dataset.tab;
+      document.getElementById('tab-' + name).classList.add('active');
+      loadTab(name);
+    });
+  });
+
+  function loadTab(name) {
+    if (name === 'dashboard') loadDashboard();
+    else if (name === 'users') loadUsers();
+    else if (name === 'guardians') loadGuardians();
+    else if (name === 'battles') loadBattles();
+    else if (name === 'actions') loadActions();
+  }
+
+  document.querySelector('.tab[data-tab="dashboard"]').click();
+}
+
+async function loadDashboard() {
+  const data = await api('/dashboard');
+  const el = document.getElementById('tab-dashboard');
+  el.innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="value">${data.totalUsers}</div><div class="label">Total Users</div></div>
+      <div class="stat"><div class="value">${data.guestUsers}</div><div class="label">Guest Accounts</div></div>
+      <div class="stat"><div class="value">${data.totalGuardians}</div><div class="label">Guardians</div></div>
+      <div class="stat"><div class="value">${data.totalBattles}</div><div class="label">Total Battles</div></div>
+      <div class="stat"><div class="value">${data.pvpBattles}</div><div class="label">PvP Battles</div></div>
+    </div>
+    <h2>Top Players</h2>
+    <table>
+      <tr><th>#</th><th>Username</th><th>Rating</th><th>W</th><th>L</th><th>Win Rate</th></tr>
+      ${data.topUsers.map((u, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${u.username}</td>
+          <td>${u.rating}</td>
+          <td>${u.wins}</td>
+          <td>${u.losses}</td>
+          <td>${(u.wins + u.losses) ? Math.round(u.wins / (u.wins + u.losses) * 100) + '%' : '-'}</td>
+        </tr>
+      `).join('')}
+    </table>
+    <h2>New Users (last 7 days)</h2>
+    <div class="chart-bars">
+      ${(() => {
+        const max = Math.max(...data.userGrowth.map(d => d.count), 1);
+        return data.userGrowth.reverse().map(d => `
+          <div class="chart-bar" style="height:${d.count / max * 80 + 4}%">
+            <div class="clabel">${d.count}</div>
+            <div class="cvalue">${d.date.slice(5)}</div>
+          </div>
+        `).join('');
+      })()}
+    </div>
+  `;
+}
+
+let usersPage = 1;
+
+async function loadUsers(search) {
+  const el = document.getElementById('tab-users');
+  const q = search || (document.getElementById('user-search')?.value || '');
+  const data = await api(`/users?page=${usersPage}&search=${encodeURIComponent(q)}`);
+  el.innerHTML = `
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+      <input class="search" id="user-search" placeholder="Search username or email..." value="${q}">
+      <button class="btn secondary" onclick="loadUsers(false)">Search</button>
+      <span style="font-size:12px;color:#8b949e;margin-left:auto">Page ${data.page}/${data.pages} (${data.total} total)</span>
+    </div>
+    <table>
+      <tr><th>ID</th><th>Username</th><th>Email</th><th>Created</th><th>Last Login</th><th>Rating</th><th>W/L</th><th></th></tr>
+      ${data.users.map(u => `
+        <tr>
+          <td>${u.id}</td>
+          <td>${u.username} ${u.username.startsWith('guest_') ? '<span class="badge guest">guest</span>' : '<span class="badge registered">user</span>'}</td>
+          <td>${u.email || '-'}</td>
+          <td>${u.created_at}</td>
+          <td>${u.last_login || '-'}</td>
+          <td>${u.rating}</td>
+          <td>${u.wins} / ${u.losses}</td>
+          <td>${u.username.startsWith('guest_') ? `<button class="btn danger" onclick="deleteUser(${u.id})">Delete</button>` : '-'}</td>
+        </tr>
+      `).join('')}
+    </table>
+    <div class="pagination">
+      ${Array.from({length: Math.min(data.pages, 10)}, (_, i) => {
+        const p = Math.max(1, Math.min(i + 1, data.pages));
+        return `<button class="btn secondary ${p === data.page ? 'active' : ''}" onclick="usersPage=${p};loadUsers(true)">${p}</button>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+async function deleteUser(id) {
+  if (!confirm('Delete this guest user?')) return;
+  await fetch(API + '/users/' + id, { method: 'DELETE', headers: { Authorization: 'Basic ' + auth } });
+  loadUsers(true);
+}
+
+async function loadGuardians() {
+  const data = await api('/guardians');
+  const el = document.getElementById('tab-guardians');
+  const rarityColors = {common:'#8b949e',rare:'#58a6ff',epic:'#d2a8ff',legendary:'#f0883e'};
+  el.innerHTML = `
+    <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+      ${data.rarityStats.map(r => `
+        <div class="stat">
+          <div class="value" style="color:${rarityColors[r.rarity] || '#8b949e'}">${r.count}</div>
+          <div class="label">${r.rarity}</div>
+        </div>
+      `).join('')}
+    </div>
+    <table>
+      <tr><th>ID</th><th>User</th><th>Name</th><th>Rarity</th><th>Level</th><th>ATK</th><th>DEF</th><th>HP</th></tr>
+      ${data.guardians.map(g => `
+        <tr>
+          <td>${g.id}</td>
+          <td>${g.username}</td>
+          <td>${g.name}</td>
+          <td><span class="badge" style="background:${rarityColors[g.rarity] || '#1b2838'};color:#fff">${g.rarity}</span></td>
+          <td>${g.level}</td>
+          <td>${g.attack}</td>
+          <td>${g.defense}</td>
+          <td>${g.hp}</td>
+        </tr>
+      `).join('')}
+    </table>
+  `;
+}
+
+async function loadBattles() {
+  const data = await api('/battles');
+  const el = document.getElementById('tab-battles');
+  el.innerHTML = `
+    <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
+      ${data.winRate.map(w => `
+        <div class="stat">
+          <div class="value ${w.result === 'win' ? 'badge win' : w.result === 'loss' ? 'badge loss' : ''}">${w.result}</div>
+          <div class="label">${w.count} battles</div>
+        </div>
+      `).join('')}
+    </div>
+    <table>
+      <tr><th>ID</th><th>Type</th><th>Attacker</th><th>Defender</th><th>Result</th><th>Rating Δ</th><th>Date</th></tr>
+      ${data.battles.map(b => `
+        <tr>
+          <td>${b.id}</td>
+          <td>${b.defender_id ? 'PvP' : 'PvE'}</td>
+          <td>${b.attacker}</td>
+          <td>${b.defender || 'AI'}</td>
+          <td><span class="badge ${b.result === 'win' ? 'win' : b.result === 'loss' ? 'loss' : ''}">${b.result}</span></td>
+          <td>${b.rating_change ?? '-'}</td>
+          <td>${b.created_at}</td>
+        </tr>
+      `).join('')}
+    </table>
+  `;
+}
+
+async function loadActions() {
+  document.getElementById('tab-actions').innerHTML = `
+    <h2>Danger Zone</h2>
+    <div style="background:#1c2128;border:1px solid #f85149;border-radius:8px;padding:20px;max-width:500px">
+      <p style="margin-bottom:12px;font-size:13px;color:#8b949e">
+        Reset every player's rating, wins, and losses to default (1000 / 0 / 0).
+        This cannot be undone.
+      </p>
+      <button class="btn danger" onclick="resetLeaderboard()">Reset Leaderboard</button>
+    </div>
+    <h2>Server Info</h2>
+    <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:20px;max-width:500px">
+      <pre id="server-info" style="font-size:12px;color:#8b949e;overflow-x:auto">Loading...</pre>
+    </div>
+  `;
+  const baseAPI = API.replace('/admin', '');
+  fetch(baseAPI + '/health').then(r => r.json()).then(data => {
+    document.getElementById('server-info').textContent = JSON.stringify(data, null, 2);
+  });
+}
+
+async function resetLeaderboard() {
+  if (!confirm('Are you sure? This will reset ALL ratings to 1000.')) return;
+  if (!confirm('Last chance. Really proceed?')) return;
+  await fetch(API + '/leaderboard/reset', { headers: { Authorization: 'Basic ' + auth } });
+  alert('Leaderboard reset!');
+}
+
+if (auth) {
+  fetch(API + '/dashboard', { headers: { Authorization: 'Basic ' + auth } })
+    .then(r => {
+      if (!r.ok) throw new Error('bad auth');
+      document.getElementById('login-overlay').style.display = 'none';
+      init();
+    })
+    .catch(() => {
+      sessionStorage.removeItem('admin_auth');
+      auth = null;
+    });
+}
+</script>
+</body>
+</html>

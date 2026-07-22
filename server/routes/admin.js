@@ -1,5 +1,5 @@
 const express = require('express');
-const path = require('path');
+
 const db = require('../db');
 
 const router = express.Router();
@@ -25,11 +25,7 @@ function basicAuth(req, res, next) {
   next();
 }
 
-router.get('/', basicAuth, (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../admin.html'));
-});
-
-router.get('/api/dashboard', basicAuth, (req, res) => {
+router.get('/dashboard', basicAuth, (req, res) => {
   try {
     const totalUsers = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
     const guestUsers = db.prepare("SELECT COUNT(*) as c FROM users WHERE username LIKE 'guest_%'").get().c;
@@ -49,7 +45,7 @@ router.get('/api/dashboard', basicAuth, (req, res) => {
   }
 });
 
-router.get('/api/users', basicAuth, (req, res) => {
+router.get('/users', basicAuth, (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = Math.min(parseInt(req.query.limit) || 20, 100);
@@ -90,7 +86,7 @@ router.get('/api/users', basicAuth, (req, res) => {
   }
 });
 
-router.delete('/api/users/:id', basicAuth, (req, res) => {
+router.delete('/users/:id', basicAuth, (req, res) => {
   try {
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -106,7 +102,7 @@ router.delete('/api/users/:id', basicAuth, (req, res) => {
   }
 });
 
-router.get('/api/guardians', basicAuth, (req, res) => {
+router.get('/guardians', basicAuth, (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = Math.min(parseInt(req.query.limit) || 30, 100);
@@ -130,7 +126,7 @@ router.get('/api/guardians', basicAuth, (req, res) => {
   }
 });
 
-router.get('/api/battles', basicAuth, (req, res) => {
+router.get('/battles', basicAuth, (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = Math.min(parseInt(req.query.limit) || 30, 100);
@@ -153,7 +149,7 @@ router.get('/api/battles', basicAuth, (req, res) => {
   }
 });
 
-router.get('/api/leaderboard/reset', basicAuth, (req, res) => {
+router.get('/leaderboard/reset', basicAuth, (req, res) => {
   try {
     db.prepare('UPDATE leaderboard SET wins = 0, losses = 0, rating = 1000').run();
     res.json({ success: true, message: 'Leaderboard reset to default values' });

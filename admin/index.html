@@ -318,7 +318,7 @@ async function loadUsers(fromSearch) {
           <td>${escapeHtml(u.last_login) || '-'}</td>
           <td>${escapeHtml(u.rating)}</td>
           <td>${escapeHtml(u.wins)} / ${escapeHtml(u.losses)}</td>
-          <td>${u.username.startsWith('guest_') ? `<button class="btn danger" onclick="deleteUser(${escapeHtml(u.id)})">Delete</button>` : '-'}</td>
+          <td><button class="btn danger" onclick="deleteUser(${escapeHtml(u.id)})">Delete</button></td>
         </tr>
       `).join('')}
     </table>
@@ -332,7 +332,7 @@ async function loadUsers(fromSearch) {
 }
 
 async function deleteUser(id) {
-  if (!confirm('Delete this guest user?')) return;
+  if (!confirm('Delete this user? All guardians, battles, and save data will be permanently removed.')) return;
   try {
     const r = await fetch(API + '/users/' + id, {
       method: 'DELETE',

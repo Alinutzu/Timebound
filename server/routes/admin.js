@@ -291,13 +291,10 @@ router.delete('/users/:id', basicAuth, (req, res) => {
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if (!user.username.startsWith('guest_')) {
-      return res.status(400).json({ error: 'Only guest accounts can be deleted via admin. Ban instead?' });
-    }
-
+    const type = user.username.startsWith('guest_') ? 'guest' : 'registered';
     db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
-    auditLog('delete', 'Guest user deleted', { user: req.adminUser, targetId: req.params.id, targetUser: user.username });
-    res.json({ success: true, message: `Deleted guest user #${req.params.id}` });
+    auditLog('delete', `${type} user deleted`, { user: req.adminUser, targetId: req.params.id, targetUser: user.username });
+    res.json({ success: true, message: `Deleted ${type} user #${req.params.id}` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

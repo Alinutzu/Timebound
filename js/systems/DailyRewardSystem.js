@@ -25,7 +25,7 @@ class DailyRewardSystem {
       {
         day: 1,
         rewards: {
-          gems: 25,
+          gems: 10,
           energy: 1000
         },
         emoji: '🎁'
@@ -33,7 +33,7 @@ class DailyRewardSystem {
       {
         day: 2,
         rewards: {
-          gems: 50,
+          gems: 20,
           energy: 2500,
           mana: 50
         },
@@ -42,7 +42,7 @@ class DailyRewardSystem {
       {
         day: 3,
         rewards: {
-          gems: 75,
+          gems: 30,
           energy: 5000,
           mana: 100
         },
@@ -51,7 +51,7 @@ class DailyRewardSystem {
       {
         day: 4,
         rewards: {
-          gems: 100,
+          gems: 40,
           energy: 10000,
           mana: 200,
           crystals: 1
@@ -61,7 +61,7 @@ class DailyRewardSystem {
       {
         day: 5,
         rewards: {
-          gems: 150,
+          gems: 60,
           energy: 20000,
           mana: 500,
           crystals: 3
@@ -71,7 +71,7 @@ class DailyRewardSystem {
       {
         day: 6,
         rewards: {
-          gems: 200,
+          gems: 80,
           energy: 50000,
           mana: 1000,
           crystals: 5
@@ -81,7 +81,7 @@ class DailyRewardSystem {
       {
         day: 7,
         rewards: {
-          gems: 500,
+          gems: 200,
           energy: 100000,
           mana: 5000,
           crystals: 20,

@@ -241,7 +241,7 @@ class UpgradeQueueSystem {
    */
   completeUpgrade(upgrade) {
     // Apply the upgrade
-    stateManager. dispatch({
+    stateManager.dispatch({
       type: 'BUY_UPGRADE',
       payload: {
         upgradeKey: upgrade.upgradeKey,
@@ -260,7 +260,7 @@ class UpgradeQueueSystem {
     // Clear active upgrade
     stateManager.dispatch({
       type: 'COMPLETE_UPGRADE',
-      payload: { upgradeKey: upgrade. upgradeKey }
+      payload: { upgradeKey: upgrade.upgradeKey }
     });
     
     logger.info('UpgradeQueueSystem', `Completed upgrade: ${upgrade.upgradeKey} → Level ${upgrade.targetLevel}`);

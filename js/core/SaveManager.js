@@ -218,6 +218,27 @@ stateManager.dispatch({
       state.structures = newStructures;
     }
     
+    // Ensure new resource fields exist (from v2.0.0+)
+    if (state.resources) {
+      state.resources.tidalEnergy = state.resources.tidalEnergy || 0;
+      state.resources.solarEssence = state.resources.solarEssence || 0;
+      state.resources.cryoEnergy = state.resources.cryoEnergy || 0;
+      state.resources.cosmicEnergy = state.resources.cosmicEnergy || 0;
+      state.resources.pearls = state.resources.pearls || 0;
+    }
+    if (state.production) {
+      state.production.tidalEnergy = state.production.tidalEnergy || 0;
+      state.production.solarEssence = state.production.solarEssence || 0;
+      state.production.cryoEnergy = state.production.cryoEnergy || 0;
+      state.production.cosmicEnergy = state.production.cosmicEnergy || 0;
+    }
+    if (state.caps) {
+      state.caps.tidalEnergy = state.caps.tidalEnergy || CONFIG.BALANCING.BASE_TIDAL_ENERGY_CAP;
+      state.caps.solarEssence = state.caps.solarEssence || CONFIG.BALANCING.BASE_SOLAR_ESSENCE_CAP;
+      state.caps.cryoEnergy = state.caps.cryoEnergy || CONFIG.BALANCING.BASE_CRYO_ENERGY_CAP;
+      state.caps.cosmicEnergy = state.caps.cosmicEnergy || CONFIG.BALANCING.BASE_COSMIC_ENERGY_CAP;
+    }
+    
     // Ensure statistics exist
     if (!state.statistics) {
       state.statistics = {

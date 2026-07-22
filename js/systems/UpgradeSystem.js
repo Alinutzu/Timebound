@@ -332,6 +332,26 @@ buy(upgradeKey) {
     if (resource === 'volcanicEnergy' && this.getLevel('volcanicPower') > 0) {
       multiplier *= this.getEffect('volcanicPower');
     }
+
+    // Tidal amplifier
+    if (resource === 'tidalEnergy' && this.getLevel('tidalAmplifier') > 0) {
+      multiplier *= this.getEffect('tidalAmplifier');
+    }
+
+    // Solar amplifier
+    if (resource === 'solarEssence' && this.getLevel('solarAmplifier') > 0) {
+      multiplier *= this.getEffect('solarAmplifier');
+    }
+
+    // Cryo amplifier
+    if (resource === 'cryoEnergy' && this.getLevel('cryoAmplifier') > 0) {
+      multiplier *= this.getEffect('cryoAmplifier');
+    }
+
+    // Cosmic amplifier
+    if (resource === 'cosmicEnergy' && this.getLevel('cosmicAmplifier') > 0) {
+      multiplier *= this.getEffect('cosmicAmplifier');
+    }
     
     return multiplier;
   }

@@ -73,7 +73,7 @@ class NotificationManager {
    */
   processQueue() {
     // Sortează după prioritate
-    this.queue. sort((a, b) => b.priority - a.priority);
+    this.queue.sort((a, b) => b.priority - a.priority);
     
     // Afișează doar dacă avem loc
     while (this.activeNotifications.length < this.maxNotifications && this.queue.length > 0) {
@@ -152,7 +152,7 @@ class NotificationManager {
    */
   clearAll() {
     this.container.innerHTML = '';
-    this. activeNotifications = [];
+    this.activeNotifications = [];
     this.queue = [];
   }
 }

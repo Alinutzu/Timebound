@@ -4,8 +4,8 @@
 
 import dailySpinGame from './DailySpinGame.js';
 import game2048 from './Game2048.js';
-import eventBus from '../utils/EventBus.js';
-import stateManager from '../core/StateManager.js';
+import eventBus from '../../utils/EventBus.js';
+import stateManager from '../../core/StateManager.js';
 
 class MiniGamesHub {
   constructor() {

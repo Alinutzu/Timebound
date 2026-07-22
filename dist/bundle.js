@@ -24,9 +24,9 @@ var CONFIG = {
   // ms (10 ticks per second)
 
   // Debug
-  DEBUG_MODE: true,
-  ENABLE_CHEATS: true,
-  // Development only
+  DEBUG_MODE: false,
+  ENABLE_CHEATS: false,
+  // Production only
   LOG_LEVEL: 'info',
   // 'error', 'warn', 'info', 'debug'
 
@@ -41,63 +41,67 @@ var CONFIG = {
   // Balancing
   BALANCING: {
     // Starting resources
-    STARTING_ENERGY: 50,
+    STARTING_ENERGY: 10,
     STARTING_MANA: 0,
-    STARTING_GEMS: 100,
-    // Tutorial bonus
+    STARTING_GEMS: 0,
+    // Must earn through gameplay
     STARTING_CRYSTALS: 0,
     // Caps
-    BASE_ENERGY_CAP: 5000,
-    BASE_MANA_CAP: 100,
-    BASE_VOLCANIC_ENERGY_CAP: 5000,
+    BASE_ENERGY_CAP: 50000,
+    BASE_MANA_CAP: 1000,
+    BASE_VOLCANIC_ENERGY_CAP: 50000,
+    BASE_TIDAL_ENERGY_CAP: 50000,
+    BASE_SOLAR_ESSENCE_CAP: 50000,
+    BASE_CRYO_ENERGY_CAP: 50000,
+    BASE_COSMIC_ENERGY_CAP: 50000,
     // Offline
-    OFFLINE_PRODUCTION_BASE: 0.5,
-    // 50% without upgrades
+    OFFLINE_PRODUCTION_BASE: 0.25,
+    // 25% without upgrades
     OFFLINE_TIME_CAP: 86400000,
     // 24h in ms
 
     // Daily
-    DAILY_QUEST_LIMIT: 10,
+    DAILY_QUEST_LIMIT: 8,
     // Ascension
-    ASCENSION_MIN_ENERGY: 10000000,
-    // 10M
+    ASCENSION_MIN_ENERGY: 100000000,
+    // 100M
     ASCENSION_CRYSTAL_FORMULA: function ASCENSION_CRYSTAL_FORMULA(lifetimeEnergy) {
-      return Math.floor(Math.sqrt(lifetimeEnergy / 1000000));
+      return Math.floor(Math.sqrt(lifetimeEnergy / 10000000));
     },
-    ASCENSION_PRODUCTION_BONUS: 0.1,
-    // +10% per level
-    ASCENSION_CAPACITY_BONUS: 0.5,
-    // +50% per level
+    ASCENSION_PRODUCTION_BONUS: 0.08,
+    // +8% per level
+    ASCENSION_CAPACITY_BONUS: 0.35,
+    // +35% per level
 
     // Guardians
-    GUARDIAN_SUMMON_COST: 100,
+    GUARDIAN_SUMMON_COST: 500,
     // gems
     GUARDIAN_RARITIES: {
       common: {
         weight: 50,
-        bonusRange: [5, 15]
+        bonusRange: [3, 8]
       },
       uncommon: {
         weight: 30,
-        bonusRange: [15, 30]
+        bonusRange: [8, 15]
       },
       rare: {
         weight: 15,
-        bonusRange: [30, 50]
+        bonusRange: [15, 25]
       },
       epic: {
         weight: 4,
-        bonusRange: [50, 100]
+        bonusRange: [25, 50]
       },
       legendary: {
         weight: 1,
-        bonusRange: [100, 200]
+        bonusRange: [50, 100]
       }
     },
     // Volcano unlock
-    VOLCANO_UNLOCK_COST: 100,
+    VOLCANO_UNLOCK_COST: 500,
     // crystals
-    VOLCANO_MIN_ASCENSION: 1
+    VOLCANO_MIN_ASCENSION: 2
   },
   // Features flags
   FEATURES: {
@@ -962,6 +966,27 @@ var SaveManager = /*#__PURE__*/function () {
         state.structures = newStructures;
       }
 
+      // Ensure new resource fields exist (from v2.0.0+)
+      if (state.resources) {
+        state.resources.tidalEnergy = state.resources.tidalEnergy || 0;
+        state.resources.solarEssence = state.resources.solarEssence || 0;
+        state.resources.cryoEnergy = state.resources.cryoEnergy || 0;
+        state.resources.cosmicEnergy = state.resources.cosmicEnergy || 0;
+        state.resources.pearls = state.resources.pearls || 0;
+      }
+      if (state.production) {
+        state.production.tidalEnergy = state.production.tidalEnergy || 0;
+        state.production.solarEssence = state.production.solarEssence || 0;
+        state.production.cryoEnergy = state.production.cryoEnergy || 0;
+        state.production.cosmicEnergy = state.production.cosmicEnergy || 0;
+      }
+      if (state.caps) {
+        state.caps.tidalEnergy = state.caps.tidalEnergy || _config["default"].BALANCING.BASE_TIDAL_ENERGY_CAP;
+        state.caps.solarEssence = state.caps.solarEssence || _config["default"].BALANCING.BASE_SOLAR_ESSENCE_CAP;
+        state.caps.cryoEnergy = state.caps.cryoEnergy || _config["default"].BALANCING.BASE_CRYO_ENERGY_CAP;
+        state.caps.cosmicEnergy = state.caps.cosmicEnergy || _config["default"].BALANCING.BASE_COSMIC_ENERGY_CAP;
+      }
+
       // Ensure statistics exist
       if (!state.statistics) {
         state.statistics = {
@@ -1255,19 +1280,32 @@ var StateManager = /*#__PURE__*/function () {
           mana: _config["default"].BALANCING.STARTING_MANA,
           gems: _config["default"].BALANCING.STARTING_GEMS,
           crystals: _config["default"].BALANCING.STARTING_CRYSTALS,
-          volcanicEnergy: 0
+          volcanicEnergy: 0,
+          tidalEnergy: 0,
+          solarEssence: 0,
+          cryoEnergy: 0,
+          cosmicEnergy: 0,
+          pearls: 0
         },
         // Caps
         caps: {
           energy: _config["default"].BALANCING.BASE_ENERGY_CAP,
           mana: _config["default"].BALANCING.BASE_MANA_CAP,
-          volcanicEnergy: _config["default"].BALANCING.BASE_VOLCANIC_ENERGY_CAP
+          volcanicEnergy: _config["default"].BALANCING.BASE_VOLCANIC_ENERGY_CAP,
+          tidalEnergy: _config["default"].BALANCING.BASE_TIDAL_ENERGY_CAP,
+          solarEssence: _config["default"].BALANCING.BASE_SOLAR_ESSENCE_CAP,
+          cryoEnergy: _config["default"].BALANCING.BASE_CRYO_ENERGY_CAP,
+          cosmicEnergy: _config["default"].BALANCING.BASE_COSMIC_ENERGY_CAP
         },
         // Production rates
         production: {
           energy: 0,
           mana: 0,
-          volcanicEnergy: 0
+          volcanicEnergy: 0,
+          tidalEnergy: 0,
+          solarEssence: 0,
+          cryoEnergy: 0,
+          cosmicEnergy: 0
         },
         // Structures (will be populated)
         structures: {},
@@ -1476,12 +1514,11 @@ var StateManager = /*#__PURE__*/function () {
         case 'BUY_STRUCTURE':
           var _action$payload = action.payload,
             structureKey = _action$payload.structureKey,
-            cost = _action$payload.cost;
+            cost = _action$payload.cost,
+            structureCostResource = _action$payload.costResource;
           var currentLevel = ((_state$structures$str = state.structures[structureKey]) === null || _state$structures$str === void 0 ? void 0 : _state$structures$str.level) || 0;
           return _objectSpread(_objectSpread({}, state), {}, {
-            resources: _objectSpread(_objectSpread({}, state.resources), {}, {
-              energy: state.resources.energy - cost
-            }),
+            resources: _objectSpread(_objectSpread({}, state.resources), {}, _defineProperty({}, structureCostResource, (state.resources[structureCostResource] || 0) - cost)),
             structures: _objectSpread(_objectSpread({}, state.structures), {}, _defineProperty({}, structureKey, {
               level: currentLevel + 1,
               totalPurchased: (((_state$structures$str2 = state.structures[structureKey]) === null || _state$structures$str2 === void 0 ? void 0 : _state$structures$str2.totalPurchased) || 0) + 1
@@ -1778,6 +1815,10 @@ var StateManager = /*#__PURE__*/function () {
               energy: _config["default"].BALANCING.STARTING_ENERGY,
               mana: 0,
               volcanicEnergy: 0,
+              tidalEnergy: 0,
+              solarEssence: 0,
+              cryoEnergy: 0,
+              cosmicEnergy: 0,
               crystals: state.resources.crystals + action.payload.crystalsEarned
             }),
             structures: {},
@@ -2363,6 +2404,62 @@ var TickManager = /*#__PURE__*/function () {
           });
         }
       }
+
+      // Tidal energy production
+      if (state.realms.unlocked.includes('ocean')) {
+        var tidalPerTick = state.production.tidalEnergy * this.deltaTime;
+        if (tidalPerTick > 0) {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: 'tidalEnergy',
+              amount: tidalPerTick
+            }
+          });
+        }
+      }
+
+      // Solar essence production
+      if (state.realms.unlocked.includes('desert')) {
+        var solarPerTick = state.production.solarEssence * this.deltaTime;
+        if (solarPerTick > 0) {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: 'solarEssence',
+              amount: solarPerTick
+            }
+          });
+        }
+      }
+
+      // Cryo energy production
+      if (state.realms.unlocked.includes('tundra')) {
+        var cryoPerTick = state.production.cryoEnergy * this.deltaTime;
+        if (cryoPerTick > 0) {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: 'cryoEnergy',
+              amount: cryoPerTick
+            }
+          });
+        }
+      }
+
+      // Cosmic energy production
+      if (state.realms.unlocked.includes('cosmos')) {
+        var cosmicPerTick = state.production.cosmicEnergy * this.deltaTime;
+        if (cosmicPerTick > 0) {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: 'cosmicEnergy',
+              amount: cosmicPerTick
+            }
+          });
+        }
+      }
     }
 
     /**
@@ -2456,19 +2553,31 @@ var TickManager = /*#__PURE__*/function () {
       var energyEarned = Math.floor(state.production.energy * secondsOffline * offlineMultiplier);
       var manaEarned = Math.floor(state.production.mana * secondsOffline * offlineMultiplier);
       var volcanicEarned = state.realms.unlocked.includes('volcano') ? Math.floor(state.production.volcanicEnergy * secondsOffline * offlineMultiplier) : 0;
+      var tidalEarned = state.realms.unlocked.includes('ocean') ? Math.floor(state.production.tidalEnergy * secondsOffline * offlineMultiplier) : 0;
+      var solarEssenceEarned = state.realms.unlocked.includes('desert') ? Math.floor(state.production.solarEssence * secondsOffline * offlineMultiplier) : 0;
+      var cryoEnergyEarned = state.realms.unlocked.includes('tundra') ? Math.floor(state.production.cryoEnergy * secondsOffline * offlineMultiplier) : 0;
+      var cosmicEnergyEarned = state.realms.unlocked.includes('cosmos') ? Math.floor(state.production.cosmicEnergy * secondsOffline * offlineMultiplier) : 0;
       _Logger["default"].info('TickManager', 'Offline progress calculated', {
         timeOffline: cappedTimeDiff,
         offlinePercent: offlinePercent,
         energyEarned: energyEarned,
         manaEarned: manaEarned,
-        volcanicEarned: volcanicEarned
+        volcanicEarned: volcanicEarned,
+        tidalEarned: tidalEarned,
+        solarEssenceEarned: solarEssenceEarned,
+        cryoEnergyEarned: cryoEnergyEarned,
+        cosmicEnergyEarned: cosmicEnergyEarned
       });
       return {
         timeOffline: cappedTimeDiff,
         resources: {
           energy: energyEarned,
           mana: manaEarned,
-          volcanicEnergy: volcanicEarned
+          volcanicEnergy: volcanicEarned,
+          tidalEnergy: tidalEarned,
+          solarEssence: solarEssenceEarned,
+          cryoEnergy: cryoEnergyEarned,
+          cosmicEnergy: cosmicEnergyEarned
         },
         wasCapped: timeDiff > _config["default"].BALANCING.OFFLINE_TIME_CAP
       };
@@ -2512,6 +2621,42 @@ var TickManager = /*#__PURE__*/function () {
           payload: {
             resource: 'volcanicEnergy',
             amount: resources.volcanicEnergy
+          }
+        });
+      }
+      if (resources.tidalEnergy > 0) {
+        _StateManager["default"].dispatch({
+          type: 'ADD_RESOURCE',
+          payload: {
+            resource: 'tidalEnergy',
+            amount: resources.tidalEnergy
+          }
+        });
+      }
+      if (resources.solarEssence > 0) {
+        _StateManager["default"].dispatch({
+          type: 'ADD_RESOURCE',
+          payload: {
+            resource: 'solarEssence',
+            amount: resources.solarEssence
+          }
+        });
+      }
+      if (resources.cryoEnergy > 0) {
+        _StateManager["default"].dispatch({
+          type: 'ADD_RESOURCE',
+          payload: {
+            resource: 'cryoEnergy',
+            amount: resources.cryoEnergy
+          }
+        });
+      }
+      if (resources.cosmicEnergy > 0) {
+        _StateManager["default"].dispatch({
+          type: 'ADD_RESOURCE',
+          payload: {
+            resource: 'cosmicEnergy',
+            amount: resources.cosmicEnergy
           }
         });
       }
@@ -2577,7 +2722,7 @@ var ACHIEVEMENTS = {
       return state.statistics.totalClicks >= 1;
     },
     reward: {
-      gems: 5
+      gems: 2
     },
     hidden: false
   },
@@ -4050,7 +4195,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'bronze',
     reward: {
-      gems: 25,
+      gems: 10,
       energy: 500
     },
     // Redus: timeShards eliminat, rewards reduse
@@ -4066,7 +4211,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'bronze',
     reward: {
-      gems: 50,
+      gems: 20,
       energy: 1000
     },
     // Redus
@@ -4082,7 +4227,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'silver',
     reward: {
-      gems: 100,
+      gems: 15,
       crystals: 2,
       energy: 2500
     },
@@ -4099,7 +4244,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'gold',
     reward: {
-      gems: 400,
+      gems: 25,
       crystals: 8,
       guardian: 1
     },
@@ -4116,7 +4261,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'silver',
     reward: {
-      gems: 120,
+      gems: 20,
       crystals: 3
     },
     // Redus
@@ -4132,7 +4277,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'gold',
     reward: {
-      gems: 300,
+      gems: 20,
       crystals: 10
     },
     // Redus
@@ -4148,7 +4293,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'gold',
     reward: {
-      gems: 200,
+      gems: 30,
       crystals: 5
     },
     // Redus
@@ -4164,7 +4309,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'dailySpin',
     tier: 'platinum',
     reward: {
-      gems: 500,
+      gems: 200,
       crystals: 15
     },
     // Redus
@@ -4214,7 +4359,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'silver',
     reward: {
-      gems: 50,
+      gems: 20,
       crystals: 1
     },
     // Redus
@@ -4230,7 +4375,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'silver',
     reward: {
-      gems: 80,
+      gems: 30,
       crystals: 2
     },
     // Redus
@@ -4262,7 +4407,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'platinum',
     reward: {
-      gems: 400,
+      gems: 25,
       crystals: 15,
       guardian: 1
     },
@@ -4279,7 +4424,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'diamond',
     reward: {
-      gems: 1000,
+      gems: 400,
       crystals: 30
     },
     // Redus
@@ -4295,7 +4440,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'bronze',
     reward: {
-      gems: 40,
+      gems: 15,
       energy: 2000
     },
     // Nou - milestone mai mic
@@ -4311,7 +4456,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'silver',
     reward: {
-      gems: 100,
+      gems: 15,
       crystals: 3
     },
     // Redus
@@ -4327,7 +4472,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'gold',
     reward: {
-      gems: 300,
+      gems: 20,
       crystals: 10
     },
     // Redus
@@ -4343,7 +4488,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'bronze',
     reward: {
-      gems: 50,
+      gems: 20,
       energy: 2500
     },
     // Nou - milestone mai mic
@@ -4359,7 +4504,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'silver',
     reward: {
-      gems: 120,
+      gems: 20,
       crystals: 4
     },
     // Redus
@@ -4375,7 +4520,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'game2048',
     tier: 'gold',
     reward: {
-      gems: 400,
+      gems: 25,
       crystals: 15
     },
     // Redus
@@ -4393,7 +4538,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'bronze',
     reward: {
-      gems: 25,
+      gems: 10,
       energy: 1000
     },
     // Redus
@@ -4425,7 +4570,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'silver',
     reward: {
-      gems: 60,
+      gems: 10,
       crystals: 2
     },
     // Redus
@@ -4441,7 +4586,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'silver',
     reward: {
-      gems: 120,
+      gems: 20,
       crystals: 4
     },
     // Redus
@@ -4457,7 +4602,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'gold',
     reward: {
-      gems: 250,
+      gems: 100,
       crystals: 10
     },
     // Redus
@@ -4473,7 +4618,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'bronze',
     reward: {
-      gems: 40,
+      gems: 15,
       energy: 2000
     },
     // Nou - milestone mai mic
@@ -4489,7 +4634,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'silver',
     reward: {
-      gems: 80,
+      gems: 30,
       crystals: 3
     },
     // Redus
@@ -4505,7 +4650,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'gold',
     reward: {
-      gems: 250,
+      gems: 100,
       crystals: 8
     },
     // Redus
@@ -4521,7 +4666,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'silver',
     reward: {
-      gems: 100,
+      gems: 15,
       crystals: 3
     },
     // Redus
@@ -4538,7 +4683,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'gold',
     reward: {
-      gems: 180,
+      gems: 30,
       crystals: 6
     },
     // Redus
@@ -4555,7 +4700,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'platinum',
     reward: {
-      gems: 400,
+      gems: 25,
       crystals: 12
     },
     // Redus
@@ -4572,7 +4717,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'bronze',
     reward: {
-      gems: 60,
+      gems: 10,
       energy: 3000
     },
     // Nou - milestone mai mic
@@ -4588,7 +4733,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'gold',
     reward: {
-      gems: 300,
+      gems: 20,
       crystals: 10
     },
     // Redus
@@ -4604,7 +4749,7 @@ var MINI_GAME_ACHIEVEMENTS = exports.MINI_GAME_ACHIEVEMENTS = {
     category: 'match3',
     tier: 'platinum',
     reward: {
-      gems: 600,
+      gems: 100,
       crystals: 20,
       guardian: 1
     },
@@ -4703,7 +4848,7 @@ var QUEST_TEMPLATES = {
       return {
         energy: Math.floor(amount * 0.08),
         // 8% bonus (reduced from 10%)
-        gems: Math.min(3 + Math.floor(amount / 5000), 30)
+        gems: Math.min(1 + Math.floor(amount / 10000), 15)
       };
     },
     weight: 30,
@@ -4721,7 +4866,7 @@ var QUEST_TEMPLATES = {
       return {
         mana: Math.floor(amount * 0.15),
         // 15% bonus (reduced from 20%)
-        gems: Math.min(5 + Math.floor(amount / 25), 50)
+        gems: Math.min(2 + Math.floor(amount / 50), 25)
       };
     },
     weight: 25,
@@ -4743,7 +4888,7 @@ var QUEST_TEMPLATES = {
     rewards: function rewards(amount) {
       return {
         volcanicEnergy: Math.floor(amount * 0.12),
-        gems: Math.min(8 + Math.floor(amount / 250), 80),
+        gems: Math.min(3 + Math.floor(amount / 500), 40),
         crystals: Math.floor(amount / 2500)
       };
     },
@@ -4767,7 +4912,7 @@ var QUEST_TEMPLATES = {
     rewards: function rewards(amount) {
       return {
         energy: amount * 200,
-        gems: Math.min(5 + amount, 50),
+        gems: Math.min(2 + amount, 25),
         mana: Math.floor(amount / 5)
       };
     },
@@ -4785,7 +4930,7 @@ var QUEST_TEMPLATES = {
     rewards: function rewards(amount) {
       return {
         energy: amount * 500,
-        gems: amount * 3
+        gems: amount * 1
       };
     },
     weight: 15,
@@ -4801,7 +4946,7 @@ var QUEST_TEMPLATES = {
     amounts: [1, 2, 3, 5],
     rewards: function rewards(amount) {
       return {
-        gems: amount * 15,
+        gems: amount * 5,
         energy: amount * 1000,
         mana: amount * 5
       };
@@ -4825,7 +4970,7 @@ var QUEST_TEMPLATES = {
     amounts: [50, 200, 500, 2000, 5000],
     rewards: function rewards(amount) {
       return {
-        gems: Math.min(15 + Math.floor(amount / 50), 100),
+        gems: Math.min(5 + Math.floor(amount / 100), 50),
         crystals: Math.floor(amount / 500),
         energy: amount * 50
       };
@@ -4843,7 +4988,7 @@ var QUEST_TEMPLATES = {
     amounts: [5, 10, 25, 50],
     rewards: function rewards(amount) {
       return {
-        gems: amount * 1,
+        gems: amount * 0.5,
         energy: amount * 500
       };
     },
@@ -4861,7 +5006,7 @@ var QUEST_TEMPLATES = {
     minScore: 500,
     rewards: function rewards(count) {
       return {
-        gems: count * 10,
+        gems: count * 5,
         energy: count * 1000
       };
     },
@@ -4877,7 +5022,7 @@ var QUEST_TEMPLATES = {
     scores: [800, 1200, 1600, 2500],
     rewards: function rewards(score) {
       return {
-        gems: Math.floor(score / 80),
+        gems: Math.floor(score / 160),
         energy: score * 3
       };
     },
@@ -5266,10 +5411,10 @@ var REALMS = {
     lore: 'The ocean depths hold secrets older than time itself.  Harness tides and marine life for immense energy.',
     bonuses: {
       tidalProduction: 1.08,
-      // +8% tidal energy production (redus de la 1. 15)
+      // +8% tidal energy production (redus de la 1.15)
       pearlDropChance: 0.06,
       // 6% chance for pearls (redus de la 10%)
-      guardianAffinity: 1.12 // +12% water guardian bonus (redus de la 1. 20)
+      guardianAffinity: 1.12 // +12% water guardian bonus (redus de la 1.20)
     },
     bossId: 'oceanLeviathan',
     questIds: ['ocean_intro', 'tide_master', 'kelp_tycoon', 'pearl_diver'],
@@ -5281,7 +5426,7 @@ var REALMS = {
     id: 'desert',
     name: 'Desert Expanse',
     description: 'Endless dunes hiding ancient solar power',
-    emoji: '�sa',
+    emoji: '🏜️',
     theme: 'yellow',
     unlockCondition: {
       ascension: {
@@ -5307,8 +5452,7 @@ var REALMS = {
       energyProduction: 1.10,
       // +10% all energy
       heatResistance: 0.9 // -10% structure costs
-    },
-    locked: true // Not implemented yet
+    }
   },
   tundra: {
     id: 'tundra',
@@ -5340,8 +5484,7 @@ var REALMS = {
       crystalChance: 0.08,
       // 8% chance for crystals
       guardianDuration: 1.20 // +20% guardian buff duration
-    },
-    locked: true // Not implemented yet
+    }
   },
   cosmos: {
     id: 'cosmos',
@@ -5379,8 +5522,7 @@ var REALMS = {
       // +25% ascension crystal gain
       guardianPower: 1.40 // +40% all guardian bonuses
     },
-    bossId: 'cosmicHarbinger',
-    locked: true // Final realm - Not implemented yet
+    bossId: 'cosmicHarbinger'
   }
 };
 
@@ -5491,7 +5633,7 @@ var SHOP_ITEMS = {
         mana: 50 // Redus de la 100
       },
       price: 0.99,
-      priceDisplay: '$0. 99',
+      priceDisplay: '$0.99',
       emoji: '💎',
       popular: false
     },
@@ -5557,7 +5699,7 @@ var SHOP_ITEMS = {
       id: 'ultimate',
       name: 'Ultimate Pack',
       description: 'The best deal',
-      gems: 20000,
+      gems: 10000,
       bonus: {
         energy: 1000000,
         // Redus de la 2000000
@@ -5703,7 +5845,7 @@ var SHOP_ITEMS = {
       name: 'Free Gems',
       description: 'Watch ad for gems',
       reward: {
-        gems: 15 // Redus de la 25
+        gems: 8
       },
       cooldown: 600000,
       // 10 min
@@ -5714,7 +5856,7 @@ var SHOP_ITEMS = {
     doubleReward: {
       id: 'doubleReward',
       name: 'Double Rewards',
-      description: '1. 5x all production for 10 minutes',
+      description: '1.5x all production for 10 minutes',
       // Updated description
       reward: {
         multiplier: 1.5,
@@ -5748,8 +5890,7 @@ var SHOP_ITEMS = {
     deals: [{
       id: 'energy_sale',
       name: 'Energy Sale',
-      gems: 400,
-      // Redus de la 500
+      gems: 100,
       bonus: {
         energy: 50000
       },
@@ -5800,7 +5941,7 @@ var SHOP_ITEMS = {
       description: 'Get 3 additional spins for the Daily Wheel!',
       spins: 3,
       bonus: {
-        gems: 50 // Redus de la 100
+        gems: 25
       },
       price: 0.99,
       priceDisplay: '$0.99',
@@ -5813,12 +5954,11 @@ var SHOP_ITEMS = {
       description: 'Best value! 10 spins + bonus gems',
       spins: 10,
       bonus: {
-        gems: 300,
-        // Redus de la 500
+        gems: 150,
         energy: 5000 // Redus de la 10000
       },
       price: 2.99,
-      priceDisplay: '$2. 99',
+      priceDisplay: '$2.99',
       emoji: '🎡',
       popular: true,
       bonusPercentage: 30
@@ -5831,7 +5971,7 @@ var SHOP_ITEMS = {
       duration: 86400000,
       // 24h
       bonus: {
-        gems: 500 // Redus de la 1000
+        gems: 250
       },
       price: 4.99,
       priceDisplay: '$4.99',
@@ -5845,7 +5985,7 @@ var SHOP_ITEMS = {
       description: '10 undo moves for 2048 game',
       undoMoves: 10,
       bonus: {
-        gems: 100
+        gems: 50
       },
       price: 1.99,
       priceDisplay: '$1.99',
@@ -5863,7 +6003,7 @@ var SHOP_ITEMS = {
         rainbow: 2
       },
       bonus: {
-        gems: 200
+        gems: 100
       },
       price: 2.99,
       priceDisplay: '$2.99',
@@ -5989,11 +6129,11 @@ var STRUCTURES = {
     emoji: '☀️',
     tier: 1,
     // Costs
-    baseCost: 50,
-    costMultiplier: 1.25,
+    baseCost: 25,
+    costMultiplier: 1.18,
     costResource: 'energy',
     // Production
-    baseProduction: 0.5,
+    baseProduction: 0.2,
     productionExponent: 1.0,
     resource: 'energy',
     // Unlock
@@ -6009,15 +6149,15 @@ var STRUCTURES = {
     description: 'Generates energy from wind',
     emoji: '💨',
     tier: 1,
-    baseCost: 300,
-    costMultiplier: 1.30,
+    baseCost: 150,
+    costMultiplier: 1.22,
     costResource: 'energy',
-    baseProduction: 2,
+    baseProduction: 0.8,
     productionExponent: 1.05,
     resource: 'energy',
     unlockCondition: {
       resources: {
-        energy: 500
+        energy: 200
       }
     },
     flavorTexts: ['The wind whispers of energy', 'Spinning into the future', 'Renewable and reliable']
@@ -6029,15 +6169,15 @@ var STRUCTURES = {
     description: 'Water-powered energy generation',
     emoji: '💧',
     tier: 2,
-    baseCost: 2500,
-    costMultiplier: 1.35,
+    baseCost: 1500,
+    costMultiplier: 1.28,
     costResource: 'energy',
-    baseProduction: 10,
+    baseProduction: 4,
     productionExponent: 1.1,
     resource: 'energy',
     unlockCondition: {
       resources: {
-        energy: 5000
+        energy: 3000
       }
     },
     flavorTexts: ['The power of flowing water', 'Hydro energy never sleeps', 'Rivers of electricity']
@@ -6048,10 +6188,10 @@ var STRUCTURES = {
     description: 'Taps into Earth\'s heat',
     emoji: '🌋',
     tier: 2,
-    baseCost: 25000,
-    costMultiplier: 1.40,
+    baseCost: 15000,
+    costMultiplier: 1.32,
     costResource: 'energy',
-    baseProduction: 50,
+    baseProduction: 20,
     productionExponent: 1.12,
     resource: 'energy',
     unlockCondition: {
@@ -6068,15 +6208,15 @@ var STRUCTURES = {
     description: 'Nuclear fusion energy',
     emoji: '⚛️',
     tier: 3,
-    baseCost: 500000,
-    costMultiplier: 1.45,
+    baseCost: 300000,
+    costMultiplier: 1.38,
     costResource: 'energy',
-    baseProduction: 300,
+    baseProduction: 120,
     productionExponent: 1.15,
     resource: 'energy',
     unlockCondition: {
       resources: {
-        energy: 1000000
+        energy: 500000
       },
       upgrades: {
         advancedTech: 1
@@ -6090,10 +6230,10 @@ var STRUCTURES = {
     description: 'Harnesses antimatter reactions',
     emoji: '✨',
     tier: 3,
-    baseCost: 1000000,
-    costMultiplier: 1.30,
+    baseCost: 2000000,
+    costMultiplier: 1.25,
     costResource: 'energy',
-    baseProduction: 10000,
+    baseProduction: 5000,
     productionExponent: 1.2,
     resource: 'energy',
     unlockCondition: {
@@ -6101,7 +6241,7 @@ var STRUCTURES = {
         level: 1
       },
       resources: {
-        crystals: 5
+        crystals: 10
       }
     },
     flavorTexts: ['Matter meets antimatter', 'The ultimate energy source', 'Beyond comprehension']
@@ -6113,15 +6253,15 @@ var STRUCTURES = {
     description: 'Extracts mana from energy',
     emoji: '🔮',
     tier: 2,
-    baseCost: 100000,
-    costMultiplier: 1.25,
+    baseCost: 50000,
+    costMultiplier: 1.22,
     costResource: 'energy',
-    baseProduction: 0.05,
+    baseProduction: 0.02,
     productionExponent: 1.1,
     resource: 'mana',
     unlockCondition: {
       resources: {
-        energy: 25000
+        energy: 15000
       }
     },
     flavorTexts: ['Converting energy to magic', 'Mana flows freely', 'The mystic conversion']
@@ -6132,15 +6272,15 @@ var STRUCTURES = {
     description: 'Crystallizes pure mana',
     emoji: '💎',
     tier: 3,
-    baseCost: 1500000,
-    costMultiplier: 1.28,
+    baseCost: 800000,
+    costMultiplier: 1.25,
     costResource: 'energy',
-    baseProduction: 1,
+    baseProduction: 0.3,
     productionExponent: 1.15,
     resource: 'mana',
     unlockCondition: {
       resources: {
-        mana: 200
+        mana: 100
       },
       structures: {
         manaExtractor: 10
@@ -6156,10 +6296,10 @@ var STRUCTURES = {
     emoji: '🌋',
     tier: 1,
     realm: 'volcano',
-    baseCost: 500,
-    costMultiplier: 1.28,
+    baseCost: 300,
+    costMultiplier: 1.22,
     costResource: 'volcanicEnergy',
-    baseProduction: 2,
+    baseProduction: 0.8,
     productionExponent: 1.1,
     resource: 'volcanicEnergy',
     unlockCondition: {
@@ -6176,10 +6316,10 @@ var STRUCTURES = {
     emoji: '🔥',
     tier: 2,
     realm: 'volcano',
-    baseCost: 5000,
-    costMultiplier: 1.32,
+    baseCost: 3000,
+    costMultiplier: 1.28,
     costResource: 'volcanicEnergy',
-    baseProduction: 0.2,
+    baseProduction: 0.08,
     productionExponent: 1.15,
     resource: 'mana',
     unlockCondition: {
@@ -6199,122 +6339,6 @@ var STRUCTURES = {
     emoji: '⚒️',
     tier: 3,
     realm: 'volcano',
-    // ===== OCEAN REALM =====
-    tidalGenerator: {
-      id: 'tidalGenerator',
-      name: 'Tidal Generator',
-      description: 'Harnesses tidal forces for energy',
-      emoji: '🌊',
-      tier: 1,
-      realm: 'ocean',
-      baseCost: 800,
-      costMultiplier: 1.28,
-      costResource: 'tidalEnergy',
-      baseProduction: 3,
-      productionExponent: 1.12,
-      resource: 'tidalEnergy',
-      unlockCondition: {
-        realms: {
-          ocean: true
-        }
-      },
-      flavorTexts: ['Power from the rhythm of the deep', 'Tides never sleep', 'Harnessing oceanic force']
-    },
-    kelpFarm: {
-      id: 'kelpFarm',
-      name: 'Kelp Farm',
-      description: 'Cultivates kelp for tidal resources',
-      emoji: '🪸',
-      tier: 2,
-      realm: 'ocean',
-      baseCost: 8000,
-      costMultiplier: 1.32,
-      costResource: 'tidalEnergy',
-      baseProduction: 15,
-      productionExponent: 1.13,
-      resource: 'tidalEnergy',
-      unlockCondition: {
-        realms: {
-          ocean: true
-        },
-        structures: {
-          tidalGenerator: 5
-        }
-      },
-      flavorTexts: ['Kelp waves with watery promise', 'Aquatic farming fuels progress', 'Oceanic abundance']
-    },
-    coralBattery: {
-      id: 'coralBattery',
-      name: 'Coral Battery',
-      description: 'Stores energy, sometimes yields pearls',
-      emoji: '🏝️',
-      tier: 3,
-      realm: 'ocean',
-      baseCost: 100000,
-      costMultiplier: 1.38,
-      costResource: 'tidalEnergy',
-      baseProduction: 80,
-      productionExponent: 1.15,
-      resource: 'tidalEnergy',
-      unlockCondition: {
-        realms: {
-          ocean: true
-        },
-        structures: {
-          kelpFarm: 8
-        }
-      },
-      flavorTexts: ['Corals accumulate deep power', 'Pearls of production', 'Battery from the reef']
-    },
-    deepSeaPump: {
-      id: 'deepSeaPump',
-      name: 'Deep Sea Pump',
-      description: 'Draws energy from ocean depths',
-      emoji: '🦑',
-      tier: 3,
-      realm: 'ocean',
-      baseCost: 500000,
-      costMultiplier: 1.42,
-      costResource: 'tidalEnergy',
-      baseProduction: 250,
-      productionExponent: 1.18,
-      resource: 'tidalEnergy',
-      unlockCondition: {
-        realms: {
-          ocean: true
-        },
-        structures: {
-          coralBattery: 5
-        },
-        upgrades: {
-          pressureTech: 1
-        }
-      },
-      flavorTexts: ['Energy from the abyss', 'Pressure fuels innovation', 'Unleashing deep force']
-    },
-    pressureReactor: {
-      id: 'pressureReactor',
-      name: 'Pressure Reactor',
-      description: 'Reacts oceanic pressure to create mana',
-      emoji: '⚓',
-      tier: 3,
-      realm: 'ocean',
-      baseCost: 1500000,
-      costMultiplier: 1.45,
-      costResource: 'tidalEnergy',
-      baseProduction: 1,
-      productionExponent: 1.2,
-      resource: 'mana',
-      unlockCondition: {
-        realms: {
-          ocean: true
-        },
-        structures: {
-          deepSeaPump: 5
-        }
-      },
-      flavorTexts: ['Mana condensed from oceanic pressure', 'Depth and force combine', 'Mystic equilibrium']
-    },
     baseCost: 10000,
     costMultiplier: 1.30,
     costResource: 'volcanicEnergy',
@@ -6331,6 +6355,628 @@ var STRUCTURES = {
       }
     },
     flavorTexts: ['Forging precious gems', 'Obsidian and fire', 'Gems from the depths']
+  },
+  // ===== OCEAN REALM =====
+  tidalGenerator: {
+    id: 'tidalGenerator',
+    name: 'Tidal Generator',
+    description: 'Harnesses tidal forces for energy',
+    emoji: '🌊',
+    tier: 1,
+    realm: 'ocean',
+    baseCost: 500,
+    costMultiplier: 1.22,
+    costResource: 'tidalEnergy',
+    baseProduction: 1.2,
+    productionExponent: 1.12,
+    resource: 'tidalEnergy',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      }
+    },
+    flavorTexts: ['Power from the rhythm of the deep', 'Tides never sleep', 'Harnessing oceanic force']
+  },
+  kelpFarm: {
+    id: 'kelpFarm',
+    name: 'Kelp Farm',
+    description: 'Cultivates kelp for tidal resources',
+    emoji: '🪸',
+    tier: 2,
+    realm: 'ocean',
+    baseCost: 5000,
+    costMultiplier: 1.28,
+    costResource: 'tidalEnergy',
+    baseProduction: 6,
+    productionExponent: 1.13,
+    resource: 'tidalEnergy',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      },
+      structures: {
+        tidalGenerator: 5
+      }
+    },
+    flavorTexts: ['Kelp waves with watery promise', 'Aquatic farming fuels progress', 'Oceanic abundance']
+  },
+  coralBattery: {
+    id: 'coralBattery',
+    name: 'Coral Battery',
+    description: 'Stores energy, sometimes yields pearls',
+    emoji: '🏝️',
+    tier: 3,
+    realm: 'ocean',
+    baseCost: 60000,
+    costMultiplier: 1.32,
+    costResource: 'tidalEnergy',
+    baseProduction: 35,
+    productionExponent: 1.15,
+    resource: 'tidalEnergy',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      },
+      structures: {
+        kelpFarm: 8
+      }
+    },
+    flavorTexts: ['Corals accumulate deep power', 'Pearls of production', 'Battery from the reef']
+  },
+  deepSeaPump: {
+    id: 'deepSeaPump',
+    name: 'Deep Sea Pump',
+    description: 'Draws energy from ocean depths',
+    emoji: '🦑',
+    tier: 3,
+    realm: 'ocean',
+    baseCost: 300000,
+    costMultiplier: 1.38,
+    costResource: 'tidalEnergy',
+    baseProduction: 120,
+    productionExponent: 1.18,
+    resource: 'tidalEnergy',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      },
+      structures: {
+        coralBattery: 5
+      },
+      upgrades: {
+        pressureTech: 1
+      }
+    },
+    flavorTexts: ['Energy from the abyss', 'Pressure fuels innovation', 'Unleashing deep force']
+  },
+  pressureReactor: {
+    id: 'pressureReactor',
+    name: 'Pressure Reactor',
+    description: 'Reacts oceanic pressure to create mana',
+    emoji: '⚓',
+    tier: 3,
+    realm: 'ocean',
+    baseCost: 800000,
+    costMultiplier: 1.42,
+    costResource: 'tidalEnergy',
+    baseProduction: 0.4,
+    productionExponent: 1.2,
+    resource: 'mana',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      },
+      structures: {
+        deepSeaPump: 5
+      }
+    },
+    flavorTexts: ['Mana condensed from oceanic pressure', 'Depth and force combine', 'Mystic equilibrium']
+  },
+  // ===== DESERT REALM =====
+  solarArray: {
+    id: 'solarArray',
+    name: 'Solar Array',
+    description: 'Harnesses concentrated solar essence',
+    emoji: '☀️',
+    tier: 1,
+    realm: 'desert',
+    baseCost: 1000,
+    costMultiplier: 1.25,
+    costResource: 'solarEssence',
+    baseProduction: 2,
+    productionExponent: 1.1,
+    resource: 'solarEssence',
+    unlockCondition: {
+      realms: {
+        desert: true
+      }
+    },
+    flavorTexts: ['Endless sun powers the array', 'Solar essence from the dunes', 'Desert light captured']
+  },
+  sandExtractor: {
+    id: 'sandExtractor',
+    name: 'Sand Extractor',
+    description: 'Extracts solar essence from ancient sands',
+    emoji: '🏜️',
+    tier: 2,
+    realm: 'desert',
+    baseCost: 10000,
+    costMultiplier: 1.30,
+    costResource: 'solarEssence',
+    baseProduction: 15,
+    productionExponent: 1.13,
+    resource: 'solarEssence',
+    unlockCondition: {
+      realms: {
+        desert: true
+      },
+      structures: {
+        solarArray: 5
+      }
+    },
+    flavorTexts: ['Ancient sands yield their power', 'Deep desert energy', 'Millennia of sunlight']
+  },
+  mirageCore: {
+    id: 'mirageCore',
+    name: 'Mirage Core',
+    description: 'Converts light into stable energy',
+    emoji: '🔮',
+    tier: 3,
+    realm: 'desert',
+    baseCost: 200000,
+    costMultiplier: 1.38,
+    costResource: 'solarEssence',
+    baseProduction: 80,
+    productionExponent: 1.18,
+    resource: 'solarEssence',
+    unlockCondition: {
+      realms: {
+        desert: true
+      },
+      structures: {
+        sandExtractor: 8
+      },
+      upgrades: {
+        heatVent: 1
+      }
+    },
+    flavorTexts: ['Light bends to your will', 'Mirage becomes reality', 'Concentrated solar power']
+  },
+  // ===== TUNDRA REALM =====
+  cryoReactor: {
+    id: 'cryoReactor',
+    name: 'Cryo Reactor',
+    description: 'Harnesses freezing temperatures for energy',
+    emoji: '❄️',
+    tier: 1,
+    realm: 'tundra',
+    baseCost: 3000,
+    costMultiplier: 1.22,
+    costResource: 'cryoEnergy',
+    baseProduction: 3,
+    productionExponent: 1.1,
+    resource: 'cryoEnergy',
+    unlockCondition: {
+      realms: {
+        tundra: true
+      }
+    },
+    flavorTexts: ['Cold itself becomes power', 'Frozen energy awaits', 'Ice and energy combine']
+  },
+  iceHarvester: {
+    id: 'iceHarvester',
+    name: 'Ice Harvester',
+    description: 'Mines cryo energy from ancient ice',
+    emoji: '🧊',
+    tier: 2,
+    realm: 'tundra',
+    baseCost: 30000,
+    costMultiplier: 1.30,
+    costResource: 'cryoEnergy',
+    baseProduction: 25,
+    productionExponent: 1.13,
+    resource: 'cryoEnergy',
+    unlockCondition: {
+      realms: {
+        tundra: true
+      },
+      structures: {
+        cryoReactor: 5
+      }
+    },
+    flavorTexts: ['Ice that never melts', 'Frozen deep power', 'Glacial precision']
+  },
+  auraBorealis: {
+    id: 'auraBorealis',
+    name: 'Aura Borealis',
+    description: 'Captures aurora energy from the skies',
+    emoji: '🌌',
+    tier: 3,
+    realm: 'tundra',
+    baseCost: 500000,
+    costMultiplier: 1.40,
+    costResource: 'cryoEnergy',
+    baseProduction: 100,
+    productionExponent: 1.18,
+    resource: 'cryoEnergy',
+    unlockCondition: {
+      realms: {
+        tundra: true
+      },
+      structures: {
+        iceHarvester: 8
+      }
+    },
+    flavorTexts: ['Dancing lights of power', 'Aurora surrendered', 'Sky-born energy']
+  },
+  // ===== COSMOS REALM =====
+  starForge: {
+    id: 'starForge',
+    name: 'Star Forge',
+    description: 'Harnesses stellar energy from distant stars',
+    emoji: '⭐',
+    tier: 1,
+    realm: 'cosmos',
+    baseCost: 10000,
+    costMultiplier: 1.20,
+    costResource: 'cosmicEnergy',
+    baseProduction: 5,
+    productionExponent: 1.1,
+    resource: 'cosmicEnergy',
+    unlockCondition: {
+      realms: {
+        cosmos: true
+      }
+    },
+    flavorTexts: ['Starlight turned to power', 'Energy from the void', 'Cosmic essence flows']
+  },
+  blackHoleGenerator: {
+    id: 'blackHoleGenerator',
+    name: 'Black Hole Generator',
+    description: 'Taps into the power of gravity itself',
+    emoji: '🕳️',
+    tier: 2,
+    realm: 'cosmos',
+    baseCost: 100000,
+    costMultiplier: 1.35,
+    costResource: 'cosmicEnergy',
+    baseProduction: 50,
+    productionExponent: 1.15,
+    resource: 'cosmicEnergy',
+    unlockCondition: {
+      realms: {
+        cosmos: true
+      },
+      structures: {
+        starForge: 5
+      }
+    },
+    flavorTexts: ['Gravity yields to you', 'The void provides', 'Event horizon crossed']
+  },
+  warpReactor: {
+    id: 'warpReactor',
+    name: 'Warp Reactor',
+    description: 'Bends spacetime for ultimate energy',
+    emoji: '🌀',
+    tier: 3,
+    realm: 'cosmos',
+    baseCost: 1000000,
+    costMultiplier: 1.45,
+    costResource: 'cosmicEnergy',
+    baseProduction: 200,
+    productionExponent: 1.2,
+    resource: 'cosmicEnergy',
+    unlockCondition: {
+      realms: {
+        cosmos: true
+      },
+      structures: {
+        blackHoleGenerator: 5
+      }
+    },
+    flavorTexts: ['Spacetime bends to energy', 'Warp drive engaged', 'Reality manipulation']
+  },
+  // ===== TIER 4: LATE-LATE GAME =====
+
+  // Forest T4
+  quantumGenerator: {
+    id: 'quantumGenerator',
+    name: 'Quantum Generator',
+    description: 'Harnesses quantum fluctuations for vast energy',
+    emoji: '⚛️',
+    tier: 4,
+    baseCost: 50000000,
+    costMultiplier: 1.45,
+    costResource: 'energy',
+    baseProduction: 5000,
+    productionExponent: 1.25,
+    resource: 'energy',
+    unlockCondition: {
+      structures: {
+        antimatterGenerator: 10
+      }
+    },
+    flavorTexts: ['Quantum uncertainty yields power', 'Subatomic energy unleashed', 'Reality at its most fundamental']
+  },
+  // Volcano T4
+  infernoCore: {
+    id: 'infernoCore',
+    name: 'Inferno Core',
+    description: 'Taps the planet\'s molten heart',
+    emoji: '🔥',
+    tier: 4,
+    realm: 'volcano',
+    baseCost: 1000000,
+    costMultiplier: 1.40,
+    costResource: 'volcanicEnergy',
+    baseProduction: 300,
+    productionExponent: 1.22,
+    resource: 'volcanicEnergy',
+    unlockCondition: {
+      realms: {
+        volcano: true
+      },
+      structures: {
+        obsidianForge: 10
+      }
+    },
+    flavorTexts: ['The core of the world', 'Inferno harnessed', 'Planetary power']
+  },
+  // Ocean T4
+  abyssExtractor: {
+    id: 'abyssExtractor',
+    name: 'Abyss Extractor',
+    description: 'Draws energy from the deepest trenches',
+    emoji: '🐙',
+    tier: 4,
+    realm: 'ocean',
+    baseCost: 2000000,
+    costMultiplier: 1.42,
+    costResource: 'tidalEnergy',
+    baseProduction: 500,
+    productionExponent: 1.22,
+    resource: 'tidalEnergy',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      },
+      structures: {
+        pressureReactor: 8
+      }
+    },
+    flavorTexts: ['The abyss answers', 'Deepest power unlocked', 'Trench-born energy']
+  },
+  // Desert T4
+  sunCathedral: {
+    id: 'sunCathedral',
+    name: 'Sun Cathedral',
+    description: 'A massive array concentrating solar might',
+    emoji: '🏛️',
+    tier: 4,
+    realm: 'desert',
+    baseCost: 5000000,
+    costMultiplier: 1.45,
+    costResource: 'solarEssence',
+    baseProduction: 800,
+    productionExponent: 1.22,
+    resource: 'solarEssence',
+    unlockCondition: {
+      realms: {
+        desert: true
+      },
+      structures: {
+        mirageCore: 8
+      }
+    },
+    flavorTexts: ['A temple to the sun', 'Solar glory amplified', 'The sun\'s full might']
+  },
+  // Tundra T4
+  polarEngine: {
+    id: 'polarEngine',
+    name: 'Polar Engine',
+    description: 'Converts absolute cold into energy',
+    emoji: '🏔️',
+    tier: 4,
+    realm: 'tundra',
+    baseCost: 10000000,
+    costMultiplier: 1.48,
+    costResource: 'cryoEnergy',
+    baseProduction: 1000,
+    productionExponent: 1.25,
+    resource: 'cryoEnergy',
+    unlockCondition: {
+      realms: {
+        tundra: true
+      },
+      structures: {
+        auraBorealis: 8
+      }
+    },
+    flavorTexts: ['Cold itself becomes fuel', 'Polar might harnessed', 'Frozen power absolute']
+  },
+  // Cosmos T4
+  novaGenerator: {
+    id: 'novaGenerator',
+    name: 'Nova Generator',
+    description: 'Captures the power of stellar explosions',
+    emoji: '💥',
+    tier: 4,
+    realm: 'cosmos',
+    baseCost: 50000000,
+    costMultiplier: 1.50,
+    costResource: 'cosmicEnergy',
+    baseProduction: 3000,
+    productionExponent: 1.28,
+    resource: 'cosmicEnergy',
+    unlockCondition: {
+      realms: {
+        cosmos: true
+      },
+      structures: {
+        warpReactor: 8
+      }
+    },
+    flavorTexts: ['Stellar death yields life', 'Nova force captured', 'Explosive power']
+  },
+  // ===== TIER 5: ASCENSION MASTERY =====
+
+  // Forest T5
+  dimensionalCore: {
+    id: 'dimensionalCore',
+    name: 'Dimensional Core',
+    description: 'Opens portals to other dimensions for pure energy',
+    emoji: '🌀',
+    tier: 5,
+    baseCost: 500000000,
+    costMultiplier: 1.50,
+    costResource: 'energy',
+    baseProduction: 50000,
+    productionExponent: 1.30,
+    resource: 'energy',
+    unlockCondition: {
+      structures: {
+        quantumGenerator: 10
+      },
+      ascension: {
+        level: 5
+      }
+    },
+    flavorTexts: ['Dimensions unfold before you', 'Cross-dimensional energy', 'Infinite possibilities']
+  },
+  // Volcano T5
+  primordialForge: {
+    id: 'primordialForge',
+    name: 'Primordial Forge',
+    description: 'Forges rare gems from planetary energy',
+    emoji: '💠',
+    tier: 5,
+    realm: 'volcano',
+    baseCost: 50000000,
+    costMultiplier: 1.40,
+    costResource: 'volcanicEnergy',
+    baseProduction: 0.1,
+    productionExponent: 1.30,
+    resource: 'gems',
+    unlockCondition: {
+      realms: {
+        volcano: true
+      },
+      structures: {
+        infernoCore: 10
+      },
+      ascension: {
+        level: 10
+      }
+    },
+    flavorTexts: ['Gems born from primal fire', 'The forge of creation', 'Primordial treasure']
+  },
+  // Ocean T5
+  leviathanCore: {
+    id: 'leviathanCore',
+    name: 'Leviathan Core',
+    description: 'Harnesses the might of ancient sea leviathans',
+    emoji: '🐋',
+    tier: 5,
+    realm: 'ocean',
+    baseCost: 50000000,
+    costMultiplier: 1.50,
+    costResource: 'tidalEnergy',
+    baseProduction: 5,
+    productionExponent: 1.30,
+    resource: 'mana',
+    unlockCondition: {
+      realms: {
+        ocean: true
+      },
+      structures: {
+        abyssExtractor: 10
+      },
+      ascension: {
+        level: 8
+      }
+    },
+    flavorTexts: ['Leviathan energy flows', 'Ancient ocean power', 'Titan of the deep']
+  },
+  // Desert T5
+  singularityLens: {
+    id: 'singularityLens',
+    name: 'Singularity Lens',
+    description: 'Focuses solar essence into a singularity',
+    emoji: '🔆',
+    tier: 5,
+    realm: 'desert',
+    baseCost: 100000000,
+    costMultiplier: 1.55,
+    costResource: 'solarEssence',
+    baseProduction: 10000,
+    productionExponent: 1.30,
+    resource: 'solarEssence',
+    unlockCondition: {
+      realms: {
+        desert: true
+      },
+      structures: {
+        sunCathedral: 10
+      },
+      ascension: {
+        level: 12
+      }
+    },
+    flavorTexts: ['Light collapses into power', 'Singularity achieved', 'Solar apotheosis']
+  },
+  // Tundra T5
+  absoluteZero: {
+    id: 'absoluteZero',
+    name: 'Absolute Zero',
+    description: 'Reaches the limit of cold to generate infinite mana',
+    emoji: '🧊',
+    tier: 5,
+    realm: 'tundra',
+    baseCost: 100000000,
+    costMultiplier: 1.55,
+    costResource: 'cryoEnergy',
+    baseProduction: 10,
+    productionExponent: 1.30,
+    resource: 'mana',
+    unlockCondition: {
+      realms: {
+        tundra: true
+      },
+      structures: {
+        polarEngine: 10
+      },
+      ascension: {
+        level: 15
+      }
+    },
+    flavorTexts: ['Zero entropy attained', 'Perfect stillness yields power', 'The coldest fire']
+  },
+  // Cosmos T5
+  voidEngine: {
+    id: 'voidEngine',
+    name: 'Void Engine',
+    description: 'Extracts energy from the void between stars',
+    emoji: '🕳️',
+    tier: 5,
+    realm: 'cosmos',
+    baseCost: 500000000,
+    costMultiplier: 1.60,
+    costResource: 'cosmicEnergy',
+    baseProduction: 50000,
+    productionExponent: 1.35,
+    resource: 'cosmicEnergy',
+    unlockCondition: {
+      realms: {
+        cosmos: true
+      },
+      structures: {
+        novaGenerator: 10
+      },
+      ascension: {
+        level: 20
+      }
+    },
+    flavorTexts: ['The void gives everything', 'Nothingness yields infinity', 'Empty space, infinite power']
   }
 };
 var _default = exports["default"] = STRUCTURES;
@@ -6363,17 +7009,16 @@ var UPGRADES = {
     category: 'production',
     // Early-mid game backbone: simți câștigul, dar nu sari instant în infinit
     maxLevel: 40,
-    baseCost: 200,
-    // accesibil foarte devreme
-    costMultiplier: 1.5,
+    baseCost: 100,
+    costMultiplier: 1.55,
     // scaling blând, potrivit pentru „primul” upgrade important
     costResource: 'energy',
     effect: function effect(level) {
-      // ~+12% per level, compounding
-      return Math.pow(1.12, level);
+      // ~+8% per level, compounding
+      return Math.pow(1.08, level);
     },
     getDescription: function getDescription(level) {
-      var bonus = ((Math.pow(1.12, level) - 1) * 100).toFixed(1);
+      var bonus = ((Math.pow(1.08, level) - 1) * 100).toFixed(1);
       return "+".concat(bonus, "% energy production");
     },
     unlockCondition: null // disponibil de la început
@@ -6386,16 +7031,16 @@ var UPGRADES = {
     category: 'production',
     // Mana e o resursă secundară, dar importantă
     maxLevel: 25,
-    baseCost: 300,
-    costMultiplier: 1.8,
+    baseCost: 200,
+    costMultiplier: 1.65,
     // mai agresiv decât energy, dar nu absurd
     costResource: 'mana',
     effect: function effect(level) {
-      // ~+14% per level, compounding
-      return Math.pow(1.14, level);
+      // ~+10% per level, compounding
+      return Math.pow(1.10, level);
     },
     getDescription: function getDescription(level) {
-      var bonus = ((Math.pow(1.14, level) - 1) * 100).toFixed(1);
+      var bonus = ((Math.pow(1.10, level) - 1) * 100).toFixed(1);
       return "+".concat(bonus, "% mana production");
     },
     unlockCondition: {
@@ -6413,20 +7058,89 @@ var UPGRADES = {
     category: 'production',
     // Realm mai avansat → costuri mai mari dar scaling ceva mai blând
     maxLevel: 30,
-    baseCost: 2000,
-    costMultiplier: 1.6,
+    baseCost: 1500,
+    costMultiplier: 1.55,
     costResource: 'volcanicEnergy',
     effect: function effect(level) {
-      // ~+15% per level, compounding
-      return Math.pow(1.15, level);
+      // ~+10% per level, compounding
+      return Math.pow(1.10, level);
     },
     getDescription: function getDescription(level) {
-      var bonus = ((Math.pow(1.15, level) - 1) * 100).toFixed(1);
+      var bonus = ((Math.pow(1.10, level) - 1) * 100).toFixed(1);
       return "+".concat(bonus, "% volcanic energy production");
     },
     unlockCondition: {
       realms: {
         volcano: true
+      }
+    }
+  },
+  solarAmplifier: {
+    id: 'solarAmplifier',
+    name: 'Solar Amplifier',
+    description: 'Boosts solar essence production',
+    emoji: '☀️',
+    category: 'production',
+    maxLevel: 25,
+    baseCost: 5000,
+    costMultiplier: 1.5,
+    costResource: 'solarEssence',
+    effect: function effect(level) {
+      return Math.pow(1.10, level);
+    },
+    getDescription: function getDescription(level) {
+      var bonus = ((Math.pow(1.10, level) - 1) * 100).toFixed(1);
+      return "+".concat(bonus, "% solar essence production");
+    },
+    unlockCondition: {
+      realms: {
+        desert: true
+      }
+    }
+  },
+  cryoAmplifier: {
+    id: 'cryoAmplifier',
+    name: 'Cryo Amplifier',
+    description: 'Boosts cryo energy production',
+    emoji: '❄️',
+    category: 'production',
+    maxLevel: 25,
+    baseCost: 8000,
+    costMultiplier: 1.5,
+    costResource: 'cryoEnergy',
+    effect: function effect(level) {
+      return Math.pow(1.10, level);
+    },
+    getDescription: function getDescription(level) {
+      var bonus = ((Math.pow(1.10, level) - 1) * 100).toFixed(1);
+      return "+".concat(bonus, "% cryo energy production");
+    },
+    unlockCondition: {
+      realms: {
+        tundra: true
+      }
+    }
+  },
+  cosmicAmplifier: {
+    id: 'cosmicAmplifier',
+    name: 'Cosmic Amplifier',
+    description: 'Boosts cosmic energy production',
+    emoji: '🌌',
+    category: 'production',
+    maxLevel: 30,
+    baseCost: 15000,
+    costMultiplier: 1.55,
+    costResource: 'cosmicEnergy',
+    effect: function effect(level) {
+      return Math.pow(1.12, level);
+    },
+    getDescription: function getDescription(level) {
+      var bonus = ((Math.pow(1.12, level) - 1) * 100).toFixed(1);
+      return "+".concat(bonus, "% cosmic energy production");
+    },
+    unlockCondition: {
+      realms: {
+        cosmos: true
       }
     }
   },
@@ -6439,24 +7153,24 @@ var UPGRADES = {
     category: 'capacity',
     // Capacity de early-mid game
     maxLevel: 20,
-    baseCost: 500,
+    baseCost: 2500,
     // corelat cu ce vezi în UI ca „prim milestone”
-    costMultiplier: 1.6,
+    costMultiplier: 1.55,
     costResource: 'energy',
     effect: function effect(level) {
       // Plecăm de la un cap decent și scalăm sănătos
       // Level 0 (implicit) înseamnă cap de bază din CONFIG; aici dăm valoarea când ai 1 level
       // Din sistemul tău: SET_CAP setează efectul direct ca nou cap
-      return 3000 * Math.pow(1.8, level);
+      return 25000 * Math.pow(1.6, level);
     },
     getDescription: function getDescription(level) {
-      var cap = Math.floor(3000 * Math.pow(1.8, level));
+      var cap = Math.floor(25000 * Math.pow(1.6, level));
       return "Energy cap: ".concat(cap.toLocaleString());
     },
     unlockCondition: {
       // simți nevoia de cap când ai atins de câteva ori acest prag
       resources: {
-        energy: 500
+        energy: 1000
       }
     }
   },
@@ -6467,11 +7181,11 @@ var UPGRADES = {
     emoji: '🔮',
     category: 'capacity',
     maxLevel: 15,
-    baseCost: 300,
+    baseCost: 200,
     costMultiplier: 1.7,
     costResource: 'mana',
     effect: function effect(level) {
-      return 500 * Math.pow(1.8, level);
+      return 500 * Math.pow(1.6, level);
     },
     getDescription: function getDescription(level) {
       var cap = Math.floor(500 * Math.pow(1.8, level));
@@ -6479,7 +7193,7 @@ var UPGRADES = {
     },
     unlockCondition: {
       resources: {
-        mana: 50
+        mana: 100
       }
     }
   },
@@ -6490,11 +7204,11 @@ var UPGRADES = {
     emoji: '⚱️',
     category: 'capacity',
     maxLevel: 15,
-    baseCost: 5000,
+    baseCost: 25000,
     costMultiplier: 1.7,
     costResource: 'volcanicEnergy',
     effect: function effect(level) {
-      return 4000 * Math.pow(1.8, level);
+      return 40000 * Math.pow(1.6, level);
     },
     getDescription: function getDescription(level) {
       var cap = Math.floor(4000 * Math.pow(1.8, level));
@@ -6514,13 +7228,13 @@ var UPGRADES = {
     emoji: '☀️',
     category: 'synergy',
     maxLevel: 5,
-    baseCost: 5000,
+    baseCost: 25000,
     costMultiplier: 2.5,
     costResource: 'energy',
     targetStructure: 'solarPanel',
     effect: function effect(level) {
-      // +40% per level (linear) – foarte puternic pe structuri mari
-      return 1 + level * 0.4;
+      // +25% per level (linear) – foarte puternic pe structuri mari
+      return 1 + level * 0.25;
     },
     getDescription: function getDescription(level) {
       var bonus = level * 40;
@@ -6544,7 +7258,7 @@ var UPGRADES = {
     costResource: 'energy',
     targetStructure: 'windTurbine',
     effect: function effect(level) {
-      return 1 + level * 0.4;
+      return 1 + level * 0.25;
     },
     getDescription: function getDescription(level) {
       var bonus = level * 40;
@@ -6589,13 +7303,13 @@ var UPGRADES = {
     emoji: '🌙',
     category: 'qol',
     maxLevel: 10,
-    baseCost: 500,
+    baseCost: 2500,
     costMultiplier: 1.4,
     // nu chiar fix, dar nici prea agresiv
     costResource: 'gems',
     effect: function effect(level) {
       // 0% → 100% in 10 levels
-      return Math.min(level * 10, 100);
+      return Math.min(level * 5, 50);
     },
     getDescription: function getDescription(level) {
       var percent = Math.min(level * 10, 100);
@@ -6603,7 +7317,7 @@ var UPGRADES = {
     },
     unlockCondition: {
       resources: {
-        gems: 200
+        gems: 500
       } // mai ușor de deblocat, dar scaling de cost mai dur pe termen lung
     }
   },
@@ -6614,7 +7328,7 @@ var UPGRADES = {
     emoji: '🤖',
     category: 'qol',
     maxLevel: 1,
-    baseCost: 2000,
+    baseCost: 1500,
     // puțin mai scump, să simți că e „feature premium”
     costMultiplier: 1.0,
     costResource: 'gems',
@@ -6690,7 +7404,7 @@ var UPGRADES = {
     emoji: '💠',
     category: 'unlock',
     maxLevel: 1,
-    baseCost: 1000,
+    baseCost: 2500,
     costMultiplier: 1.0,
     costResource: 'mana',
     effect: function effect() {
@@ -6710,6 +7424,60 @@ var UPGRADES = {
       }
     }
   },
+  pressureTech: {
+    id: 'pressureTech',
+    name: 'Pressure Technology',
+    description: 'Unlock Deep Sea Pump',
+    emoji: '⚓',
+    category: 'unlock',
+    maxLevel: 1,
+    baseCost: 75000,
+    costMultiplier: 1.0,
+    costResource: 'tidalEnergy',
+    effect: function effect() {
+      return {
+        unlock: 'deepSeaPump'
+      };
+    },
+    getDescription: function getDescription() {
+      return 'Unlocks: Deep Sea Pump';
+    },
+    unlockCondition: {
+      structures: {
+        coralBattery: 5
+      },
+      resources: {
+        tidalEnergy: 50000
+      }
+    }
+  },
+  heatVent: {
+    id: 'heatVent',
+    name: 'Heat Vent',
+    description: 'Unlock Mirage Core',
+    emoji: '🌡️',
+    category: 'unlock',
+    maxLevel: 1,
+    baseCost: 100000,
+    costMultiplier: 1.0,
+    costResource: 'solarEssence',
+    effect: function effect() {
+      return {
+        unlock: 'mirageCore'
+      };
+    },
+    getDescription: function getDescription() {
+      return 'Unlocks: Mirage Core';
+    },
+    unlockCondition: {
+      structures: {
+        sandExtractor: 8
+      },
+      resources: {
+        solarEssence: 150000
+      }
+    }
+  },
   // ===== SPECIAL UPGRADES =====
   criticalEnergy: {
     id: 'criticalEnergy',
@@ -6718,14 +7486,14 @@ var UPGRADES = {
     emoji: '💥',
     category: 'special',
     maxLevel: 10,
-    baseCost: 10000,
+    baseCost: 25000,
     costMultiplier: 2.2,
     costResource: 'gems',
     effect: function effect(level) {
-      return level * 2; // 2% per level
+      return level * 1; // 1% per level
     },
     getDescription: function getDescription(level) {
-      var chance = level * 2;
+      var chance = level * 1;
       return "".concat(chance, "% chance for 2x energy ticks");
     },
     unlockCondition: {
@@ -6744,14 +7512,14 @@ var UPGRADES = {
     emoji: '🍀',
     category: 'special',
     maxLevel: 10,
-    baseCost: 8000,
+    baseCost: 15000,
     costMultiplier: 2.0,
     costResource: 'gems',
     effect: function effect(level) {
-      return level * 5; // 5% per level
+      return level * 3; // 3% per level
     },
     getDescription: function getDescription(level) {
-      var chance = level * 5;
+      var chance = level * 3;
       return "".concat(chance, "% chance for bonus gems");
     },
     unlockCondition: {
@@ -6767,7 +7535,7 @@ var UPGRADES = {
     emoji: '🤝',
     category: 'special',
     maxLevel: 10,
-    baseCost: 5000,
+    baseCost: 25000,
     costMultiplier: 2.0,
     costResource: 'gems',
     effect: function effect(level) {
@@ -6791,7 +7559,7 @@ var UPGRADES = {
     emoji: '🌊',
     category: 'synergy',
     maxLevel: 5,
-    baseCost: 8000,
+    baseCost: 15000,
     costMultiplier: 2.8,
     costResource: 'tidalEnergy',
     targetStructure: 'tidalGenerator',
@@ -6890,7 +7658,7 @@ var UPGRADES = {
     emoji: '🏝️',
     category: 'special',
     maxLevel: 1,
-    baseCost: 8000,
+    baseCost: 15000,
     costMultiplier: 1.0,
     costResource: 'pearls',
     effect: function effect() {
@@ -6904,6 +7672,29 @@ var UPGRADES = {
     unlockCondition: {
       structures: {
         coralBattery: 10
+      }
+    }
+  },
+  tidalAmplifier: {
+    id: 'tidalAmplifier',
+    name: 'Tidal Amplifier',
+    description: 'Boosts tidal energy production',
+    emoji: '🌊',
+    category: 'production',
+    maxLevel: 25,
+    baseCost: 3000,
+    costMultiplier: 1.5,
+    costResource: 'tidalEnergy',
+    effect: function effect(level) {
+      return Math.pow(1.10, level);
+    },
+    getDescription: function getDescription(level) {
+      var bonus = ((Math.pow(1.10, level) - 1) * 100).toFixed(1);
+      return "+".concat(bonus, "% tidal energy production");
+    },
+    unlockCondition: {
+      realms: {
+        ocean: true
       }
     }
   }
@@ -7475,7 +8266,7 @@ function handleSwipe() {
   var diff = touchEndX - touchStartX;
   if (Math.abs(diff) < 50) return; // Minimum swipe distance
 
-  var activeTab = document.querySelector('.tab-btn. active');
+  var activeTab = document.querySelector('.tab-btn.active');
   var allTabs = Array.from(document.querySelectorAll('.tab-btn'));
   var currentIndex = allTabs.indexOf(activeTab);
   if (diff < 0 && currentIndex < allTabs.length - 1) {
@@ -9580,14 +10371,14 @@ var DailyRewardSystem = /*#__PURE__*/function () {
       return [{
         day: 1,
         rewards: {
-          gems: 25,
+          gems: 10,
           energy: 1000
         },
         emoji: '🎁'
       }, {
         day: 2,
         rewards: {
-          gems: 50,
+          gems: 20,
           energy: 2500,
           mana: 50
         },
@@ -9595,7 +10386,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
       }, {
         day: 3,
         rewards: {
-          gems: 75,
+          gems: 30,
           energy: 5000,
           mana: 100
         },
@@ -9603,7 +10394,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
       }, {
         day: 4,
         rewards: {
-          gems: 100,
+          gems: 40,
           energy: 10000,
           mana: 200,
           crystals: 1
@@ -9612,7 +10403,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
       }, {
         day: 5,
         rewards: {
-          gems: 150,
+          gems: 60,
           energy: 20000,
           mana: 500,
           crystals: 3
@@ -9621,7 +10412,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
       }, {
         day: 6,
         rewards: {
-          gems: 200,
+          gems: 80,
           energy: 50000,
           mana: 1000,
           crystals: 5
@@ -9630,7 +10421,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
       }, {
         day: 7,
         rewards: {
-          gems: 500,
+          gems: 200,
           energy: 100000,
           mana: 5000,
           crystals: 20,
@@ -13434,14 +14225,18 @@ var StructureSystem = /*#__PURE__*/function () {
         });
         return false;
       }
+      var structure = this.structures[structureKey];
+      if (!structure) return false;
       var cost = this.getCost(structureKey);
+      var costResource = structure.costResource;
 
       // Dispatch purchase
       _StateManager["default"].dispatch({
         type: 'BUY_STRUCTURE',
         payload: {
           structureKey: structureKey,
-          cost: cost
+          cost: cost,
+          costResource: costResource
         }
       });
       var newLevel = this.getLevel(structureKey);
@@ -13493,6 +14288,10 @@ var StructureSystem = /*#__PURE__*/function () {
       var energyProduction = 0;
       var manaProduction = 0;
       var volcanicProduction = 0;
+      var tidalProduction = 0;
+      var solarEssenceProduction = 0;
+      var cryoEnergyProduction = 0;
+      var cosmicEnergyProduction = 0;
 
       // Sum production from all structures
       for (var _i6 = 0, _Object$entries5 = Object.entries(this.structures); _i6 < _Object$entries5.length; _i6++) {
@@ -13511,6 +14310,18 @@ var StructureSystem = /*#__PURE__*/function () {
             break;
           case 'volcanicEnergy':
             volcanicProduction += production;
+            break;
+          case 'tidalEnergy':
+            tidalProduction += production;
+            break;
+          case 'solarEssence':
+            solarEssenceProduction += production;
+            break;
+          case 'cryoEnergy':
+            cryoEnergyProduction += production;
+            break;
+          case 'cosmicEnergy':
+            cosmicEnergyProduction += production;
             break;
           case 'gems':
             // Gems production is handled separately (very slow)
@@ -13540,15 +14351,48 @@ var StructureSystem = /*#__PURE__*/function () {
           amount: volcanicProduction
         }
       });
+      _StateManager["default"].dispatch({
+        type: 'SET_PRODUCTION',
+        payload: {
+          resource: 'tidalEnergy',
+          amount: tidalProduction
+        }
+      });
+      _StateManager["default"].dispatch({
+        type: 'SET_PRODUCTION',
+        payload: {
+          resource: 'solarEssence',
+          amount: solarEssenceProduction
+        }
+      });
+      _StateManager["default"].dispatch({
+        type: 'SET_PRODUCTION',
+        payload: {
+          resource: 'cryoEnergy',
+          amount: cryoEnergyProduction
+        }
+      });
+      _StateManager["default"].dispatch({
+        type: 'SET_PRODUCTION',
+        payload: {
+          resource: 'cosmicEnergy',
+          amount: cosmicEnergyProduction
+        }
+      });
       _Logger["default"].debug('StructureSystem', 'Production recalculated', {
         energy: energyProduction,
         mana: manaProduction,
-        volcanic: volcanicProduction
+        volcanic: volcanicProduction,
+        tidal: tidalProduction
       });
       _EventBus["default"].emit('production:updated', {
         energy: energyProduction,
         mana: manaProduction,
-        volcanicEnergy: volcanicProduction
+        volcanicEnergy: volcanicProduction,
+        tidalEnergy: tidalProduction,
+        solarEssence: solarEssenceProduction,
+        cryoEnergy: cryoEnergyProduction,
+        cosmicEnergy: cosmicEnergyProduction
       });
     }
 
@@ -13565,12 +14409,18 @@ var StructureSystem = /*#__PURE__*/function () {
         byTier: {
           1: 0,
           2: 0,
-          3: 0
+          3: 0,
+          4: 0,
+          5: 0
         },
         byResource: {
           energy: 0,
           mana: 0,
           volcanicEnergy: 0,
+          tidalEnergy: 0,
+          solarEssence: 0,
+          cryoEnergy: 0,
+          cosmicEnergy: 0,
           gems: 0
         }
       };
@@ -15126,6 +15976,26 @@ var UpgradeSystem = /*#__PURE__*/function () {
       if (resource === 'volcanicEnergy' && this.getLevel('volcanicPower') > 0) {
         multiplier *= this.getEffect('volcanicPower');
       }
+
+      // Tidal amplifier
+      if (resource === 'tidalEnergy' && this.getLevel('tidalAmplifier') > 0) {
+        multiplier *= this.getEffect('tidalAmplifier');
+      }
+
+      // Solar amplifier
+      if (resource === 'solarEssence' && this.getLevel('solarAmplifier') > 0) {
+        multiplier *= this.getEffect('solarAmplifier');
+      }
+
+      // Cryo amplifier
+      if (resource === 'cryoEnergy' && this.getLevel('cryoAmplifier') > 0) {
+        multiplier *= this.getEffect('cryoAmplifier');
+      }
+
+      // Cosmic amplifier
+      if (resource === 'cosmicEnergy' && this.getLevel('cosmicAmplifier') > 0) {
+        multiplier *= this.getEffect('cosmicAmplifier');
+      }
       return multiplier;
     }
 
@@ -16249,7 +17119,7 @@ var GuardiansUI = /*#__PURE__*/function () {
     value: function dismissGuardian(guardian) {
       _ConfirmModal["default"].show({
         title: 'Dismiss Guardian',
-        message: "Are you sure you want to dismiss ".concat(guardian.emoji, " ").concat(guardian.name, "?  This guardian provides +").concat(guardian.bonus, "% ").concat(this.getTypeName(guardian.type), " production and cannot be recovered! "),
+        message: "Are you sure you want to dismiss ".concat(guardian.emoji, " ").concat(guardian.name, "? This guardian provides +").concat(guardian.bonus, "% ").concat(this.getTypeName(guardian.type), " production and cannot be recovered!"),
         danger: true,
         onConfirm: function onConfirm() {
           _GuardianSystem["default"].dismiss(guardian.id);
@@ -17627,6 +18497,7 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _StructureCard = _interopRequireDefault(require("./components/StructureCard.js"));
 var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
+var _RealmSystem = _interopRequireDefault(require("../systems/RealmSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -17667,10 +18538,43 @@ var StructuresUI = /*#__PURE__*/function () {
       _EventBus["default"].on('state:SWITCH_REALM', function () {
         _this.render();
       });
+      _EventBus["default"].on('state:UNLOCK_REALM', function () {
+        _this.render();
+      });
 
       // Update when structures unlocked
       _EventBus["default"].on('structure:purchased', function () {
         _this.checkNewUnlocks();
+      });
+
+      // Delegate realm button clicks
+      this.container.addEventListener('click', function (e) {
+        var btn = e.target.closest('.realm-btn');
+        if (btn) {
+          var realmId = btn.dataset.realm;
+          if (_RealmSystem["default"].isUnlocked(realmId)) {
+            _RealmSystem["default"].switchTo(realmId);
+          } else {
+            var result = _RealmSystem["default"].unlock(realmId);
+            if (!result) {
+              var _realm$unlockCost;
+              var state = _StateManager["default"].getState();
+              var realm = _RealmSystem["default"].getRealm(realmId);
+              var cost = realm === null || realm === void 0 || (_realm$unlockCost = realm.unlockCost) === null || _realm$unlockCost === void 0 ? void 0 : _realm$unlockCost.crystals;
+              if (cost && state.resources.crystals < cost) {
+                _EventBus["default"].emit('notification:show', {
+                  type: 'warning',
+                  message: "Need ".concat(cost, " \uD83D\uDCA0 to unlock ").concat(realm.name)
+                });
+              } else {
+                _EventBus["default"].emit('notification:show', {
+                  type: 'warning',
+                  message: "Requirements not met for ".concat((realm === null || realm === void 0 ? void 0 : realm.name) || realmId)
+                });
+              }
+            }
+          }
+        }
       });
     }
 
@@ -17683,10 +18587,14 @@ var StructuresUI = /*#__PURE__*/function () {
       // Clear existing
       this.container.innerHTML = '';
       this.cards.clear();
-
-      // Get structures for current realm
       var state = _StateManager["default"].getState();
       var currentRealm = state.realms.current;
+
+      // Realm selector
+      var selector = this.renderRealmSelector(state, currentRealm);
+      this.container.appendChild(selector);
+
+      // Get structures for current realm
       var structures = _StructureSystem["default"].getStructuresForRealm(currentRealm);
 
       // Create header
@@ -17704,7 +18612,9 @@ var StructuresUI = /*#__PURE__*/function () {
       var tiers = {
         1: [],
         2: [],
-        3: []
+        3: [],
+        4: [],
+        5: []
       };
       for (var _i = 0, _Object$entries = Object.entries(structures); _i < _Object$entries.length; _i++) {
         var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
@@ -17714,7 +18624,7 @@ var StructuresUI = /*#__PURE__*/function () {
       }
 
       // Render by tier
-      for (var _i2 = 0, _arr = [1, 2, 3]; _i2 < _arr.length; _i2++) {
+      for (var _i2 = 0, _arr = [1, 2, 3, 4, 5]; _i2 < _arr.length; _i2++) {
         var tier = _arr[_i2];
         if (tiers[tier].length === 0) continue;
         var tierSection = document.createElement('div');
@@ -17744,6 +18654,39 @@ var StructuresUI = /*#__PURE__*/function () {
       // Add summary
       this.renderSummary();
     }
+  }, {
+    key: "renderRealmSelector",
+    value: function renderRealmSelector(state, currentRealm) {
+      var container = document.createElement('div');
+      container.className = 'realm-selector';
+      var realmOrder = ['forest', 'volcano', 'ocean', 'desert', 'tundra', 'cosmos'];
+      for (var _i3 = 0, _realmOrder = realmOrder; _i3 < _realmOrder.length; _i3++) {
+        var id = _realmOrder[_i3];
+        var realm = _RealmSystem["default"].getRealm(id);
+        if (!realm) continue;
+        var btn = document.createElement('button');
+        btn.className = 'realm-btn';
+        if (currentRealm === id) btn.classList.add('active');
+        if (!state.realms.unlocked.includes(id)) btn.classList.add('locked');
+        btn.dataset.realm = id;
+        if (state.realms.unlocked.includes(id)) {
+          btn.textContent = "".concat(realm.emoji || '', " ").concat(realm.name);
+        } else {
+          btn.innerHTML = "".concat(realm.emoji || '', " ").concat(realm.name);
+          if (realm.unlockCost) {
+            var costEntry = Object.entries(realm.unlockCost)[0];
+            if (costEntry) {
+              var span = document.createElement('span');
+              span.className = 'unlock-cost';
+              span.textContent = "".concat(costEntry[1], " \uD83D\uDCA0");
+              btn.appendChild(span);
+            }
+          }
+        }
+        container.appendChild(btn);
+      }
+      return container;
+    }
 
     /**
      * Render production summary
@@ -17755,7 +18698,52 @@ var StructuresUI = /*#__PURE__*/function () {
       var summary = document.createElement('div');
       summary.className = 'structures-summary';
       summary.id = 'structures-summary';
-      summary.innerHTML = "\n      <div class=\"summary-card\">\n        <h4>\u26A1 Energy Production</h4>\n        <p class=\"summary-value\">".concat(_Formatters["default"].formatNumber(state.production.energy), "/s</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>\u2728 Mana Production</h4>\n        <p class=\"summary-value\">").concat(_Formatters["default"].formatNumber(state.production.mana), "/s</p>\n      </div>\n      \n      ").concat(state.realms.unlocked.includes('volcano') ? "\n        <div class=\"summary-card\">\n          <h4>\uD83C\uDF0B Volcanic Production</h4>\n          <p class=\"summary-value\">".concat(_Formatters["default"].formatNumber(state.production.volcanicEnergy), "/s</p>\n        </div>\n      ") : '', "\n      \n      <div class=\"summary-card\">\n        <h4>\uD83D\uDCCA Total Structures</h4>\n        <p class=\"summary-value\">").concat(_StructureSystem["default"].getStats().totalStructures, "</p>\n      </div>\n    ");
+      var resourceCards = [{
+        key: 'energy',
+        label: '⚡ Energy',
+        production: state.production.energy
+      }, {
+        key: 'mana',
+        label: '✨ Mana',
+        production: state.production.mana
+      }, {
+        key: 'volcanicEnergy',
+        label: '🌋 Volcanic',
+        production: state.production.volcanicEnergy,
+        realm: 'volcano'
+      }, {
+        key: 'tidalEnergy',
+        label: '🌊 Tidal',
+        production: state.production.tidalEnergy,
+        realm: 'ocean'
+      }, {
+        key: 'solarEssence',
+        label: '🏜️ Solar',
+        production: state.production.solarEssence,
+        realm: 'desert'
+      }, {
+        key: 'cryoEnergy',
+        label: '❄️ Cryo',
+        production: state.production.cryoEnergy,
+        realm: 'tundra'
+      }, {
+        key: 'cosmicEnergy',
+        label: '🌌 Cosmic',
+        production: state.production.cosmicEnergy,
+        realm: 'cosmos'
+      }];
+      for (var _i4 = 0, _resourceCards = resourceCards; _i4 < _resourceCards.length; _i4++) {
+        var rc = _resourceCards[_i4];
+        if (rc.realm && !state.realms.unlocked.includes(rc.realm)) continue;
+        var card = document.createElement('div');
+        card.className = 'summary-card';
+        card.innerHTML = "\n        <h4>".concat(rc.label, " Production</h4>\n        <p class=\"summary-value\">").concat(_Formatters["default"].formatNumber(rc.production), "/s</p>\n      ");
+        summary.appendChild(card);
+      }
+      var statsCard = document.createElement('div');
+      statsCard.className = 'summary-card';
+      statsCard.innerHTML = "\n      <h4>\uD83D\uDCCA Total Structures</h4>\n      <p class=\"summary-value\">".concat(_StructureSystem["default"].getStats().totalStructures, "</p>\n    ");
+      summary.appendChild(statsCard);
       this.container.appendChild(summary);
     }
 
@@ -17790,7 +18778,11 @@ var StructuresUI = /*#__PURE__*/function () {
     value: function getRealmName(realmId) {
       var names = {
         forest: 'Forest Realm',
-        volcano: 'Volcanic Realm'
+        volcano: 'Volcanic Realm',
+        ocean: 'Ocean Depths',
+        desert: 'Desert Expanse',
+        tundra: 'Frozen Tundra',
+        cosmos: 'Cosmic Expanse'
       };
       return names[realmId] || realmId;
     }
@@ -17819,7 +18811,7 @@ var StructuresUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructuresUI;
 
-},{"../core/StateManager.js":6,"../systems/StructureSystem.js":30,"../utils/EventBus.js":57,"../utils/Formatters.js":58,"./components/StructureCard.js":52}],49:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/RealmSystem.js":27,"../systems/StructureSystem.js":30,"../utils/EventBus.js":57,"../utils/Formatters.js":58,"./components/StructureCard.js":52}],49:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18217,7 +19209,7 @@ var ResourceDisplay = /*#__PURE__*/function () {
   }, {
     key: "render",
     value: function render() {
-      this.container.innerHTML = "\n      <div class=\"resource-display\">\n        <div class=\"resource-item\" id=\"energy-display\">\n          <span class=\"resource-icon\">\u26A1</span>\n          <div class=\"resource-info\">\n            <div class=\"resource-amount\" id=\"energy-amount\">0</div>\n            <div class=\"resource-rate\" id=\"energy-rate\">0/s</div>\n          </div>\n          <div class=\"resource-bar\">\n            <div class=\"resource-bar-fill\" id=\"energy-bar\"></div>\n          </div>\n        </div>\n        \n        <div class=\"resource-item\" id=\"mana-display\">\n          <span class=\"resource-icon\">\u2728</span>\n          <div class=\"resource-info\">\n            <div class=\"resource-amount\" id=\"mana-amount\">0</div>\n            <div class=\"resource-rate\" id=\"mana-rate\">0/s</div>\n          </div>\n          <div class=\"resource-bar\">\n            <div class=\"resource-bar-fill\" id=\"mana-bar\"></div>\n          </div>\n        </div>\n        \n        <div class=\"resource-item\" id=\"gems-display\">\n          <span class=\"resource-icon\">\uD83D\uDC8E</span>\n          <div class=\"resource-info\">\n            <div class=\"resource-amount\" id=\"gems-amount\">0</div>\n          </div>\n        </div>\n        \n        <div class=\"resource-item\" id=\"crystals-display\" style=\"display: none;\">\n          <span class=\"resource-icon\">\uD83D\uDCA0</span>\n          <div class=\"resource-info\">\n            <div class=\"resource-amount\" id=\"crystals-amount\">0</div>\n          </div>\n        </div>\n        \n        <div class=\"resource-item\" id=\"volcanic-display\" style=\"display: none;\">\n          <span class=\"resource-icon\">\uD83C\uDF0B</span>\n          <div class=\"resource-info\">\n            <div class=\"resource-amount\" id=\"volcanic-amount\">0</div>\n            <div class=\"resource-rate\" id=\"volcanic-rate\">0/s</div>\n          </div>\n          <div class=\"resource-bar\">\n            <div class=\"resource-bar-fill\" id=\"volcanic-bar\"></div>\n          </div>\n        </div>\n      </div>\n    ";
+      this.container.innerHTML = "\n      <div class=\"resource-display\" id=\"resource-display\"></div>\n    ";
       this.update();
     }
 
@@ -18228,77 +19220,72 @@ var ResourceDisplay = /*#__PURE__*/function () {
     key: "update",
     value: function update() {
       var state = _StateManager["default"].getState();
-
-      // Energy
-      this.updateResource('energy', state.resources.energy, state.caps.energy, state.production.energy);
-
-      // Mana
-      this.updateResource('mana', state.resources.mana, state.caps.mana, state.production.mana);
-
-      // Gems (no cap or rate)
-      var gemsAmount = document.getElementById('gems-amount');
-      if (gemsAmount) {
-        gemsAmount.textContent = _Formatters["default"].formatNumber(state.resources.gems, 0);
+      var display = document.getElementById('resource-display');
+      if (!display) return;
+      var resources = [{
+        key: 'energy',
+        icon: '⚡',
+        label: 'Energy',
+        show: true
+      }, {
+        key: 'mana',
+        icon: '✨',
+        label: 'Mana',
+        show: true
+      }, {
+        key: 'gems',
+        icon: '💎',
+        label: 'Gems',
+        show: true,
+        noBar: true,
+        noRate: true
+      }, {
+        key: 'crystals',
+        icon: '💠',
+        label: 'Crystals',
+        show: state.resources.crystals > 0 || state.ascension.level > 0,
+        noBar: true,
+        noRate: true
+      }, {
+        key: 'volcanicEnergy',
+        icon: '🌋',
+        label: 'Volcanic',
+        show: state.realms.unlocked.includes('volcano')
+      }, {
+        key: 'tidalEnergy',
+        icon: '🌊',
+        label: 'Tidal',
+        show: state.realms.unlocked.includes('ocean')
+      }, {
+        key: 'solarEssence',
+        icon: '☀️',
+        label: 'Solar',
+        show: state.realms.unlocked.includes('desert')
+      }, {
+        key: 'cryoEnergy',
+        icon: '❄️',
+        label: 'Cryo',
+        show: state.realms.unlocked.includes('tundra')
+      }, {
+        key: 'cosmicEnergy',
+        icon: '🌌',
+        label: 'Cosmic',
+        show: state.realms.unlocked.includes('cosmos')
+      }];
+      var html = '';
+      for (var _i = 0, _resources = resources; _i < _resources.length; _i++) {
+        var res = _resources[_i];
+        if (!res.show) continue;
+        var amount = state.resources[res.key] || 0;
+        var cap = state.caps[res.key];
+        var rate = state.production[res.key];
+        var amountText = cap != null ? "".concat(_Formatters["default"].formatNumber(amount), " / ").concat(Math.floor(cap).toLocaleString()) : _Formatters["default"].formatNumber(amount);
+        var rateText = rate != null ? "".concat(_Formatters["default"].formatNumber(rate), "/s") : '';
+        var barPercent = cap ? Math.min(amount / cap * 100, 100) : 0;
+        var barColor = barPercent >= 100 ? '#ef4444' : barPercent >= 80 ? '#f59e0b' : '#10b981';
+        html += "\n        <div class=\"resource-item\">\n          <span class=\"resource-icon\">".concat(res.icon, "</span>\n          <div class=\"resource-info\">\n            <div class=\"resource-amount\">").concat(amountText, "</div>\n            ").concat(rateText ? "<div class=\"resource-rate\" style=\"color: ".concat(rate > 0 ? '#10b981' : '#6b7280', "\">").concat(rateText, "</div>") : '', "\n          </div>\n          ").concat(barPercent > 0 && !res.noBar ? "\n            <div class=\"resource-bar\">\n              <div class=\"resource-bar-fill\" style=\"width: ".concat(barPercent, "%; background-color: ").concat(barColor, "\"></div>\n            </div>\n          ") : '', "\n        </div>\n      ");
       }
-
-      // Crystals (show if player has any or has ascended)
-      if (state.resources.crystals > 0 || state.ascension.level > 0) {
-        var crystalsDisplay = document.getElementById('crystals-display');
-        var crystalsAmount = document.getElementById('crystals-amount');
-        if (crystalsDisplay) crystalsDisplay.style.display = 'flex';
-        if (crystalsAmount) {
-          crystalsAmount.textContent = _Formatters["default"].formatNumber(state.resources.crystals, 0);
-        }
-      }
-
-      // Volcanic (show if volcano unlocked)
-      if (state.realms.unlocked.includes('volcano')) {
-        var volcanicDisplay = document.getElementById('volcanic-display');
-        if (volcanicDisplay) volcanicDisplay.style.display = 'flex';
-        this.updateResource('volcanic', state.resources.volcanicEnergy, state.caps.volcanicEnergy, state.production.volcanicEnergy);
-      }
-    }
-
-    /**
-     * Update individual resource
-     */
-  }, {
-    key: "updateResource",
-    value: function updateResource(resourceKey, amount, cap, rate) {
-      // Amount
-      var amountEl = document.getElementById("".concat(resourceKey, "-amount"));
-      if (amountEl) {
-        var currentText = _Formatters["default"].formatNumber(amount); // ex: 1.27K
-        var capInt = Math.floor(cap || 0);
-        var capText = capInt.toLocaleString(); // ex: 17,496
-
-        amountEl.textContent = "".concat(currentText, " / ").concat(capText);
-      }
-
-      // Rate
-      var rateEl = document.getElementById("".concat(resourceKey, "-rate"));
-      if (rateEl && rate !== undefined) {
-        rateEl.textContent = "".concat(_Formatters["default"].formatNumber(rate), "/s");
-        if (rate > 0) {
-          rateEl.style.color = '#10b981'; // Green
-        } else {
-          rateEl.style.color = '#6b7280'; // Gray
-        }
-      }
-
-      // Progress bar (rămâne la fel)
-      var barEl = document.getElementById("".concat(resourceKey, "-bar"));
-      if (barEl && cap) {
-        var percentage = Math.min(amount / cap * 100, 100);
-        barEl.style.width = "".concat(percentage, "%");
-        if (percentage >= 100) {
-          barEl.style.backgroundColor = '#ef4444'; // Red (full)
-        } else if (percentage >= 80) {
-          barEl.style.backgroundColor = '#f59e0b'; // Orange
-        } else {
-          barEl.style.backgroundColor = '#10b981'; // Green
-        }
-      }
+      display.innerHTML = html;
     }
   }]);
 }();
@@ -18772,7 +19759,7 @@ var DailySpinGame = /*#__PURE__*/function () {
       id: 0,
       label: '50💎',
       reward: {
-        gems: 50
+        gems: 20
       },
       color: '#8B5CF6',
       weight: 20
@@ -18788,7 +19775,7 @@ var DailySpinGame = /*#__PURE__*/function () {
       id: 2,
       label: '100💎',
       reward: {
-        gems: 100
+        gems: 40
       },
       color: '#8B5CF6',
       weight: 15
@@ -18804,7 +19791,7 @@ var DailySpinGame = /*#__PURE__*/function () {
       id: 4,
       label: '200💎',
       reward: {
-        gems: 200
+        gems: 80
       },
       color: '#8B5CF6',
       weight: 10
@@ -18828,7 +19815,7 @@ var DailySpinGame = /*#__PURE__*/function () {
       id: 7,
       label: '500💎',
       reward: {
-        gems: 500
+        gems: 200
       },
       color: '#8B5CF6',
       weight: 3

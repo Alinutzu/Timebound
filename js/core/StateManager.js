@@ -33,21 +33,34 @@ class StateManager {
         mana: CONFIG.BALANCING.STARTING_MANA,
         gems: CONFIG.BALANCING.STARTING_GEMS,
         crystals: CONFIG.BALANCING.STARTING_CRYSTALS,
-        volcanicEnergy: 0
+        volcanicEnergy: 0,
+        tidalEnergy: 0,
+        solarEssence: 0,
+        cryoEnergy: 0,
+        cosmicEnergy: 0,
+        pearls: 0
       },
       
       // Caps
       caps: {
         energy: CONFIG.BALANCING.BASE_ENERGY_CAP,
         mana: CONFIG.BALANCING.BASE_MANA_CAP,
-        volcanicEnergy: CONFIG.BALANCING.BASE_VOLCANIC_ENERGY_CAP
+        volcanicEnergy: CONFIG.BALANCING.BASE_VOLCANIC_ENERGY_CAP,
+        tidalEnergy: CONFIG.BALANCING.BASE_TIDAL_ENERGY_CAP,
+        solarEssence: CONFIG.BALANCING.BASE_SOLAR_ESSENCE_CAP,
+        cryoEnergy: CONFIG.BALANCING.BASE_CRYO_ENERGY_CAP,
+        cosmicEnergy: CONFIG.BALANCING.BASE_COSMIC_ENERGY_CAP
       },
       
       // Production rates
       production: {
         energy: 0,
         mana: 0,
-        volcanicEnergy: 0
+        volcanicEnergy: 0,
+        tidalEnergy: 0,
+        solarEssence: 0,
+        cryoEnergy: 0,
+        cosmicEnergy: 0
       },
       
       // Structures (will be populated)
@@ -292,14 +305,14 @@ class StateManager {
       
       // ===== STRUCTURES =====
       case 'BUY_STRUCTURE':
-        const { structureKey, cost } = action.payload;
+        const { structureKey, cost, costResource: structureCostResource } = action.payload;
         const currentLevel = state.structures[structureKey]?.level || 0;
         
         return {
           ...state,
           resources: {
             ...state.resources,
-            energy: state.resources.energy - cost
+            [structureCostResource]: (state.resources[structureCostResource] || 0) - cost
           },
           structures: {
             ...state.structures,
@@ -323,7 +336,7 @@ class StateManager {
             // ===== UPGRADES =====
       case 'BUY_UPGRADE':
         const { upgradeKey, upgradeCost, costResource, skipResourceDeduction } = action.payload;
-        const currentUpgradeLevel = state. upgrades[upgradeKey]?. level || 0;
+        const currentUpgradeLevel = state.upgrades[upgradeKey]?.level || 0;
         
         // Calculate new resources (only deduct if not already deducted)
         const newResources = skipResourceDeduction 
@@ -703,6 +716,10 @@ class StateManager {
             energy: CONFIG.BALANCING.STARTING_ENERGY,
             mana: 0,
             volcanicEnergy: 0,
+            tidalEnergy: 0,
+            solarEssence: 0,
+            cryoEnergy: 0,
+            cosmicEnergy: 0,
             crystals: state.resources.crystals + action.payload.crystalsEarned
           },
           structures: {},

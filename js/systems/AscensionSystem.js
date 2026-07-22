@@ -124,9 +124,9 @@ class AscensionSystem {
      // ===== ADAUGĂ: Save current resources for Quick Start =====
   const stateBefore = stateManager.getState();
   const previousResources = {
-    energy: stateBefore. resources.energy,
+    energy: stateBefore.resources.energy,
     mana: stateBefore.resources.mana,
-    volcanicEnergy: stateBefore.resources. volcanicEnergy
+    volcanicEnergy: stateBefore.resources.volcanicEnergy
   };
   // ===== SFÂRȘIT ADĂUGARE =====
 
@@ -170,20 +170,20 @@ class AscensionSystem {
  */
 applyQuickStart(previousResources = null) {
   const upgradeSystem = require('./UpgradeSystem.js').default;
-  const quickStartLevel = upgradeSystem. getLevel('quickStart');
+  const quickStartLevel = upgradeSystem.getLevel('quickStart');
   
   if (quickStartLevel === 0) return;
   
-  const quickStartPercent = upgradeSystem. getEffect('quickStart');
+  const quickStartPercent = upgradeSystem.getEffect('quickStart');
   
   // ✅ Acum folosim resursele reale din run-ul anterior
   if (previousResources) {
-    const energyBonus = Math. floor(previousResources.energy * quickStartPercent);
+    const energyBonus = Math.floor(previousResources.energy * quickStartPercent);
     const manaBonus = Math.floor(previousResources.mana * quickStartPercent);
     const volcanicBonus = Math.floor(previousResources.volcanicEnergy * quickStartPercent);
     
     if (energyBonus > 0) {
-      stateManager. dispatch({
+      stateManager.dispatch({
         type: 'ADD_RESOURCE',
         payload: { resource: 'energy', amount: energyBonus }
       });

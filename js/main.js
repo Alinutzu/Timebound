@@ -39,11 +39,11 @@ import TabManager from './ui/TabManager.js';
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker. register('/service-worker.js')
+    navigator.serviceWorker.register('/service-worker.js')
       .then((registration) => {
         console.log('ServiceWorker registered:', registration);
       })
-      . catch((error) => {
+      .catch((error) => {
         console.log('ServiceWorker registration failed:', error);
       });
   });
@@ -514,13 +514,13 @@ function handleSwipe() {
   const diff = touchEndX - touchStartX;
   if (Math.abs(diff) < 50) return; // Minimum swipe distance
   
-  const activeTab = document.querySelector('.tab-btn. active');
+  const activeTab = document.querySelector('.tab-btn.active');
   const allTabs = Array.from(document.querySelectorAll('.tab-btn'));
   const currentIndex = allTabs.indexOf(activeTab);
   
   if (diff < 0 && currentIndex < allTabs.length - 1) {
     // Swipe left - next tab
-    allTabs[currentIndex + 1]. click();
+    allTabs[currentIndex + 1].click();
   } else if (diff > 0 && currentIndex > 0) {
     // Swipe right - previous tab
     allTabs[currentIndex - 1].click();

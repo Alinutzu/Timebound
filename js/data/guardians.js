@@ -281,7 +281,7 @@ const GUARDIAN_POOL = {
 };
 
 // Rarity configurations (from CONFIG but can be overridden here)
-const RARITIES = CONFIG. BALANCING.GUARDIAN_RARITIES;
+const RARITIES = CONFIG.BALANCING.GUARDIAN_RARITIES;
 
 export { GUARDIAN_POOL, RARITIES };
 export default GUARDIAN_POOL;

@@ -210,13 +210,13 @@ class StructureSystem {
   }
   
   // ===== FIX: Use UpgradeSystem instead of duplicate logic =====
-  const upgradeSystem = require('./UpgradeSystem.js'). default;
+  const upgradeSystem = require('./UpgradeSystem.js').default;
   multipliers.upgrades = upgradeSystem.getProductionMultiplier(resource);
   // ===== END FIX =====
   
   // Guardian bonuses
   const guardianSystem = require('./GuardianSystem.js').default;
-  multipliers.guardians = guardianSystem. getProductionMultiplier(resource);
+  multipliers.guardians = guardianSystem.getProductionMultiplier(resource);
   
   // Calculate total
   multipliers.total = multipliers.ascension * multipliers.upgrades * multipliers.guardians;
@@ -278,14 +278,18 @@ class StructureSystem {
       return false;
     }
     
+    const structure = this.structures[structureKey];
+    if (!structure) return false;
     const cost = this.getCost(structureKey);
+    const costResource = structure.costResource;
     
     // Dispatch purchase
     stateManager.dispatch({
       type: 'BUY_STRUCTURE',
       payload: {
         structureKey,
-        cost
+        cost,
+        costResource
       }
     });
     
@@ -338,6 +342,10 @@ class StructureSystem {
     let energyProduction = 0;
     let manaProduction = 0;
     let volcanicProduction = 0;
+    let tidalProduction = 0;
+    let solarEssenceProduction = 0;
+    let cryoEnergyProduction = 0;
+    let cosmicEnergyProduction = 0;
     
     // Sum production from all structures
     for (let [key, structure] of Object.entries(this.structures)) {
@@ -355,6 +363,18 @@ class StructureSystem {
           break;
         case 'volcanicEnergy':
           volcanicProduction += production;
+          break;
+        case 'tidalEnergy':
+          tidalProduction += production;
+          break;
+        case 'solarEssence':
+          solarEssenceProduction += production;
+          break;
+        case 'cryoEnergy':
+          cryoEnergyProduction += production;
+          break;
+        case 'cosmicEnergy':
+          cosmicEnergyProduction += production;
           break;
         case 'gems':
           // Gems production is handled separately (very slow)
@@ -377,17 +397,42 @@ class StructureSystem {
       type: 'SET_PRODUCTION',
       payload: { resource: 'volcanicEnergy', amount: volcanicProduction }
     });
+
+    stateManager.dispatch({
+      type: 'SET_PRODUCTION',
+      payload: { resource: 'tidalEnergy', amount: tidalProduction }
+    });
+
+    stateManager.dispatch({
+      type: 'SET_PRODUCTION',
+      payload: { resource: 'solarEssence', amount: solarEssenceProduction }
+    });
+
+    stateManager.dispatch({
+      type: 'SET_PRODUCTION',
+      payload: { resource: 'cryoEnergy', amount: cryoEnergyProduction }
+    });
+
+    stateManager.dispatch({
+      type: 'SET_PRODUCTION',
+      payload: { resource: 'cosmicEnergy', amount: cosmicEnergyProduction }
+    });
     
     logger.debug('StructureSystem', 'Production recalculated', {
       energy: energyProduction,
       mana: manaProduction,
-      volcanic: volcanicProduction
+      volcanic: volcanicProduction,
+      tidal: tidalProduction
     });
     
     eventBus.emit('production:updated', {
       energy: energyProduction,
       mana: manaProduction,
-      volcanicEnergy: volcanicProduction
+      volcanicEnergy: volcanicProduction,
+      tidalEnergy: tidalProduction,
+      solarEssence: solarEssenceProduction,
+      cryoEnergy: cryoEnergyProduction,
+      cosmicEnergy: cosmicEnergyProduction
     });
   }
   
@@ -399,8 +444,8 @@ class StructureSystem {
     const stats = {
       totalStructures: 0,
       totalLevels: 0,
-      byTier: { 1: 0, 2: 0, 3: 0 },
-      byResource: { energy: 0, mana: 0, volcanicEnergy: 0, gems: 0 }
+      byTier: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      byResource: { energy: 0, mana: 0, volcanicEnergy: 0, tidalEnergy: 0, solarEssence: 0, cryoEnergy: 0, cosmicEnergy: 0, gems: 0 }
     };
     
     for (let [key, structure] of Object.entries(this.structures)) {

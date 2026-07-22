@@ -13,7 +13,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🎰',
       category: 'dailySpin',
       tier: 'bronze',
-      reward: { gems: 25, energy: 500 }, // Redus: timeShards eliminat, rewards reduse
+      reward: { gems: 10, energy: 500 }, // Redus: timeShards eliminat, rewards reduse
       condition: (stats) => stats.totalSpins >= 1,
       hidden: false
     },
@@ -24,7 +24,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🔥',
       category: 'dailySpin',
       tier: 'bronze',
-      reward: { gems: 50, energy: 1000 }, // Redus
+      reward: { gems: 20, energy: 1000 }, // Redus
       condition: (stats) => stats.currentStreak >= 3,
       hidden: false
     },
@@ -35,8 +35,8 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🍀',
       category: 'dailySpin',
       tier: 'silver',
-      reward: { gems: 100, crystals: 2, energy: 2500 }, // Redus
-      condition: (stats) => stats. currentStreak >= 7,
+      reward: { gems: 15, crystals: 2, energy: 2500 }, // Redus
+      condition: (stats) => stats.currentStreak >= 7,
       hidden: false
     },
     {
@@ -46,7 +46,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '👑',
       category: 'dailySpin',
       tier: 'gold',
-      reward: { gems: 400, crystals: 8, guardian: 1 }, // Redus
+      reward: { gems: 25, crystals: 8, guardian: 1 }, // Redus
       condition: (stats) => stats.currentStreak >= 30,
       hidden: false
     },
@@ -57,7 +57,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🎡',
       category: 'dailySpin',
       tier: 'silver',
-      reward: { gems: 120, crystals: 3 }, // Redus
+      reward: { gems: 20, crystals: 3 }, // Redus
       condition: (stats) => stats.totalSpins >= 50,
       hidden: false
     },
@@ -68,7 +68,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🏆',
       category: 'dailySpin',
       tier: 'gold',
-      reward: { gems: 300, crystals: 10 }, // Redus
+      reward: { gems: 20, crystals: 10 }, // Redus
       condition: (stats) => stats.totalSpins >= 100,
       hidden: false
     },
@@ -79,7 +79,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '💎',
       category: 'dailySpin',
       tier: 'gold',
-      reward: { gems: 200, crystals: 5 }, // Redus
+      reward: { gems: 30, crystals: 5 }, // Redus
       condition: (stats) => stats.highestGemReward >= 500,
       hidden: false
     },
@@ -90,7 +90,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🛡️',
       category: 'dailySpin',
       tier: 'platinum',
-      reward: { gems: 500, crystals: 15 }, // Redus
+      reward: { gems: 200, crystals: 15 }, // Redus
       condition: (stats) => stats.guardiansWon >= 1,
       hidden: false
     }
@@ -127,7 +127,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🟦',
       category: 'game2048',
       tier: 'silver',
-      reward: { gems: 50, crystals: 1 }, // Redus
+      reward: { gems: 20, crystals: 1 }, // Redus
       condition: (stats) => stats.highestTile >= 256,
       hidden: false
     },
@@ -138,7 +138,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🟩',
       category: 'game2048',
       tier: 'silver',
-      reward: { gems: 80, crystals: 2 }, // Redus
+      reward: { gems: 30, crystals: 2 }, // Redus
       condition: (stats) => stats.highestTile >= 512,
       hidden: false
     },
@@ -160,7 +160,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🏆',
       category: 'game2048',
       tier: 'platinum',
-      reward: { gems: 400, crystals: 15, guardian: 1 }, // Redus
+      reward: { gems: 25, crystals: 15, guardian: 1 }, // Redus
       condition: (stats) => stats.highestTile >= 2048,
       hidden: false
     },
@@ -171,7 +171,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '💫',
       category: 'game2048',
       tier: 'diamond',
-      reward: { gems: 1000, crystals: 30 }, // Redus
+      reward: { gems: 400, crystals: 30 }, // Redus
       condition: (stats) => stats.highestTile >= 4096,
       hidden: false
     },
@@ -182,7 +182,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '⭐',
       category: 'game2048',
       tier: 'bronze',
-      reward: { gems: 40, energy: 2000 }, // Nou - milestone mai mic
+      reward: { gems: 15, energy: 2000 }, // Nou - milestone mai mic
       condition: (stats) => stats.highScore >= 5000,
       hidden: false
     },
@@ -193,7 +193,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '💥',
       category: 'game2048',
       tier: 'silver',
-      reward: { gems: 100, crystals: 3 }, // Redus
+      reward: { gems: 15, crystals: 3 }, // Redus
       condition: (stats) => stats.highScore >= 10000,
       hidden: false
     },
@@ -204,7 +204,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🌟',
       category: 'game2048',
       tier: 'gold',
-      reward: { gems: 300, crystals: 10 }, // Redus
+      reward: { gems: 20, crystals: 10 }, // Redus
       condition: (stats) => stats.highScore >= 50000,
       hidden: false
     },
@@ -215,7 +215,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🎲',
       category: 'game2048',
       tier: 'bronze',
-      reward: { gems: 50, energy: 2500 }, // Nou - milestone mai mic
+      reward: { gems: 20, energy: 2500 }, // Nou - milestone mai mic
       condition: (stats) => stats.gamesPlayed >= 10,
       hidden: false
     },
@@ -226,8 +226,8 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🎯',
       category: 'game2048',
       tier: 'silver',
-      reward: { gems: 120, crystals: 4 }, // Redus
-      condition: (stats) => stats. gamesPlayed >= 25,
+      reward: { gems: 20, crystals: 4 }, // Redus
+      condition: (stats) => stats.gamesPlayed >= 25,
       hidden: false
     },
     {
@@ -237,8 +237,8 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '👾',
       category: 'game2048',
       tier: 'gold',
-      reward: { gems: 400, crystals: 15 }, // Redus
-      condition: (stats) => stats. gamesPlayed >= 100,
+      reward: { gems: 25, crystals: 15 }, // Redus
+      condition: (stats) => stats.gamesPlayed >= 100,
       hidden: false
     }
   ],
@@ -252,7 +252,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🧩',
       category: 'match3',
       tier: 'bronze',
-      reward: { gems: 25, energy: 1000 }, // Redus
+      reward: { gems: 10, energy: 1000 }, // Redus
       condition: (stats) => stats.gamesPlayed >= 1,
       hidden: false
     },
@@ -274,7 +274,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '💫',
       category: 'match3',
       tier: 'silver',
-      reward: { gems: 60, crystals: 2 }, // Redus
+      reward: { gems: 10, crystals: 2 }, // Redus
       condition: (stats) => stats.bestCombo >= 5,
       hidden: false
     },
@@ -285,8 +285,8 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '⚡',
       category: 'match3',
       tier: 'silver',
-      reward: { gems: 120, crystals: 4 }, // Redus
-      condition: (stats) => stats. bestCombo >= 10,
+      reward: { gems: 20, crystals: 4 }, // Redus
+      condition: (stats) => stats.bestCombo >= 10,
       hidden: false
     },
     {
@@ -296,8 +296,8 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '💥',
       category: 'match3',
       tier: 'gold',
-      reward: { gems: 250, crystals: 10 }, // Redus
-      condition: (stats) => stats. bestCombo >= 15,
+      reward: { gems: 100, crystals: 10 }, // Redus
+      condition: (stats) => stats.bestCombo >= 15,
       hidden: false
     },
     {
@@ -307,7 +307,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🎯',
       category: 'match3',
       tier: 'bronze',
-      reward: { gems: 40, energy: 2000 }, // Nou - milestone mai mic
+      reward: { gems: 15, energy: 2000 }, // Nou - milestone mai mic
       condition: (stats) => stats.highScore >= 500,
       hidden: false
     },
@@ -318,8 +318,8 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '⭐',
       category: 'match3',
       tier: 'silver',
-      reward: { gems: 80, crystals: 3 }, // Redus
-      condition: (stats) => stats. highScore >= 1000,
+      reward: { gems: 30, crystals: 3 }, // Redus
+      condition: (stats) => stats.highScore >= 1000,
       hidden: false
     },
     {
@@ -329,8 +329,8 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🏆',
       category: 'match3',
       tier: 'gold',
-      reward: { gems: 250, crystals: 8 }, // Redus
-      condition: (stats) => stats. highScore >= 2500,
+      reward: { gems: 100, crystals: 8 }, // Redus
+      condition: (stats) => stats.highScore >= 2500,
       hidden: false
     },
     {
@@ -340,8 +340,8 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '💣',
       category: 'match3',
       tier: 'silver',
-      reward: { gems: 100, crystals: 3 }, // Redus
-      condition: (stats) => stats. specialGemsCreated?. bomb >= 10,
+      reward: { gems: 15, crystals: 3 }, // Redus
+      condition: (stats) => stats.specialGemsCreated?.bomb >= 10,
       hidden: false
     },
     {
@@ -351,8 +351,8 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '⚡',
       category: 'match3',
       tier: 'gold',
-      reward: { gems: 180, crystals: 6 }, // Redus
-      condition: (stats) => stats. specialGemsCreated?.lightning >= 5,
+      reward: { gems: 30, crystals: 6 }, // Redus
+      condition: (stats) => stats.specialGemsCreated?.lightning >= 5,
       hidden: false
     },
     {
@@ -362,7 +362,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🌈',
       category: 'match3',
       tier: 'platinum',
-      reward: { gems: 400, crystals: 12 }, // Redus
+      reward: { gems: 25, crystals: 12 }, // Redus
       condition: (stats) => stats.specialGemsCreated?.rainbow >= 1,
       hidden: false
     },
@@ -373,7 +373,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🎮',
       category: 'match3',
       tier: 'bronze',
-      reward: { gems: 60, energy: 3000 }, // Nou - milestone mai mic
+      reward: { gems: 10, energy: 3000 }, // Nou - milestone mai mic
       condition: (stats) => stats.gamesPlayed >= 10,
       hidden: false
     },
@@ -384,8 +384,8 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '🎯',
       category: 'match3',
       tier: 'gold',
-      reward: { gems: 300, crystals: 10 }, // Redus
-      condition: (stats) => stats. gamesPlayed >= 50,
+      reward: { gems: 20, crystals: 10 }, // Redus
+      condition: (stats) => stats.gamesPlayed >= 50,
       hidden: false
     },
     {
@@ -395,7 +395,7 @@ export const MINI_GAME_ACHIEVEMENTS = {
       icon: '⭐',
       category: 'match3',
       tier: 'platinum',
-      reward: { gems: 600, crystals: 20, guardian: 1 }, // Redus + score requirement redus
+      reward: { gems: 100, crystals: 20, guardian: 1 }, // Redus + score requirement redus
       condition: (stats) => stats.perfectVictories >= 1,
       hidden: false
     }
@@ -435,5 +435,5 @@ export function getAchievementById(achievementId) {
  * Get all achievements (flat array)
  */
 export function getAllMiniGameAchievements() {
-  return Object.values(MINI_GAME_ACHIEVEMENTS). flat();
+  return Object.values(MINI_GAME_ACHIEVEMENTS).flat();
 }

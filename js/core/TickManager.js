@@ -122,7 +122,7 @@ class TickManager {
   // ===== END FIX =====
   
   // Energy production
-  let energyPerTick = state. production.energy * this.deltaTime;
+  let energyPerTick = state.production.energy * this.deltaTime;
   
   // ✅ Apply critical multiplier
   if (isCritical && energyPerTick > 0) {
@@ -168,6 +168,62 @@ class TickManager {
         payload: {
           resource: 'volcanicEnergy',
           amount: volcanicPerTick
+        }
+      });
+    }
+  }
+
+  // Tidal energy production
+  if (state.realms.unlocked.includes('ocean')) {
+    const tidalPerTick = state.production.tidalEnergy * this.deltaTime;
+    if (tidalPerTick > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: {
+          resource: 'tidalEnergy',
+          amount: tidalPerTick
+        }
+      });
+    }
+  }
+
+  // Solar essence production
+  if (state.realms.unlocked.includes('desert')) {
+    const solarPerTick = state.production.solarEssence * this.deltaTime;
+    if (solarPerTick > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: {
+          resource: 'solarEssence',
+          amount: solarPerTick
+        }
+      });
+    }
+  }
+
+  // Cryo energy production
+  if (state.realms.unlocked.includes('tundra')) {
+    const cryoPerTick = state.production.cryoEnergy * this.deltaTime;
+    if (cryoPerTick > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: {
+          resource: 'cryoEnergy',
+          amount: cryoPerTick
+        }
+      });
+    }
+  }
+
+  // Cosmic energy production
+  if (state.realms.unlocked.includes('cosmos')) {
+    const cosmicPerTick = state.production.cosmicEnergy * this.deltaTime;
+    if (cosmicPerTick > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: {
+          resource: 'cosmicEnergy',
+          amount: cosmicPerTick
         }
       });
     }
@@ -249,7 +305,7 @@ class TickManager {
   const state = stateManager.getState();
   
   // ===== FIX: Use upgrade effect directly =====
-  const upgradeSystem = require('../systems/UpgradeSystem.js'). default;
+  const upgradeSystem = require('../systems/UpgradeSystem.js').default;
   const offlinePercent = upgradeSystem.getLevel('offlineProduction') > 0
     ? upgradeSystem.getEffect('offlineProduction') // Returns 10, 20, 30...100
     : CONFIG.BALANCING.OFFLINE_PRODUCTION_BASE * 100; // 50%
@@ -268,7 +324,23 @@ class TickManager {
   );
   
   const volcanicEarned = state.realms.unlocked.includes('volcano')
-    ? Math. floor(state.production.volcanicEnergy * secondsOffline * offlineMultiplier)
+    ? Math.floor(state.production.volcanicEnergy * secondsOffline * offlineMultiplier)
+    : 0;
+
+  const tidalEarned = state.realms.unlocked.includes('ocean')
+    ? Math.floor(state.production.tidalEnergy * secondsOffline * offlineMultiplier)
+    : 0;
+
+  const solarEssenceEarned = state.realms.unlocked.includes('desert')
+    ? Math.floor(state.production.solarEssence * secondsOffline * offlineMultiplier)
+    : 0;
+
+  const cryoEnergyEarned = state.realms.unlocked.includes('tundra')
+    ? Math.floor(state.production.cryoEnergy * secondsOffline * offlineMultiplier)
+    : 0;
+
+  const cosmicEnergyEarned = state.realms.unlocked.includes('cosmos')
+    ? Math.floor(state.production.cosmicEnergy * secondsOffline * offlineMultiplier)
     : 0;
   
   logger.info('TickManager', 'Offline progress calculated', {
@@ -276,7 +348,11 @@ class TickManager {
     offlinePercent: offlinePercent,
     energyEarned,
     manaEarned,
-    volcanicEarned
+    volcanicEarned,
+    tidalEarned,
+    solarEssenceEarned,
+    cryoEnergyEarned,
+    cosmicEnergyEarned
   });
   
   return {
@@ -284,7 +360,11 @@ class TickManager {
     resources: {
       energy: energyEarned,
       mana: manaEarned,
-      volcanicEnergy: volcanicEarned
+      volcanicEnergy: volcanicEarned,
+      tidalEnergy: tidalEarned,
+      solarEssence: solarEssenceEarned,
+      cryoEnergy: cryoEnergyEarned,
+      cosmicEnergy: cosmicEnergyEarned
     },
     wasCapped: timeDiff > CONFIG.BALANCING.OFFLINE_TIME_CAP
   };
@@ -321,6 +401,34 @@ class TickManager {
       stateManager.dispatch({
         type: 'ADD_RESOURCE',
         payload: { resource: 'volcanicEnergy', amount: resources.volcanicEnergy }
+      });
+    }
+
+    if (resources.tidalEnergy > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: { resource: 'tidalEnergy', amount: resources.tidalEnergy }
+      });
+    }
+
+    if (resources.solarEssence > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: { resource: 'solarEssence', amount: resources.solarEssence }
+      });
+    }
+
+    if (resources.cryoEnergy > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: { resource: 'cryoEnergy', amount: resources.cryoEnergy }
+      });
+    }
+
+    if (resources.cosmicEnergy > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: { resource: 'cosmicEnergy', amount: resources.cosmicEnergy }
       });
     }
     

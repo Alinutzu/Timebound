@@ -20,17 +20,17 @@ const UPGRADES = {
     
     // Early-mid game backbone: simți câștigul, dar nu sari instant în infinit
     maxLevel: 40,
-    baseCost: 200,          // accesibil foarte devreme
-    costMultiplier: 1.5,    // scaling blând, potrivit pentru „primul” upgrade important
+    baseCost: 100,
+    costMultiplier: 1.55,    // scaling blând, potrivit pentru „primul” upgrade important
     costResource: 'energy',
     
     effect: (level) => {
-      // ~+12% per level, compounding
-      return Math.pow(1.12, level);
+      // ~+8% per level, compounding
+      return Math.pow(1.08, level);
     },
     
     getDescription: (level) => {
-      const bonus = ((Math.pow(1.12, level) - 1) * 100).toFixed(1);
+      const bonus = ((Math.pow(1.08, level) - 1) * 100).toFixed(1);
       return `+${bonus}% energy production`;
     },
     
@@ -46,17 +46,17 @@ const UPGRADES = {
     
     // Mana e o resursă secundară, dar importantă
     maxLevel: 25,
-    baseCost: 300,
-    costMultiplier: 1.8,    // mai agresiv decât energy, dar nu absurd
+    baseCost: 200,
+    costMultiplier: 1.65,    // mai agresiv decât energy, dar nu absurd
     costResource: 'mana',
     
     effect: (level) => {
-      // ~+14% per level, compounding
-      return Math.pow(1.14, level);
+      // ~+10% per level, compounding
+      return Math.pow(1.10, level);
     },
     
     getDescription: (level) => {
-      const bonus = ((Math.pow(1.14, level) - 1) * 100).toFixed(1);
+      const bonus = ((Math.pow(1.10, level) - 1) * 100).toFixed(1);
       return `+${bonus}% mana production`;
     },
     
@@ -75,17 +75,17 @@ const UPGRADES = {
     
     // Realm mai avansat → costuri mai mari dar scaling ceva mai blând
     maxLevel: 30,
-    baseCost: 2000,
-    costMultiplier: 1.6,
+    baseCost: 1500,
+    costMultiplier: 1.55,
     costResource: 'volcanicEnergy',
     
     effect: (level) => {
-      // ~+15% per level, compounding
-      return Math.pow(1.15, level);
+      // ~+10% per level, compounding
+      return Math.pow(1.10, level);
     },
     
     getDescription: (level) => {
-      const bonus = ((Math.pow(1.15, level) - 1) * 100).toFixed(1);
+      const bonus = ((Math.pow(1.10, level) - 1) * 100).toFixed(1);
       return `+${bonus}% volcanic energy production`;
     },
     
@@ -93,7 +93,73 @@ const UPGRADES = {
       realms: { volcano: true }
     }
   },
-  
+
+  solarAmplifier: {
+    id: 'solarAmplifier',
+    name: 'Solar Amplifier',
+    description: 'Boosts solar essence production',
+    emoji: '☀️',
+    category: 'production',
+    maxLevel: 25,
+    baseCost: 5000,
+    costMultiplier: 1.5,
+    costResource: 'solarEssence',
+    effect: (level) => {
+      return Math.pow(1.10, level);
+    },
+    getDescription: (level) => {
+      const bonus = ((Math.pow(1.10, level) - 1) * 100).toFixed(1);
+      return `+${bonus}% solar essence production`;
+    },
+    unlockCondition: {
+      realms: { desert: true }
+    }
+  },
+
+  cryoAmplifier: {
+    id: 'cryoAmplifier',
+    name: 'Cryo Amplifier',
+    description: 'Boosts cryo energy production',
+    emoji: '❄️',
+    category: 'production',
+    maxLevel: 25,
+    baseCost: 8000,
+    costMultiplier: 1.5,
+    costResource: 'cryoEnergy',
+    effect: (level) => {
+      return Math.pow(1.10, level);
+    },
+    getDescription: (level) => {
+      const bonus = ((Math.pow(1.10, level) - 1) * 100).toFixed(1);
+      return `+${bonus}% cryo energy production`;
+    },
+    unlockCondition: {
+      realms: { tundra: true }
+    }
+  },
+
+  cosmicAmplifier: {
+    id: 'cosmicAmplifier',
+    name: 'Cosmic Amplifier',
+    description: 'Boosts cosmic energy production',
+    emoji: '🌌',
+    category: 'production',
+    maxLevel: 30,
+    baseCost: 15000,
+    costMultiplier: 1.55,
+    costResource: 'cosmicEnergy',
+    effect: (level) => {
+      return Math.pow(1.12, level);
+    },
+    getDescription: (level) => {
+      const bonus = ((Math.pow(1.12, level) - 1) * 100).toFixed(1);
+      return `+${bonus}% cosmic energy production`;
+    },
+    unlockCondition: {
+      realms: { cosmos: true }
+    }
+  },
+
   // ===== RESOURCE CAPS =====
   energyCap: {
     id: 'energyCap',
@@ -104,25 +170,25 @@ const UPGRADES = {
     
     // Capacity de early-mid game
     maxLevel: 20,
-    baseCost: 500,          // corelat cu ce vezi în UI ca „prim milestone”
-    costMultiplier: 1.6,
+    baseCost: 2500,          // corelat cu ce vezi în UI ca „prim milestone”
+    costMultiplier: 1.55,
     costResource: 'energy',
     
     effect: (level) => {
       // Plecăm de la un cap decent și scalăm sănătos
       // Level 0 (implicit) înseamnă cap de bază din CONFIG; aici dăm valoarea când ai 1 level
       // Din sistemul tău: SET_CAP setează efectul direct ca nou cap
-      return 3000 * Math.pow(1.8, level);
+      return 25000 * Math.pow(1.6, level);
     },
     
     getDescription: (level) => {
-      const cap = Math.floor(3000 * Math.pow(1.8, level));
+      const cap = Math.floor(25000 * Math.pow(1.6, level));
       return `Energy cap: ${cap.toLocaleString()}`;
     },
     
     unlockCondition: {
       // simți nevoia de cap când ai atins de câteva ori acest prag
-      resources: { energy: 500 }
+      resources: { energy: 1000 }
     }
   },
   
@@ -134,12 +200,12 @@ const UPGRADES = {
     category: 'capacity',
     
     maxLevel: 15,
-    baseCost: 300,
+    baseCost: 200,
     costMultiplier: 1.7,
     costResource: 'mana',
     
     effect: (level) => {
-      return 500 * Math.pow(1.8, level);
+      return 500 * Math.pow(1.6, level);
     },
     
     getDescription: (level) => {
@@ -148,7 +214,7 @@ const UPGRADES = {
     },
     
     unlockCondition: {
-      resources: { mana: 50 }
+      resources: { mana: 100 }
     }
   },
   
@@ -160,12 +226,12 @@ const UPGRADES = {
     category: 'capacity',
     
     maxLevel: 15,
-    baseCost: 5000,
+    baseCost: 25000,
     costMultiplier: 1.7,
     costResource: 'volcanicEnergy',
     
     effect: (level) => {
-      return 4000 * Math.pow(1.8, level);
+      return 40000 * Math.pow(1.6, level);
     },
     
     getDescription: (level) => {
@@ -187,15 +253,15 @@ const UPGRADES = {
     category: 'synergy',
     
     maxLevel: 5,
-    baseCost: 5000,
+    baseCost: 25000,
     costMultiplier: 2.5,
     costResource: 'energy',
     
     targetStructure: 'solarPanel',
     
     effect: (level) => {
-      // +40% per level (linear) – foarte puternic pe structuri mari
-      return 1 + (level * 0.4);
+      // +25% per level (linear) – foarte puternic pe structuri mari
+      return 1 + (level * 0.25);
     },
     
     getDescription: (level) => {
@@ -223,7 +289,7 @@ const UPGRADES = {
     targetStructure: 'windTurbine',
     
     effect: (level) => {
-      return 1 + (level * 0.4);
+      return 1 + (level * 0.25);
     },
     
     getDescription: (level) => {
@@ -274,13 +340,13 @@ const UPGRADES = {
     category: 'qol',
     
     maxLevel: 10,
-    baseCost: 500,
+    baseCost: 2500,
     costMultiplier: 1.4, // nu chiar fix, dar nici prea agresiv
     costResource: 'gems',
     
     effect: (level) => {
       // 0% → 100% in 10 levels
-      return Math.min(level * 10, 100);
+      return Math.min(level * 5, 50);
     },
     
     getDescription: (level) => {
@@ -289,7 +355,7 @@ const UPGRADES = {
     },
     
     unlockCondition: {
-      resources: { gems: 200 } // mai ușor de deblocat, dar scaling de cost mai dur pe termen lung
+      resources: { gems: 500 } // mai ușor de deblocat, dar scaling de cost mai dur pe termen lung
     }
   },
   
@@ -301,7 +367,7 @@ const UPGRADES = {
     category: 'qol',
     
     maxLevel: 1,
-    baseCost: 2000,        // puțin mai scump, să simți că e „feature premium”
+    baseCost: 1500,        // puțin mai scump, să simți că e „feature premium”
     costMultiplier: 1.0,
     costResource: 'gems',
     
@@ -381,7 +447,7 @@ const UPGRADES = {
     category: 'unlock',
     
     maxLevel: 1,
-    baseCost: 1000,
+    baseCost: 2500,
     costMultiplier: 1.0,
     costResource: 'mana',
     
@@ -398,6 +464,50 @@ const UPGRADES = {
       structures: { manaExtractor: 10 }
     }
   },
+
+  pressureTech: {
+    id: 'pressureTech',
+    name: 'Pressure Technology',
+    description: 'Unlock Deep Sea Pump',
+    emoji: '⚓',
+    category: 'unlock',
+    maxLevel: 1,
+    baseCost: 75000,
+    costMultiplier: 1.0,
+    costResource: 'tidalEnergy',
+    effect: () => {
+      return { unlock: 'deepSeaPump' };
+    },
+    getDescription: () => {
+      return 'Unlocks: Deep Sea Pump';
+    },
+    unlockCondition: {
+      structures: { coralBattery: 5 },
+      resources: { tidalEnergy: 50000 }
+    }
+  },
+
+  heatVent: {
+    id: 'heatVent',
+    name: 'Heat Vent',
+    description: 'Unlock Mirage Core',
+    emoji: '🌡️',
+    category: 'unlock',
+    maxLevel: 1,
+    baseCost: 100000,
+    costMultiplier: 1.0,
+    costResource: 'solarEssence',
+    effect: () => {
+      return { unlock: 'mirageCore' };
+    },
+    getDescription: () => {
+      return 'Unlocks: Mirage Core';
+    },
+    unlockCondition: {
+      structures: { sandExtractor: 8 },
+      resources: { solarEssence: 150000 }
+    }
+  },
   
   // ===== SPECIAL UPGRADES =====
   criticalEnergy: {
@@ -408,16 +518,16 @@ const UPGRADES = {
     category: 'special',
     
     maxLevel: 10,
-    baseCost: 10000,
+    baseCost: 25000,
     costMultiplier: 2.2,
     costResource: 'gems',
     
     effect: (level) => {
-      return level * 2; // 2% per level
+      return level * 1; // 1% per level
     },
     
     getDescription: (level) => {
-      const chance = level * 2;
+      const chance = level * 1;
       return `${chance}% chance for 2x energy ticks`;
     },
     
@@ -435,16 +545,16 @@ const UPGRADES = {
     category: 'special',
     
     maxLevel: 10,
-    baseCost: 8000,
+    baseCost: 15000,
     costMultiplier: 2.0,
     costResource: 'gems',
     
     effect: (level) => {
-      return level * 5; // 5% per level
+      return level * 3; // 3% per level
     },
     
     getDescription: (level) => {
-      const chance = level * 5;
+      const chance = level * 3;
       return `${chance}% chance for bonus gems`;
     },
     
@@ -461,7 +571,7 @@ const UPGRADES = {
     category: 'special',
     
     maxLevel: 10,
-    baseCost: 5000,
+    baseCost: 25000,
     costMultiplier: 2.0,
     costResource: 'gems',
     
@@ -488,7 +598,7 @@ const UPGRADES = {
     category: 'synergy',
 
     maxLevel: 5,
-    baseCost: 8000,
+    baseCost: 15000,
     costMultiplier: 2.8,
     costResource: 'tidalEnergy',
     targetStructure: 'tidalGenerator',
@@ -596,7 +706,7 @@ const UPGRADES = {
     category: 'special',
 
     maxLevel: 1,
-    baseCost: 8000,
+    baseCost: 15000,
     costMultiplier: 1.0,
     costResource: 'pearls',
 
@@ -610,6 +720,28 @@ const UPGRADES = {
 
     unlockCondition: {
       structures: { coralBattery: 10 }
+    }
+  },
+
+  tidalAmplifier: {
+    id: 'tidalAmplifier',
+    name: 'Tidal Amplifier',
+    description: 'Boosts tidal energy production',
+    emoji: '🌊',
+    category: 'production',
+    maxLevel: 25,
+    baseCost: 3000,
+    costMultiplier: 1.5,
+    costResource: 'tidalEnergy',
+    effect: (level) => {
+      return Math.pow(1.10, level);
+    },
+    getDescription: (level) => {
+      const bonus = ((Math.pow(1.10, level) - 1) * 100).toFixed(1);
+      return `+${bonus}% tidal energy production`;
+    },
+    unlockCondition: {
+      realms: { ocean: true }
     }
   }
 };

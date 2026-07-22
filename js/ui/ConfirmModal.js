@@ -41,7 +41,7 @@ class ConfirmModal {
     const modal = document.getElementById('confirm-modal');
     
     document.getElementById('confirm-title').innerHTML = danger ? '⚠️ ' + title : title;
-    document. getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-message').textContent = message;
     
     // Remove old listener
     const yesBtn = document.getElementById('confirm-yes');

@@ -102,9 +102,9 @@ const REALMS = {
     lore: 'The ocean depths hold secrets older than time itself.  Harness tides and marine life for immense energy.',
     
     bonuses: {
-      tidalProduction: 1.08, // +8% tidal energy production (redus de la 1. 15)
+      tidalProduction: 1.08, // +8% tidal energy production (redus de la 1.15)
       pearlDropChance: 0.06, // 6% chance for pearls (redus de la 10%)
-      guardianAffinity: 1.12 // +12% water guardian bonus (redus de la 1. 20)
+      guardianAffinity: 1.12 // +12% water guardian bonus (redus de la 1.20)
     },
     
     bossId: 'oceanLeviathan',
@@ -119,7 +119,7 @@ const REALMS = {
     id: 'desert',
     name: 'Desert Expanse',
     description: 'Endless dunes hiding ancient solar power',
-    emoji: '�sa',
+    emoji: '🏜️',
     theme: 'yellow',
     
     unlockCondition: {
@@ -145,9 +145,7 @@ const REALMS = {
       solarProduction: 1.25, // +25% solar energy
       energyProduction: 1.10, // +10% all energy
       heatResistance: 0.9 // -10% structure costs
-    },
-    
-    locked: true // Not implemented yet
+    }
   },
   
   tundra: {
@@ -180,9 +178,7 @@ const REALMS = {
       cryoProduction: 1.30, // +30% cryo energy
       crystalChance: 0.08, // 8% chance for crystals
       guardianDuration: 1.20 // +20% guardian buff duration
-    },
-    
-    locked: true // Not implemented yet
+    }
   },
   
   cosmos: {
@@ -222,9 +218,7 @@ const REALMS = {
       guardianPower: 1.40 // +40% all guardian bonuses
     },
     
-    bossId: 'cosmicHarbinger',
-    
-    locked: true // Final realm - Not implemented yet
+    bossId: 'cosmicHarbinger'
   }
 };
 
@@ -240,10 +234,10 @@ export function getRealmById(realmId) {
  */
 export function getUnlockedRealms(state) {
   return Object.values(REALMS).filter(realm => {
-    if (! realm.unlockCondition) return true; // Forest always unlocked
+    if (!realm.unlockCondition) return true; // Forest always unlocked
     if (realm.locked) return false; // Not implemented
     
-    return state.realms. unlocked.includes(realm.id);
+    return state.realms.unlocked.includes(realm.id);
   });
 }
 
@@ -253,19 +247,19 @@ export function getUnlockedRealms(state) {
 export function canUnlockRealm(realmId, state) {
   const realm = REALMS[realmId];
   if (!realm || realm.locked) return false;
-  if (! realm.unlockCondition) return true;
+  if (!realm.unlockCondition) return true;
   
   const condition = realm.unlockCondition;
   
   // Check ascension level
-  if (condition.ascension && state.ascension. level < condition.ascension.level) {
+  if (condition.ascension && state.ascension.level < condition.ascension.level) {
     return false;
   }
   
   // Check other realms
   if (condition.realms) {
-    for (const [requiredRealm, status] of Object.entries(condition. realms)) {
-      if (status === 'unlocked' && !state.realms. unlocked.includes(requiredRealm)) {
+    for (const [requiredRealm, status] of Object.entries(condition.realms)) {
+      if (status === 'unlocked' && !state.realms.unlocked.includes(requiredRealm)) {
         return false;
       }
     }
@@ -273,8 +267,8 @@ export function canUnlockRealm(realmId, state) {
   
   // Check bosses
   if (condition.bosses) {
-    for (const [boss, status] of Object.entries(condition. bosses)) {
-      if (status === 'defeated' && ! state.bosses[boss]?.defeated) {
+    for (const [boss, status] of Object.entries(condition.bosses)) {
+      if (status === 'defeated' && !state.bosses[boss]?.defeated) {
         return false;
       }
     }
@@ -282,7 +276,7 @@ export function canUnlockRealm(realmId, state) {
   
   // Check production
   if (condition.production) {
-    for (const [resource, amount] of Object.entries(condition. production)) {
+    for (const [resource, amount] of Object.entries(condition.production)) {
       if (state.production[resource] < amount) {
         return false;
       }
@@ -290,7 +284,7 @@ export function canUnlockRealm(realmId, state) {
   }
   
   // Check resources for cost
-  if (realm.unlockCost?. crystals && state.resources.crystals < realm.unlockCost.crystals) {
+  if (realm.unlockCost?.crystals && state.resources.crystals < realm.unlockCost.crystals) {
     return false;
   }
   

@@ -151,7 +151,7 @@ class GuardiansUI {
   dismissGuardian(guardian) {
   confirmModal.show({
     title: 'Dismiss Guardian',
-    message: `Are you sure you want to dismiss ${guardian.emoji} ${guardian.name}?  This guardian provides +${guardian.bonus}% ${this.getTypeName(guardian. type)} production and cannot be recovered! `,
+    message: `Are you sure you want to dismiss ${guardian.emoji} ${guardian.name}? This guardian provides +${guardian.bonus}% ${this.getTypeName(guardian.type)} production and cannot be recovered!`,
     danger: true,
     onConfirm: () => {
       guardianSystem.dismiss(guardian.id);

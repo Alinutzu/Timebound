@@ -22,7 +22,7 @@ class BadgeManager {
   
   subscribeToEvents() {
     // Update on state changes
-    eventBus. on('quest:completed', () => this.updateQuestsBadge());
+    eventBus.on('quest:completed', () => this.updateQuestsBadge());
     eventBus.on('quest:claimed', () => this.updateQuestsBadge());
     eventBus.on('achievement:unlocked', () => this.updateAchievementsBadge());
     eventBus.on('achievement:claimed', () => this.updateAchievementsBadge());
@@ -30,7 +30,7 @@ class BadgeManager {
     // Update on game tick (for completed quests)
     eventBus.on('game:tick', () => {
       // Throttle to once per second
-      if (! this.lastUpdate || Date.now() - this. lastUpdate > 1000) {
+      if (!this.lastUpdate || Date.now() - this.lastUpdate > 1000) {
         this.updateAllBadges();
         this.lastUpdate = Date.now();
       }
@@ -45,20 +45,20 @@ class BadgeManager {
   
   updateQuestsBadge() {
     const state = stateManager.getState();
-    const completedQuests = state.quests.active.filter(q => q.completed). length;
+    const completedQuests = state.quests.active.filter(q => q.completed).length;
     
     this.setBadge('quests', completedQuests);
   }
   
   updateAchievementsBadge() {
-  const state = stateManager. getState();
+  const state = stateManager.getState();
   
   // ===== FIX: Adaptare pentru structura de array =====
   // Verifică dacă achievements sunt în formatul vechi (array-based)
-  if (Array.isArray(state.achievements?. unlocked)) {
+  if (Array.isArray(state.achievements?.unlocked)) {
     // Formatul: { unlocked: [], claimed: [] }
-    const unlockedAchievements = state.achievements. unlocked || [];
-    const claimedAchievements = state.achievements. claimed || [];
+    const unlockedAchievements = state.achievements.unlocked || [];
+    const claimedAchievements = state.achievements.claimed || [];
     
     // Achievements unlocked dar NU claimed
     const unclaimedCount = unlockedAchievements.filter(
@@ -72,7 +72,7 @@ class BadgeManager {
   // Fallback: format nou (object-based)
   let unclaimedCount = 0;
   for (let achievement of Object.values(state.achievements)) {
-    if (achievement. unlocked && !achievement.claimed) {
+    if (achievement.unlocked && !achievement.claimed) {
       unclaimedCount++;
     }
   }
@@ -98,7 +98,7 @@ class BadgeManager {
     if (!badge) return;
     
     if (value && value !== 0) {
-      badge. textContent = value;
+      badge.textContent = value;
       badge.style.display = 'inline-block';
       
       // Add pulse animation
@@ -112,7 +112,7 @@ class BadgeManager {
   hideBadge(badgeKey) {
     const badge = this.badges[badgeKey];
     if (badge) {
-      badge.style. display = 'none';
+      badge.style.display = 'none';
     }
   }
   

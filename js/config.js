@@ -16,8 +16,8 @@ const CONFIG = {
   TICK_RATE: 100, // ms (10 ticks per second)
   
   // Debug
-  DEBUG_MODE: true,
-  ENABLE_CHEATS: true, // Development only
+  DEBUG_MODE: false,
+  ENABLE_CHEATS: false, // Production only
   LOG_LEVEL: 'info', // 'error', 'warn', 'info', 'debug'
   
   // UI
@@ -28,44 +28,48 @@ const CONFIG = {
   // Balancing
   BALANCING: {
     // Starting resources
-    STARTING_ENERGY: 50,
+    STARTING_ENERGY: 10,
     STARTING_MANA: 0,
-    STARTING_GEMS: 100, // Tutorial bonus
+    STARTING_GEMS: 0, // Must earn through gameplay
     STARTING_CRYSTALS: 0,
     
     // Caps
-    BASE_ENERGY_CAP: 5000,
-    BASE_MANA_CAP: 100,
-    BASE_VOLCANIC_ENERGY_CAP: 5000,
+    BASE_ENERGY_CAP: 50000,
+    BASE_MANA_CAP: 1000,
+    BASE_VOLCANIC_ENERGY_CAP: 50000,
+    BASE_TIDAL_ENERGY_CAP: 50000,
+    BASE_SOLAR_ESSENCE_CAP: 50000,
+    BASE_CRYO_ENERGY_CAP: 50000,
+    BASE_COSMIC_ENERGY_CAP: 50000,
     
     // Offline
-    OFFLINE_PRODUCTION_BASE: 0.5, // 50% without upgrades
+    OFFLINE_PRODUCTION_BASE: 0.25, // 25% without upgrades
     OFFLINE_TIME_CAP: 86400000, // 24h in ms
     
     // Daily
-    DAILY_QUEST_LIMIT: 10,
+    DAILY_QUEST_LIMIT: 8,
     
     // Ascension
-    ASCENSION_MIN_ENERGY: 10000000, // 10M
+    ASCENSION_MIN_ENERGY: 100000000, // 100M
     ASCENSION_CRYSTAL_FORMULA: (lifetimeEnergy) => {
-      return Math.floor(Math.sqrt(lifetimeEnergy / 1000000));
+      return Math.floor(Math.sqrt(lifetimeEnergy / 10000000));
     },
-    ASCENSION_PRODUCTION_BONUS: 0.1, // +10% per level
-    ASCENSION_CAPACITY_BONUS: 0.5,   // +50% per level
+    ASCENSION_PRODUCTION_BONUS: 0.08, // +8% per level
+    ASCENSION_CAPACITY_BONUS: 0.35,   // +35% per level
     
     // Guardians
-    GUARDIAN_SUMMON_COST: 100, // gems
+    GUARDIAN_SUMMON_COST: 500, // gems
     GUARDIAN_RARITIES: {
-      common: { weight: 50, bonusRange: [5, 15] },
-      uncommon: { weight: 30, bonusRange: [15, 30] },
-      rare: { weight: 15, bonusRange: [30, 50] },
-      epic: { weight: 4, bonusRange: [50, 100] },
-      legendary: { weight: 1, bonusRange: [100, 200] }
+      common: { weight: 50, bonusRange: [3, 8] },
+      uncommon: { weight: 30, bonusRange: [8, 15] },
+      rare: { weight: 15, bonusRange: [15, 25] },
+      epic: { weight: 4, bonusRange: [25, 50] },
+      legendary: { weight: 1, bonusRange: [50, 100] }
     },
     
     // Volcano unlock
-    VOLCANO_UNLOCK_COST: 100, // crystals
-    VOLCANO_MIN_ASCENSION: 1
+    VOLCANO_UNLOCK_COST: 500, // crystals
+    VOLCANO_MIN_ASCENSION: 2
   },
   
   // Features flags

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'idle-energy-empire-v2. 0. 0';
+const CACHE_NAME = 'idle-energy-empire-v2.0.0';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -8,7 +8,7 @@ const urlsToCache = [
   '/css/components/cards.css',
   '/css/components/tabs.css',
   '/css/components/modals.css',
-  '/css/components/notifications. css',
+  '/css/components/notifications.css',
   '/css/components/tooltips.css',
   '/css/components/tutorial.css',
   '/css/components/upgrade-queue.css',
@@ -17,7 +17,7 @@ const urlsToCache = [
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
-  event. waitUntil(
+  event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
   );
@@ -43,7 +43,7 @@ self.addEventListener('activate', (event) => {
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event. request)
+    caches.match(event.request)
       .then((response) => {
         // Cache hit - return response
         if (response) {

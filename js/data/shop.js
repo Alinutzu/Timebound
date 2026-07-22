@@ -15,7 +15,7 @@ const SHOP_ITEMS = {
         mana: 50 // Redus de la 100
       },
       price: 0.99,
-      priceDisplay: '$0. 99',
+      priceDisplay: '$0.99',
       emoji: '💎',
       popular: false
     },
@@ -77,7 +77,7 @@ const SHOP_ITEMS = {
       id: 'ultimate',
       name: 'Ultimate Pack',
       description: 'The best deal',
-      gems: 20000,
+      gems: 10000,
       bonus: {
         energy: 1000000, // Redus de la 2000000
         mana: 10000, // Redus de la 20000
@@ -209,7 +209,7 @@ const SHOP_ITEMS = {
       name: 'Free Gems',
       description: 'Watch ad for gems',
       reward: {
-        gems: 15 // Redus de la 25
+        gems: 8
       },
       cooldown: 600000, // 10 min
       dailyLimit: 4, // Redus de la 5
@@ -219,7 +219,7 @@ const SHOP_ITEMS = {
     doubleReward: {
       id: 'doubleReward',
       name: 'Double Rewards',
-      description: '1. 5x all production for 10 minutes', // Updated description
+      description: '1.5x all production for 10 minutes', // Updated description
       reward: {
         multiplier: 1.5, // Redus de la 2 (100% → 50%)
         duration: 600000 // 10 min
@@ -250,7 +250,7 @@ const SHOP_ITEMS = {
       {
         id: 'energy_sale',
         name: 'Energy Sale',
-        gems: 400, // Redus de la 500
+        gems: 100,
         bonus: { energy: 50000 }, // Redus de la 100000
         price: 0.99,
         discount: 50
@@ -294,7 +294,7 @@ const SHOP_ITEMS = {
       description: 'Get 3 additional spins for the Daily Wheel!',
       spins: 3,
       bonus: {
-        gems: 50 // Redus de la 100
+        gems: 25
       },
       price: 0.99,
       priceDisplay: '$0.99',
@@ -308,11 +308,11 @@ const SHOP_ITEMS = {
       description: 'Best value! 10 spins + bonus gems',
       spins: 10,
       bonus: {
-        gems: 300, // Redus de la 500
+        gems: 150,
         energy: 5000 // Redus de la 10000
       },
       price: 2.99,
-      priceDisplay: '$2. 99',
+      priceDisplay: '$2.99',
       emoji: '🎡',
       popular: true,
       bonusPercentage: 30
@@ -325,7 +325,7 @@ const SHOP_ITEMS = {
       unlimited: true,
       duration: 86400000, // 24h
       bonus: {
-        gems: 500 // Redus de la 1000
+        gems: 250
       },
       price: 4.99,
       priceDisplay: '$4.99',
@@ -340,7 +340,7 @@ const SHOP_ITEMS = {
       description: '10 undo moves for 2048 game',
       undoMoves: 10,
       bonus: {
-        gems: 100
+        gems: 50
       },
       price: 1.99,
       priceDisplay: '$1.99',
@@ -359,7 +359,7 @@ const SHOP_ITEMS = {
         rainbow: 2
       },
       bonus: {
-        gems: 200
+        gems: 100
       },
       price: 2.99,
       priceDisplay: '$2.99',
@@ -439,7 +439,7 @@ export function getPackagesByCategory(category) {
  * Check if limited offer is available
  */
 export function isOfferAvailable(offer, playerState) {
-  if (!offer. condition) return true;
+  if (!offer.condition) return true;
   
   const { condition } = offer;
   
@@ -463,9 +463,9 @@ export function isOfferAvailable(offer, playerState) {
   }
   
   // Check day of week
-  if (condition. dayOfWeek) {
+  if (condition.dayOfWeek) {
     const currentDay = new Date().getDay();
-    if (! condition.dayOfWeek.includes(currentDay)) {
+    if (!condition.dayOfWeek.includes(currentDay)) {
       return false;
     }
   }

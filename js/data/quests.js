@@ -17,7 +17,7 @@ const QUEST_TEMPLATES = {
     rewards: (amount) => {
       return {
         energy: Math.floor(amount * 0.08), // 8% bonus (reduced from 10%)
-        gems: Math.min(3 + Math.floor(amount / 5000), 30)
+        gems: Math.min(1 + Math.floor(amount / 10000), 15)
       };
     },
     
@@ -37,8 +37,8 @@ const QUEST_TEMPLATES = {
     
     rewards: (amount) => {
       return {
-        mana: Math. floor(amount * 0.15), // 15% bonus (reduced from 20%)
-        gems: Math.min(5 + Math.floor(amount / 25), 50)
+        mana: Math.floor(amount * 0.15), // 15% bonus (reduced from 20%)
+        gems: Math.min(2 + Math.floor(amount / 50), 25)
       };
     },
     
@@ -63,7 +63,7 @@ const QUEST_TEMPLATES = {
     rewards: (amount) => {
       return {
         volcanicEnergy: Math.floor(amount * 0.12),
-        gems: Math.min(8 + Math.floor(amount / 250), 80),
+        gems: Math.min(3 + Math.floor(amount / 500), 40),
         crystals: Math.floor(amount / 2500)
       };
     },
@@ -90,7 +90,7 @@ const QUEST_TEMPLATES = {
     rewards: (amount) => {
       return {
         energy: amount * 200,
-        gems: Math.min(5 + amount, 50),
+        gems: Math.min(2 + amount, 25),
         mana: Math.floor(amount / 5)
       };
     },
@@ -112,7 +112,7 @@ const QUEST_TEMPLATES = {
     rewards: (amount) => {
       return {
         energy: amount * 500,
-        gems: amount * 3
+        gems: amount * 1
       };
     },
     
@@ -132,7 +132,7 @@ const QUEST_TEMPLATES = {
     
     rewards: (amount) => {
       return {
-        gems: amount * 15,
+        gems: amount * 5,
         energy: amount * 1000,
         mana: amount * 5
       };
@@ -159,7 +159,7 @@ const QUEST_TEMPLATES = {
     
     rewards: (amount) => {
       return {
-        gems: Math.min(15 + Math.floor(amount / 50), 100),
+        gems: Math.min(5 + Math.floor(amount / 100), 50),
         crystals: Math.floor(amount / 500),
         energy: amount * 50
       };
@@ -181,7 +181,7 @@ const QUEST_TEMPLATES = {
     
     rewards: (amount) => {
       return {
-        gems: amount * 1,
+        gems: amount * 0.5,
         energy: amount * 500
       };
     },
@@ -203,7 +203,7 @@ const QUEST_TEMPLATES = {
     
     rewards: (count) => {
       return {
-        gems: count * 10,
+        gems: count * 5,
         energy: count * 1000
       };
     },
@@ -223,7 +223,7 @@ const QUEST_TEMPLATES = {
     
     rewards: (score) => {
       return {
-        gems: Math.floor(score / 80),
+        gems: Math.floor(score / 160),
         energy: score * 3
       };
     },

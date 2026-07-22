@@ -35,54 +35,7 @@ class ResourceDisplay {
    */
   render() {
     this.container.innerHTML = `
-      <div class="resource-display">
-        <div class="resource-item" id="energy-display">
-          <span class="resource-icon">⚡</span>
-          <div class="resource-info">
-            <div class="resource-amount" id="energy-amount">0</div>
-            <div class="resource-rate" id="energy-rate">0/s</div>
-          </div>
-          <div class="resource-bar">
-            <div class="resource-bar-fill" id="energy-bar"></div>
-          </div>
-        </div>
-        
-        <div class="resource-item" id="mana-display">
-          <span class="resource-icon">✨</span>
-          <div class="resource-info">
-            <div class="resource-amount" id="mana-amount">0</div>
-            <div class="resource-rate" id="mana-rate">0/s</div>
-          </div>
-          <div class="resource-bar">
-            <div class="resource-bar-fill" id="mana-bar"></div>
-          </div>
-        </div>
-        
-        <div class="resource-item" id="gems-display">
-          <span class="resource-icon">💎</span>
-          <div class="resource-info">
-            <div class="resource-amount" id="gems-amount">0</div>
-          </div>
-        </div>
-        
-        <div class="resource-item" id="crystals-display" style="display: none;">
-          <span class="resource-icon">💠</span>
-          <div class="resource-info">
-            <div class="resource-amount" id="crystals-amount">0</div>
-          </div>
-        </div>
-        
-        <div class="resource-item" id="volcanic-display" style="display: none;">
-          <span class="resource-icon">🌋</span>
-          <div class="resource-info">
-            <div class="resource-amount" id="volcanic-amount">0</div>
-            <div class="resource-rate" id="volcanic-rate">0/s</div>
-          </div>
-          <div class="resource-bar">
-            <div class="resource-bar-fill" id="volcanic-bar"></div>
-          </div>
-        </div>
-      </div>
+      <div class="resource-display" id="resource-display"></div>
     `;
     
     this.update();
@@ -93,92 +46,55 @@ class ResourceDisplay {
    */
   update() {
     const state = stateManager.getState();
+    const display = document.getElementById('resource-display');
+    if (!display) return;
     
-    // Energy
-    this.updateResource('energy', 
-      state.resources.energy, 
-      state.caps.energy, 
-      state.production.energy
-    );
+    const resources = [
+      { key: 'energy', icon: '⚡', label: 'Energy', show: true },
+      { key: 'mana', icon: '✨', label: 'Mana', show: true },
+      { key: 'gems', icon: '💎', label: 'Gems', show: true, noBar: true, noRate: true },
+      { key: 'crystals', icon: '💠', label: 'Crystals', show: state.resources.crystals > 0 || state.ascension.level > 0, noBar: true, noRate: true },
+      { key: 'volcanicEnergy', icon: '🌋', label: 'Volcanic', show: state.realms.unlocked.includes('volcano') },
+      { key: 'tidalEnergy', icon: '🌊', label: 'Tidal', show: state.realms.unlocked.includes('ocean') },
+      { key: 'solarEssence', icon: '☀️', label: 'Solar', show: state.realms.unlocked.includes('desert') },
+      { key: 'cryoEnergy', icon: '❄️', label: 'Cryo', show: state.realms.unlocked.includes('tundra') },
+      { key: 'cosmicEnergy', icon: '🌌', label: 'Cosmic', show: state.realms.unlocked.includes('cosmos') }
+    ];
     
-    // Mana
-    this.updateResource('mana', 
-      state.resources.mana, 
-      state.caps.mana, 
-      state.production.mana
-    );
-    
-    // Gems (no cap or rate)
-    const gemsAmount = document.getElementById('gems-amount');
-    if (gemsAmount) {
-      gemsAmount.textContent = Formatters.formatNumber(state.resources.gems, 0);
-    }
-    
-    // Crystals (show if player has any or has ascended)
-    if (state.resources.crystals > 0 || state.ascension.level > 0) {
-      const crystalsDisplay = document.getElementById('crystals-display');
-      const crystalsAmount = document.getElementById('crystals-amount');
+    let html = '';
+    for (const res of resources) {
+      if (!res.show) continue;
       
-      if (crystalsDisplay) crystalsDisplay.style.display = 'flex';
-      if (crystalsAmount) {
-        crystalsAmount.textContent = Formatters.formatNumber(state.resources.crystals, 0);
-      }
-    }
-    
-    // Volcanic (show if volcano unlocked)
-    if (state.realms.unlocked.includes('volcano')) {
-      const volcanicDisplay = document.getElementById('volcanic-display');
-      if (volcanicDisplay) volcanicDisplay.style.display = 'flex';
+      const amount = state.resources[res.key] || 0;
+      const cap = state.caps[res.key];
+      const rate = state.production[res.key];
       
-      this.updateResource('volcanic',
-        state.resources.volcanicEnergy,
-        state.caps.volcanicEnergy,
-        state.production.volcanicEnergy
-      );
+      const amountText = cap != null
+        ? `${Formatters.formatNumber(amount)} / ${Math.floor(cap).toLocaleString()}`
+        : Formatters.formatNumber(amount);
+      
+      const rateText = rate != null ? `${Formatters.formatNumber(rate)}/s` : '';
+      const barPercent = cap ? Math.min((amount / cap) * 100, 100) : 0;
+      const barColor = barPercent >= 100 ? '#ef4444' : barPercent >= 80 ? '#f59e0b' : '#10b981';
+      
+      html += `
+        <div class="resource-item">
+          <span class="resource-icon">${res.icon}</span>
+          <div class="resource-info">
+            <div class="resource-amount">${amountText}</div>
+            ${rateText ? `<div class="resource-rate" style="color: ${rate > 0 ? '#10b981' : '#6b7280'}">${rateText}</div>` : ''}
+          </div>
+          ${barPercent > 0 && !res.noBar ? `
+            <div class="resource-bar">
+              <div class="resource-bar-fill" style="width: ${barPercent}%; background-color: ${barColor}"></div>
+            </div>
+          ` : ''}
+        </div>
+      `;
     }
-  }
-  
-  /**
-   * Update individual resource
-   */
-  updateResource(resourceKey, amount, cap, rate) {
-  // Amount
-  const amountEl = document.getElementById(`${resourceKey}-amount`);
-  if (amountEl) {
-    const currentText = Formatters.formatNumber(amount);       // ex: 1.27K
-    const capInt = Math.floor(cap || 0);
-    const capText = capInt.toLocaleString();                   // ex: 17,496
-
-    amountEl.textContent = `${currentText} / ${capText}`;
-  }
-
-  // Rate
-  const rateEl = document.getElementById(`${resourceKey}-rate`);
-  if (rateEl && rate !== undefined) {
-    rateEl.textContent = `${Formatters.formatNumber(rate)}/s`;
     
-    if (rate > 0) {
-      rateEl.style.color = '#10b981'; // Green
-    } else {
-      rateEl.style.color = '#6b7280'; // Gray
-    }
+    display.innerHTML = html;
   }
-
-  // Progress bar (rămâne la fel)
-  const barEl = document.getElementById(`${resourceKey}-bar`);
-  if (barEl && cap) {
-    const percentage = Math.min((amount / cap) * 100, 100);
-    barEl.style.width = `${percentage}%`;
-    
-    if (percentage >= 100) {
-      barEl.style.backgroundColor = '#ef4444'; // Red (full)
-    } else if (percentage >= 80) {
-      barEl.style.backgroundColor = '#f59e0b'; // Orange
-    } else {
-      barEl.style.backgroundColor = '#10b981'; // Green
-    }
-  }
-}
 }
 
 export default ResourceDisplay;

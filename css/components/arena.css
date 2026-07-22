@@ -169,6 +169,24 @@
   cursor: pointer;
 }
 
+.arena-energy {
+  background: linear-gradient(135deg, #f59e0b33, #f9731633);
+  border: 1px solid #f59e0b;
+  color: #f59e0b;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  background: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+}
+
 .arena-battle-actions {
   display: flex;
   gap: var(--spacing-md);

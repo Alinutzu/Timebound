@@ -59,6 +59,10 @@ export default {
     return request('POST', '/auth/login', { username, password });
   },
 
+  getUser() {
+    return request('GET', '/auth/me');
+  },
+
   // Guardians
   getGuardians() {
     return request('GET', '/guardians');

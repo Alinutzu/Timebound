@@ -14,7 +14,15 @@ class ArenaUI {
     this.opponents = [];
     this.isGuest = false;
     this.connecting = false;
+    this.energy = 0;
     this.render();
+  }
+
+  static LEVELUP_BASE_COST = 10000;
+  static LEVELUP_COST_MULTIPLIER = 1.5;
+
+  static calculateLevelUpCost(level) {
+    return Math.floor(ArenaUI.LEVELUP_BASE_COST * Math.pow(ArenaUI.LEVELUP_COST_MULTIPLIER, level));
   }
 
   render() {
@@ -95,6 +103,7 @@ class ArenaUI {
       <div class="arena-header">
         <h2>⚔️ Arena ${this.isGuest ? '<span class="arena-guest-badge">GUEST</span>' : ''}</h2>
         <div class="arena-header-actions">
+          <span id="arena-energy-display" class="arena-energy">⚡ ${this.energy.toLocaleString()}</span>
           <span id="arena-username-display"></span>
           ${this.isGuest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Register</button>' : ''}
           <button class="btn btn-small btn-secondary" id="arena-save-cloud">☁️ Save</button>
@@ -261,8 +270,19 @@ class ArenaUI {
   }
 
   async loadDashboard() {
-    document.getElementById('arena-username-display').textContent = `👤 ${JSON.parse(atob(api.getToken().split('.')[1])).username}`;
+    const username = JSON.parse(atob(api.getToken().split('.')[1])).username;
+    document.getElementById('arena-username-display').textContent = `👤 ${username}`;
+    try {
+      const user = await api.getUser();
+      this.energy = user.energy || 0;
+      this.updateEnergyDisplay();
+    } catch (e) {}
     await Promise.all([this.loadGuardians(), this.loadLeaderboard()]);
+  }
+
+  updateEnergyDisplay() {
+    const el = document.getElementById('arena-energy-display');
+    if (el) el.textContent = `⚡ ${this.energy.toLocaleString()}`;
   }
 
   async loadGuardians() {
@@ -281,7 +301,11 @@ class ArenaUI {
       return;
     }
 
-    list.innerHTML = this.guardians.map(g => `
+    list.innerHTML = this.guardians.map(g => {
+      const cost = ArenaUI.calculateLevelUpCost(g.level);
+      const canAfford = this.energy >= cost;
+      const maxLevel = g.level >= 50;
+      return `
       <div class="arena-guardian-card ${g.rarity}" data-id="${g.id}">
         <div class="arena-guardian-info">
           <span class="arena-guardian-name">${g.name}</span>
@@ -295,17 +319,22 @@ class ArenaUI {
         </div>
         <div class="arena-guardian-actions">
           <input type="checkbox" class="arena-guardian-select" data-id="${g.id}">
-          <button class="btn btn-small btn-primary levelup-btn" data-id="${g.id}">Level Up</button>
+          ${maxLevel
+            ? '<button class="btn btn-small btn-secondary" disabled>MAX</button>'
+            : `<button class="btn btn-small btn-primary levelup-btn ${canAfford ? '' : 'btn-disabled'}" data-id="${g.id}" ${canAfford ? '' : 'disabled'}>⚡${cost.toLocaleString()}</button>`
+          }
           <button class="btn btn-small btn-danger release-btn" data-id="${g.id}">Release</button>
         </div>
       </div>
-    `).join('');
+    `}).join('');
 
     list.querySelectorAll('.levelup-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         try {
-          const updated = await api.levelUpGuardian(parseInt(btn.dataset.id));
-          this.showNotification(`${updated.name} is now level ${updated.level}!`, 'success');
+          const result = await api.levelUpGuardian(parseInt(btn.dataset.id));
+          this.energy = result.energy;
+          this.updateEnergyDisplay();
+          this.showNotification(`${result.guardian.name} → Lv.${result.guardian.level}! (-⚡${result.cost.toLocaleString()})`, 'success');
           this.loadGuardians();
         } catch (err) {
           this.showNotification(err.message, 'warning');

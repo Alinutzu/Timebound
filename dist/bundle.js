@@ -8394,6 +8394,9 @@ var _default = exports["default"] = {
       password: password
     });
   },
+  getUser: function getUser() {
+    return request('GET', '/auth/me');
+  },
   // Guardians
   getGuardians: function getGuardians() {
     return request('GET', '/guardians');
@@ -16601,6 +16604,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 var ArenaUI = /*#__PURE__*/function () {
@@ -16615,6 +16619,7 @@ var ArenaUI = /*#__PURE__*/function () {
     this.opponents = [];
     this.isGuest = false;
     this.connecting = false;
+    this.energy = 0;
     this.render();
   }
   return _createClass(ArenaUI, [{
@@ -16674,7 +16679,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "renderDashboard",
     value: function renderDashboard() {
-      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena ".concat(this.isGuest ? '<span class="arena-guest-badge">GUEST</span>' : '', "</h2>\n        <div class=\"arena-header-actions\">\n          <span id=\"arena-username-display\"></span>\n          ").concat(this.isGuest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Register</button>' : '', "\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-save-cloud\">\u2601\uFE0F Save</button>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-load-cloud\">\u2601\uFE0F Load</button>\n          <button class=\"btn btn-small btn-danger\" id=\"arena-logout\">Logout</button>\n        </div>\n      </div>\n      ").concat(this.isGuest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : '', "\n      <div class=\"arena-dashboard\">\n        <div class=\"arena-section\" id=\"arena-guardians-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDEE1\uFE0F My Guardians</h3>\n            <button class=\"btn btn-primary\" id=\"arena-summon-btn\">\u2728 Summon (0 \uD83D\uDC8E)</button>\n          </div>\n          <div id=\"arena-guardians-list\" class=\"arena-guardians-list\">\n            <p class=\"arena-loading\">Loading guardians...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-battle-section\">\n          <div class=\"arena-section-header\">\n            <h3>\u2694\uFE0F Battle</h3>\n          </div>\n          <div class=\"arena-battle-actions\">\n            <button class=\"btn btn-success\" id=\"arena-pve-btn\">\u2694\uFE0F Train (PvE)</button>\n            <button class=\"btn btn-danger\" id=\"arena-pvp-btn\">\uD83D\uDD25 Find Opponent (PvP)</button>\n          </div>\n          <div id=\"arena-battle-result\"></div>\n          <div id=\"arena-opponents-list\"></div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-leaderboard-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83C\uDFC6 Leaderboard</h3>\n            <span id=\"arena-my-rank\"></span>\n          </div>\n          <div id=\"arena-leaderboard-list\" class=\"arena-leaderboard-list\">\n            <p class=\"arena-loading\">Loading leaderboard...</p>\n          </div>\n        </div>\n      </div>\n    ");
+      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena ".concat(this.isGuest ? '<span class="arena-guest-badge">GUEST</span>' : '', "</h2>\n        <div class=\"arena-header-actions\">\n          <span id=\"arena-energy-display\" class=\"arena-energy\">\u26A1 ").concat(this.energy.toLocaleString(), "</span>\n          <span id=\"arena-username-display\"></span>\n          ").concat(this.isGuest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Register</button>' : '', "\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-save-cloud\">\u2601\uFE0F Save</button>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-load-cloud\">\u2601\uFE0F Load</button>\n          <button class=\"btn btn-small btn-danger\" id=\"arena-logout\">Logout</button>\n        </div>\n      </div>\n      ").concat(this.isGuest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : '', "\n      <div class=\"arena-dashboard\">\n        <div class=\"arena-section\" id=\"arena-guardians-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDEE1\uFE0F My Guardians</h3>\n            <button class=\"btn btn-primary\" id=\"arena-summon-btn\">\u2728 Summon (0 \uD83D\uDC8E)</button>\n          </div>\n          <div id=\"arena-guardians-list\" class=\"arena-guardians-list\">\n            <p class=\"arena-loading\">Loading guardians...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-battle-section\">\n          <div class=\"arena-section-header\">\n            <h3>\u2694\uFE0F Battle</h3>\n          </div>\n          <div class=\"arena-battle-actions\">\n            <button class=\"btn btn-success\" id=\"arena-pve-btn\">\u2694\uFE0F Train (PvE)</button>\n            <button class=\"btn btn-danger\" id=\"arena-pvp-btn\">\uD83D\uDD25 Find Opponent (PvP)</button>\n          </div>\n          <div id=\"arena-battle-result\"></div>\n          <div id=\"arena-opponents-list\"></div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-leaderboard-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83C\uDFC6 Leaderboard</h3>\n            <span id=\"arena-my-rank\"></span>\n          </div>\n          <div id=\"arena-leaderboard-list\" class=\"arena-leaderboard-list\">\n            <p class=\"arena-loading\">Loading leaderboard...</p>\n          </div>\n        </div>\n      </div>\n    ");
     }
   }, {
     key: "bindEvents",
@@ -16914,16 +16919,31 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "loadDashboard",
     value: function () {
       var _loadDashboard = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+        var username, user, _t8;
         return _regenerator().w(function (_context8) {
-          while (1) switch (_context8.n) {
+          while (1) switch (_context8.p = _context8.n) {
             case 0:
-              document.getElementById('arena-username-display').textContent = "\uD83D\uDC64 ".concat(JSON.parse(atob(_api["default"].getToken().split('.')[1])).username);
-              _context8.n = 1;
+              username = JSON.parse(atob(_api["default"].getToken().split('.')[1])).username;
+              document.getElementById('arena-username-display').textContent = "\uD83D\uDC64 ".concat(username);
+              _context8.p = 1;
+              _context8.n = 2;
+              return _api["default"].getUser();
+            case 2:
+              user = _context8.v;
+              this.energy = user.energy || 0;
+              this.updateEnergyDisplay();
+              _context8.n = 4;
+              break;
+            case 3:
+              _context8.p = 3;
+              _t8 = _context8.v;
+            case 4:
+              _context8.n = 5;
               return Promise.all([this.loadGuardians(), this.loadLeaderboard()]);
-            case 1:
+            case 5:
               return _context8.a(2);
           }
-        }, _callee8, this);
+        }, _callee8, this, [[1, 3]]);
       }));
       function loadDashboard() {
         return _loadDashboard.apply(this, arguments);
@@ -16931,10 +16951,16 @@ var ArenaUI = /*#__PURE__*/function () {
       return loadDashboard;
     }()
   }, {
+    key: "updateEnergyDisplay",
+    value: function updateEnergyDisplay() {
+      var el = document.getElementById('arena-energy-display');
+      if (el) el.textContent = "\u26A1 ".concat(this.energy.toLocaleString());
+    }
+  }, {
     key: "loadGuardians",
     value: function () {
       var _loadGuardians = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
-        var _t8;
+        var _t9;
         return _regenerator().w(function (_context9) {
           while (1) switch (_context9.p = _context9.n) {
             case 0:
@@ -16948,7 +16974,7 @@ var ArenaUI = /*#__PURE__*/function () {
               break;
             case 2:
               _context9.p = 2;
-              _t8 = _context9.v;
+              _t9 = _context9.v;
               document.getElementById('arena-guardians-list').innerHTML = "<p class=\"arena-error\">Failed to load guardians</p>";
             case 3:
               return _context9.a(2);
@@ -16970,11 +16996,14 @@ var ArenaUI = /*#__PURE__*/function () {
         return;
       }
       list.innerHTML = this.guardians.map(function (g) {
-        return "\n      <div class=\"arena-guardian-card ".concat(g.rarity, "\" data-id=\"").concat(g.id, "\">\n        <div class=\"arena-guardian-info\">\n          <span class=\"arena-guardian-name\">").concat(g.name, "</span>\n          <span class=\"arena-guardian-rarity ").concat(g.rarity, "\">").concat(g.rarity, "</span>\n        </div>\n        <div class=\"arena-guardian-stats\">\n          <span>\u2764\uFE0F ").concat(g.hp, "/").concat(g.max_hp, "</span>\n          <span>\u2694\uFE0F ").concat(g.attack, "</span>\n          <span>\uD83D\uDEE1\uFE0F ").concat(g.defense, "</span>\n          <span>\u2B06\uFE0F Lv.").concat(g.level, "</span>\n        </div>\n        <div class=\"arena-guardian-actions\">\n          <input type=\"checkbox\" class=\"arena-guardian-select\" data-id=\"").concat(g.id, "\">\n          <button class=\"btn btn-small btn-primary levelup-btn\" data-id=\"").concat(g.id, "\">Level Up</button>\n          <button class=\"btn btn-small btn-danger release-btn\" data-id=\"").concat(g.id, "\">Release</button>\n        </div>\n      </div>\n    ");
+        var cost = ArenaUI.calculateLevelUpCost(g.level);
+        var canAfford = _this3.energy >= cost;
+        var maxLevel = g.level >= 50;
+        return "\n      <div class=\"arena-guardian-card ".concat(g.rarity, "\" data-id=\"").concat(g.id, "\">\n        <div class=\"arena-guardian-info\">\n          <span class=\"arena-guardian-name\">").concat(g.name, "</span>\n          <span class=\"arena-guardian-rarity ").concat(g.rarity, "\">").concat(g.rarity, "</span>\n        </div>\n        <div class=\"arena-guardian-stats\">\n          <span>\u2764\uFE0F ").concat(g.hp, "/").concat(g.max_hp, "</span>\n          <span>\u2694\uFE0F ").concat(g.attack, "</span>\n          <span>\uD83D\uDEE1\uFE0F ").concat(g.defense, "</span>\n          <span>\u2B06\uFE0F Lv.").concat(g.level, "</span>\n        </div>\n        <div class=\"arena-guardian-actions\">\n          <input type=\"checkbox\" class=\"arena-guardian-select\" data-id=\"").concat(g.id, "\">\n          ").concat(maxLevel ? '<button class="btn btn-small btn-secondary" disabled>MAX</button>' : "<button class=\"btn btn-small btn-primary levelup-btn ".concat(canAfford ? '' : 'btn-disabled', "\" data-id=\"").concat(g.id, "\" ").concat(canAfford ? '' : 'disabled', ">\u26A1").concat(cost.toLocaleString(), "</button>"), "\n          <button class=\"btn btn-small btn-danger release-btn\" data-id=\"").concat(g.id, "\">Release</button>\n        </div>\n      </div>\n    ");
       }).join('');
       list.querySelectorAll('.levelup-btn').forEach(function (btn) {
         btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
-          var updated, _t9;
+          var result, _t0;
           return _regenerator().w(function (_context0) {
             while (1) switch (_context0.p = _context0.n) {
               case 0:
@@ -16982,15 +17011,17 @@ var ArenaUI = /*#__PURE__*/function () {
                 _context0.n = 1;
                 return _api["default"].levelUpGuardian(parseInt(btn.dataset.id));
               case 1:
-                updated = _context0.v;
-                _this3.showNotification("".concat(updated.name, " is now level ").concat(updated.level, "!"), 'success');
+                result = _context0.v;
+                _this3.energy = result.energy;
+                _this3.updateEnergyDisplay();
+                _this3.showNotification("".concat(result.guardian.name, " \u2192 Lv.").concat(result.guardian.level, "! (-\u26A1").concat(result.cost.toLocaleString(), ")"), 'success');
                 _this3.loadGuardians();
                 _context0.n = 3;
                 break;
               case 2:
                 _context0.p = 2;
-                _t9 = _context0.v;
-                _this3.showNotification(_t9.message, 'warning');
+                _t0 = _context0.v;
+                _this3.showNotification(_t0.message, 'warning');
               case 3:
                 return _context0.a(2);
             }
@@ -16999,7 +17030,7 @@ var ArenaUI = /*#__PURE__*/function () {
       });
       list.querySelectorAll('.release-btn').forEach(function (btn) {
         btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
-          var _t0;
+          var _t1;
           return _regenerator().w(function (_context1) {
             while (1) switch (_context1.p = _context1.n) {
               case 0:
@@ -17013,8 +17044,8 @@ var ArenaUI = /*#__PURE__*/function () {
                 break;
               case 2:
                 _context1.p = 2;
-                _t0 = _context1.v;
-                _this3.showNotification(_t0.message, 'warning');
+                _t1 = _context1.v;
+                _this3.showNotification(_t1.message, 'warning');
               case 3:
                 return _context1.a(2);
             }
@@ -17043,7 +17074,7 @@ var ArenaUI = /*#__PURE__*/function () {
       }).join(''), "\n      </div>\n    ");
       list.querySelectorAll('.challenge-btn').forEach(function (btn) {
         btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
-          var result, _t1;
+          var result, _t10;
           return _regenerator().w(function (_context10) {
             while (1) switch (_context10.p = _context10.n) {
               case 0:
@@ -17059,8 +17090,8 @@ var ArenaUI = /*#__PURE__*/function () {
                 break;
               case 2:
                 _context10.p = 2;
-                _t1 = _context10.v;
-                _this4.showNotification(_t1.message, 'warning');
+                _t10 = _context10.v;
+                _this4.showNotification(_t10.message, 'warning');
               case 3:
                 return _context10.a(2);
             }
@@ -17072,7 +17103,7 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "loadLeaderboard",
     value: function () {
       var _loadLeaderboard = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
-        var _yield$Promise$all, _yield$Promise$all2, leaderboard, myRank, rankEl, list, _t10;
+        var _yield$Promise$all, _yield$Promise$all2, leaderboard, myRank, rankEl, list, _t11;
         return _regenerator().w(function (_context11) {
           while (1) switch (_context11.p = _context11.n) {
             case 0:
@@ -17098,7 +17129,7 @@ var ArenaUI = /*#__PURE__*/function () {
               break;
             case 2:
               _context11.p = 2;
-              _t10 = _context11.v;
+              _t11 = _context11.v;
               document.getElementById('arena-leaderboard-list').innerHTML = "<p class=\"arena-error\">Failed to load leaderboard</p>";
             case 3:
               return _context11.a(2);
@@ -17123,7 +17154,7 @@ var ArenaUI = /*#__PURE__*/function () {
       });
       overlay.querySelector('#arena-convert-form').addEventListener('submit', /*#__PURE__*/function () {
         var _ref0 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(e) {
-          var username, email, password, errorEl, data, _t11;
+          var username, email, password, errorEl, data, _t12;
           return _regenerator().w(function (_context12) {
             while (1) switch (_context12.p = _context12.n) {
               case 0:
@@ -17146,8 +17177,8 @@ var ArenaUI = /*#__PURE__*/function () {
                 break;
               case 3:
                 _context12.p = 3;
-                _t11 = _context12.v;
-                errorEl.textContent = _t11.message;
+                _t12 = _context12.v;
+                errorEl.textContent = _t12.message;
               case 4:
                 return _context12.a(2);
             }
@@ -17177,8 +17208,15 @@ var ArenaUI = /*#__PURE__*/function () {
         duration: 3000
       });
     }
+  }], [{
+    key: "calculateLevelUpCost",
+    value: function calculateLevelUpCost(level) {
+      return Math.floor(ArenaUI.LEVELUP_BASE_COST * Math.pow(ArenaUI.LEVELUP_COST_MULTIPLIER, level));
+    }
   }]);
 }();
+_defineProperty(ArenaUI, "LEVELUP_BASE_COST", 10000);
+_defineProperty(ArenaUI, "LEVELUP_COST_MULTIPLIER", 1.5);
 var _default = exports["default"] = ArenaUI;
 
 },{"../core/StateManager.js":6,"../services/api.js":18,"../utils/EventBus.js":59,"../utils/Formatters.js":60}],37:[function(require,module,exports){

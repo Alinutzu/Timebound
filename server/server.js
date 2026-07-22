@@ -9,6 +9,7 @@ const guardianRoutes = require('./routes/guardians');
 const battleRoutes = require('./routes/battles');
 const leaderboardRoutes = require('./routes/leaderboard');
 const saveRoutes = require('./routes/save');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const server = http.createServer(app);
@@ -26,6 +27,7 @@ app.use('/api/guardians', guardianRoutes);
 app.use('/api/battles', battleRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/save', saveRoutes);
+app.use('/admin', adminRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });

@@ -46,31 +46,39 @@ tr:hover td{background:#1c2128}
 .chart-bar{flex:1;background:#1f6feb;border-radius:4px 4px 0 0;min-height:4px;position:relative;transition:height .3s}
 .chart-bar .clabel{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;color:#8b949e;white-space:nowrap}
 .chart-bar .cvalue{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:10px;color:#8b949e}
-.actions{display:flex;gap:6px}
 .login-overlay{position:fixed;inset:0;background:#0d1117;display:flex;align-items:center;justify-content:center;z-index:100}
-.login-box{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:32px;width:360px;text-align:center}
+.login-box{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:32px;width:380px;text-align:center}
 .login-box h2{margin-bottom:20px;border:none}
 .login-box input{width:100%;padding:10px 12px;margin-bottom:12px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-size:14px}
 .login-box input:focus{outline:none;border-color:#58a6ff}
-.login-box .error{color:#f85149;font-size:13px;margin-bottom:12px}
+.login-box .error{color:#f85149;font-size:13px;margin-bottom:8px}
+.login-box .info{color:#d29922;font-size:12px;margin-bottom:12px}
+#session-bar{position:fixed;top:0;left:0;right:0;height:4px;z-index:99;transition:width 1s linear}
+#logout-banner{display:none;position:fixed;top:8px;right:16px;z-index:99;font-size:12px;color:#8b949e;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:6px 12px}
 </style>
 </head>
 <body>
+<div id="session-bar"></div>
+<div id="logout-banner">Session expires in <span id="session-timer">30:00</span> · <a href="#" onclick="logout()" style="color:#f85149">Logout</a></div>
+
 <div id="login-overlay" class="login-overlay">
   <div class="login-box">
     <h2>⚙ Admin Login</h2>
     <div id="login-error" class="error"></div>
-    <input id="login-user" type="text" placeholder="Username" value="admin">
-    <input id="login-pass" type="password" placeholder="Password" value="admin123" onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="login-info" class="info"></div>
+    <input id="login-user" type="text" placeholder="Username" autocomplete="username">
+    <input id="login-pass" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="btn primary" onclick="doLogin()" style="width:100%;padding:10px;font-size:14px">Login</button>
   </div>
 </div>
+
 <h1>⚙ Timebound Admin Panel</h1>
 <div class="tabs" id="tabs">
   <div class="tab active" data-tab="dashboard">Dashboard</div>
   <div class="tab" data-tab="users">Users</div>
   <div class="tab" data-tab="guardians">Guardians</div>
   <div class="tab" data-tab="battles">Battles</div>
+  <div class="tab" data-tab="security">🔒 Security</div>
   <div class="tab" data-tab="actions">Actions</div>
 </div>
 
@@ -78,6 +86,7 @@ tr:hover td{background:#1c2128}
 <div id="tab-users" class="tab-content"></div>
 <div id="tab-guardians" class="tab-content"></div>
 <div id="tab-battles" class="tab-content"></div>
+<div id="tab-security" class="tab-content"></div>
 <div id="tab-actions" class="tab-content"></div>
 
 <script>
@@ -85,32 +94,112 @@ const API = window.location.hostname === 'localhost' || window.location.hostname
   ? '/api/admin'
   : 'https://familyhub.go.ro/api/admin';
 
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 let auth = sessionStorage.getItem('admin_auth');
+let sessionTimer = null;
+let sessionInterval = null;
+let lastActivity = Date.now();
+
+function resetSessionTimer() {
+  lastActivity = Date.now();
+}
+
+document.addEventListener('click', resetSessionTimer);
+document.addEventListener('keydown', resetSessionTimer);
+document.addEventListener('mousemove', resetSessionTimer);
+document.addEventListener('scroll', resetSessionTimer);
+
+function startSessionMonitor() {
+  document.getElementById('logout-banner').style.display = 'block';
+  const bar = document.getElementById('session-bar');
+  const timer = document.getElementById('session-timer');
+
+  function update() {
+    const elapsed = Date.now() - lastActivity;
+    const remaining = Math.max(0, SESSION_TIMEOUT_MS - elapsed);
+    const pct = (remaining / SESSION_TIMEOUT_MS) * 100;
+    bar.style.width = pct + '%';
+    bar.style.background = remaining < 60000 ? '#f85149' : remaining < 300000 ? '#d29922' : '#1f6feb';
+    const secs = Math.ceil(remaining / 1000);
+    timer.textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
+    if (remaining <= 0) logout();
+  }
+  update();
+  sessionInterval = setInterval(update, 1000);
+}
+
+function logout() {
+  sessionStorage.removeItem('admin_auth');
+  if (sessionInterval) clearInterval(sessionInterval);
+  document.getElementById('logout-banner').style.display = 'none';
+  document.getElementById('session-bar').style.width = '0';
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-info').textContent = '';
+  auth = null;
+}
 
 function doLogin() {
   const user = document.getElementById('login-user').value;
   const pass = document.getElementById('login-pass').value;
+  if (!user || !pass) {
+    document.getElementById('login-error').textContent = 'Username and password required';
+    return;
+  }
   auth = btoa(user + ':' + pass);
   sessionStorage.setItem('admin_auth', auth);
   fetch(API + '/dashboard', { headers: { Authorization: 'Basic ' + auth } })
-    .then(r => {
-      if (!r.ok) throw new Error('Invalid credentials');
+    .then(async r => {
+      if (r.status === 429) {
+        const data = await r.json();
+        document.getElementById('login-error').textContent = 'Too many attempts. Try again in ' + data.minutesLeft + ' min';
+        sessionStorage.removeItem('admin_auth');
+        auth = null;
+        return;
+      }
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        document.getElementById('login-error').textContent = data.remaining !== undefined
+          ? 'Invalid credentials (' + data.remaining + ' attempts remaining)'
+          : 'Invalid credentials';
+        sessionStorage.removeItem('admin_auth');
+        auth = null;
+        return;
+      }
       document.getElementById('login-overlay').style.display = 'none';
       init();
     })
     .catch(() => {
-      document.getElementById('login-error').textContent = 'Invalid credentials';
+      document.getElementById('login-error').textContent = 'Connection error';
       sessionStorage.removeItem('admin_auth');
       auth = null;
     });
 }
 
+async function checkLock() {
+  try {
+    const r = await fetch(API + '/check-lock');
+    const data = await r.json();
+    if (data.locked) {
+      document.getElementById('login-error').textContent = 'IP locked. Try again in ' + data.minutesLeft + ' min';
+      document.getElementById('login-info').textContent = '';
+    }
+  } catch {}
+}
+
 function api(path) {
-  return fetch(API + path, { headers: { Authorization: 'Basic ' + auth } }).then(r => {
+  return fetch(API + path, { headers: { Authorization: 'Basic ' + auth } }).then(async r => {
+    if (r.status === 429) {
+      const data = await r.json();
+      alert('Too many failed attempts. Locked for ' + data.minutesLeft + ' minutes.');
+      logout();
+      throw new Error('locked');
+    }
     if (r.status === 401 || r.status === 403) {
-      sessionStorage.removeItem('admin_auth');
-      auth = null;
-      location.reload();
+      logout();
+      throw new Error('unauthorized');
     }
     return r.json();
   });
@@ -127,15 +216,15 @@ function init() {
       loadTab(name);
     });
   });
-
   function loadTab(name) {
     if (name === 'dashboard') loadDashboard();
     else if (name === 'users') loadUsers();
     else if (name === 'guardians') loadGuardians();
     else if (name === 'battles') loadBattles();
+    else if (name === 'security') loadSecurity();
     else if (name === 'actions') loadActions();
   }
-
+  startSessionMonitor();
   document.querySelector('.tab[data-tab="dashboard"]').click();
 }
 
@@ -180,7 +269,6 @@ async function loadDashboard() {
 }
 
 let usersPage = 1;
-
 async function loadUsers(search) {
   const el = document.getElementById('tab-users');
   const q = search || (document.getElementById('user-search')?.value || '');
@@ -281,6 +369,70 @@ async function loadBattles() {
   `;
 }
 
+async function loadSecurity() {
+  const el = document.getElementById('tab-security');
+  el.innerHTML = `
+    <h2>Change Password</h2>
+    <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:20px;max-width:460px">
+      <div id="pass-error" style="color:#f85149;font-size:13px;margin-bottom:12px"></div>
+      <div id="pass-success" style="color:#3fb950;font-size:13px;margin-bottom:12px"></div>
+      <input id="current-pass" type="password" placeholder="Current password" style="width:100%;padding:10px 12px;margin-bottom:12px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-size:14px">
+      <input id="new-pass" type="password" placeholder="New password (min 6 chars)" style="width:100%;padding:10px 12px;margin-bottom:12px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-size:14px">
+      <input id="confirm-pass" type="password" placeholder="Confirm new password" style="width:100%;padding:10px 12px;margin-bottom:16px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-size:14px" onkeydown="if(event.key==='Enter')changePassword()">
+      <button class="btn primary" onclick="changePassword()" style="width:100%;padding:10px;font-size:14px">Update Password</button>
+    </div>
+    <h2>Session</h2>
+    <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:20px;max-width:460px">
+      <p style="font-size:13px;color:#8b949e;margin-bottom:12px">
+        Auto-logout after <strong>30 minutes</strong> of inactivity.
+      </p>
+      <button class="btn warning" onclick="logout()" style="width:100%;padding:10px;font-size:14px">Logout Now</button>
+    </div>
+  `;
+}
+
+async function changePassword() {
+  const current = document.getElementById('current-pass').value;
+  const newPass = document.getElementById('new-pass').value;
+  const confirm = document.getElementById('confirm-pass').value;
+  document.getElementById('pass-error').textContent = '';
+  document.getElementById('pass-success').textContent = '';
+
+  if (!current || !newPass) {
+    document.getElementById('pass-error').textContent = 'Fill in all fields';
+    return;
+  }
+  if (newPass.length < 6) {
+    document.getElementById('pass-error').textContent = 'New password must be at least 6 characters';
+    return;
+  }
+  if (newPass !== confirm) {
+    document.getElementById('pass-error').textContent = 'Passwords do not match';
+    return;
+  }
+
+  try {
+    const r = await fetch(API + '/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Basic ' + auth },
+      body: JSON.stringify({ currentPassword: current, newPassword: newPass }),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      document.getElementById('pass-error').textContent = data.error || 'Failed to change password';
+      return;
+    }
+    document.getElementById('pass-success').textContent = 'Password changed!';
+    document.getElementById('current-pass').value = '';
+    document.getElementById('new-pass').value = '';
+    document.getElementById('confirm-pass').value = '';
+    auth = btoa('admin' + ':' + newPass);
+    sessionStorage.setItem('admin_auth', auth);
+  } catch (err) {
+    document.getElementById('pass-error').textContent = 'Connection error';
+  }
+}
+
 async function loadActions() {
   document.getElementById('tab-actions').innerHTML = `
     <h2>Danger Zone</h2>
@@ -309,6 +461,7 @@ async function resetLeaderboard() {
   alert('Leaderboard reset!');
 }
 
+checkLock();
 if (auth) {
   fetch(API + '/dashboard', { headers: { Authorization: 'Basic ' + auth } })
     .then(r => {

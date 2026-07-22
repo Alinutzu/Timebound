@@ -1,16 +1,94 @@
 const express = require('express');
-
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const db = require('../db');
+
+const CONFIG_PATH = path.resolve(__dirname, '../admin-config.json');
 
 const router = express.Router();
 
-const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
+function loadConfig() {
+  try {
+    const data = fs.readFileSync(CONFIG_PATH, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    const defaults = {
+      username: process.env.ADMIN_USER || 'admin',
+      password: process.env.ADMIN_PASS || 'admin123',
+    };
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaults, null, 2));
+    return defaults;
+  }
+}
+
+function saveConfig(config) {
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
+}
+
+const loginAttempts = new Map();
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MINUTES = 15;
+
+function getClientIP(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.socket.remoteAddress;
+}
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = loginAttempts.get(ip);
+  if (!record) return { allowed: true, remaining: MAX_ATTEMPTS };
+
+  if (record.lockedUntil && now < record.lockedUntil) {
+    const minutesLeft = Math.ceil((record.lockedUntil - now) / 60000);
+    return { allowed: false, locked: true, minutesLeft, remaining: 0 };
+  }
+
+  if (record.lockedUntil && now >= record.lockedUntil) {
+    loginAttempts.delete(ip);
+    return { allowed: true, remaining: MAX_ATTEMPTS };
+  }
+
+  return { allowed: true, remaining: Math.max(0, MAX_ATTEMPTS - record.count) };
+}
+
+function recordFailedAttempt(ip) {
+  const now = Date.now();
+  const record = loginAttempts.get(ip) || { count: 0, firstAttempt: now };
+  record.count++;
+  record.lastAttempt = now;
+
+  if (record.count >= MAX_ATTEMPTS) {
+    record.lockedUntil = now + LOCKOUT_MINUTES * 60 * 1000;
+  }
+
+  loginAttempts.set(ip, record);
+
+  setTimeout(() => {
+    const current = loginAttempts.get(ip);
+    if (current && now >= current.firstAttempt + LOCKOUT_MINUTES * 60 * 1000) {
+      loginAttempts.delete(ip);
+    }
+  }, LOCKOUT_MINUTES * 60 * 1000);
+}
+
+function recordSuccessfulAttempt(ip) {
+  loginAttempts.delete(ip);
+}
 
 function basicAuth(req, res, next) {
+  const ip = getClientIP(req);
+  const rateCheck = checkRateLimit(ip);
+  if (!rateCheck.allowed) {
+    return res.status(429).json({
+      error: 'Too many failed attempts',
+      locked: true,
+      minutesLeft: rateCheck.minutesLeft,
+    });
+  }
+
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Basic ')) {
-    res.set('WWW-Authenticate', 'Basic realm="Timebound Admin"');
     return res.status(401).json({ error: 'Authentication required' });
   }
 
@@ -18,12 +96,46 @@ function basicAuth(req, res, next) {
   const decoded = Buffer.from(base64, 'base64').toString('utf-8');
   const [user, pass] = decoded.split(':');
 
-  if (user !== ADMIN_USER || pass !== ADMIN_PASS) {
-    return res.status(403).json({ error: 'Invalid credentials' });
+  const config = loadConfig();
+
+  if (user !== config.username || pass !== config.password) {
+    recordFailedAttempt(ip);
+    const remaining = MAX_ATTEMPTS - (loginAttempts.get(ip)?.count || 0);
+    return res.status(403).json({
+      error: 'Invalid credentials',
+      remaining: Math.max(0, remaining),
+    });
   }
 
+  recordSuccessfulAttempt(ip);
+  req.adminUser = config.username;
   next();
 }
+
+router.get('/check-lock', (req, res) => {
+  const ip = getClientIP(req);
+  const rateCheck = checkRateLimit(ip);
+  res.json(rateCheck);
+});
+
+router.post('/change-password', basicAuth, (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'currentPassword and newPassword required' });
+  }
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'New password must be at least 6 characters' });
+  }
+
+  const config = loadConfig();
+  if (currentPassword !== config.password) {
+    return res.status(403).json({ error: 'Current password is incorrect' });
+  }
+
+  config.password = newPassword;
+  saveConfig(config);
+  res.json({ success: true, message: 'Password changed successfully' });
+});
 
 router.get('/dashboard', basicAuth, (req, res) => {
   try {

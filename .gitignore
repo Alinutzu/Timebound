@@ -2,3 +2,4 @@ node_modules/
 server/*.db
 server/*.db-wal
 server/*.db-shm
+server/admin-config.json

@@ -16621,10 +16621,6 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "render",
     value: function render() {
       var token = _api["default"].getToken();
-      if (!token && !this.connecting) {
-        this.autoGuest();
-        return;
-      }
       this.container.innerHTML = "\n      <div class=\"arena-container\">\n        ".concat(this.connecting ? this.renderConnecting() : token ? this.renderDashboard() : this.renderLogin(), "\n      </div>\n    ");
       this.bindEvents();
     }
@@ -16673,7 +16669,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "renderLogin",
     value: function renderLogin() {
-      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena</h2>\n        <p>Battle other players with your guardians!</p>\n      </div>\n      <div class=\"arena-login\">\n        <div class=\"arena-login-tabs\">\n          <button class=\"arena-auth-btn active\" data-auth=\"login\">Login</button>\n          <button class=\"arena-auth-btn\" data-auth=\"register\">Register</button>\n        </div>\n        <form id=\"arena-auth-form\">\n          <input type=\"text\" id=\"arena-username\" placeholder=\"Username\" required>\n          <input type=\"email\" id=\"arena-email\" placeholder=\"Email (only for register)\" style=\"display:none\">\n          <input type=\"password\" id=\"arena-password\" placeholder=\"Password\" required>\n          <button type=\"submit\" class=\"btn btn-primary btn-large\">Connect</button>\n        </form>\n        <p class=\"arena-error\" id=\"arena-error\"></p>\n      </div>\n    ";
+      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena</h2>\n        <p>Battle other players with your guardians!</p>\n      </div>\n      <div class=\"arena-login\">\n        <div class=\"arena-login-tabs\">\n          <button class=\"arena-auth-btn active\" data-auth=\"login\">Login</button>\n          <button class=\"arena-auth-btn\" data-auth=\"register\">Register</button>\n        </div>\n        <form id=\"arena-auth-form\">\n          <input type=\"text\" id=\"arena-username\" placeholder=\"Username\" required>\n          <input type=\"email\" id=\"arena-email\" placeholder=\"Email (only for register)\" style=\"display:none\">\n          <input type=\"password\" id=\"arena-password\" placeholder=\"Password\" required>\n          <button type=\"submit\" class=\"btn btn-primary btn-large\">Connect</button>\n        </form>\n        <p class=\"arena-error\" id=\"arena-error\"></p>\n        <div class=\"arena-guest-option\">\n          <hr style=\"border-color:#30363d;margin:16px 0\">\n          <button class=\"btn btn-secondary btn-large\" id=\"arena-guest-btn\">\uD83D\uDC64 Continue as Guest</button>\n        </div>\n      </div>\n    ";
     }
   }, {
     key: "renderDashboard",
@@ -16694,7 +16690,8 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "bindAuthEvents",
     value: function bindAuthEvents() {
-      var _this = this;
+      var _document$getElementB,
+        _this = this;
       var tabs = this.container.querySelectorAll('.arena-auth-btn');
       var emailField = document.getElementById('arena-email');
       tabs.forEach(function (tab) {
@@ -16705,6 +16702,9 @@ var ArenaUI = /*#__PURE__*/function () {
           tab.classList.add('active');
           emailField.style.display = tab.dataset.auth === 'register' ? 'block' : 'none';
         });
+      });
+      (_document$getElementB = document.getElementById('arena-guest-btn')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
+        _this.autoGuest();
       });
       document.getElementById('arena-auth-form').addEventListener('submit', /*#__PURE__*/function () {
         var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(e) {
@@ -16736,6 +16736,7 @@ var ArenaUI = /*#__PURE__*/function () {
                 data = _context2.v;
               case 5:
                 _api["default"].setToken(data.token);
+                _this.isGuest = false;
                 _this.render();
                 _context2.n = 7;
                 break;
@@ -16756,23 +16757,24 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "bindDashboardEvents",
     value: function bindDashboardEvents() {
-      var _document$getElementB,
+      var _document$getElementB2,
         _this2 = this,
-        _document$getElementB2,
         _document$getElementB3,
         _document$getElementB4,
         _document$getElementB5,
-        _document$getElementB6;
-      (_document$getElementB = document.getElementById('arena-logout')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
+        _document$getElementB6,
+        _document$getElementB7;
+      (_document$getElementB2 = document.getElementById('arena-logout')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', function () {
         _api["default"].clearToken();
         _this2.isGuest = false;
+        _this2.connecting = false;
         _this2.render();
       });
       var registerBtn = document.getElementById('arena-register-btn') || document.getElementById('arena-register-btn-banner');
       registerBtn === null || registerBtn === void 0 || registerBtn.addEventListener('click', function () {
         return _this2.showRegisterForm();
       });
-      (_document$getElementB2 = document.getElementById('arena-summon-btn')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+      (_document$getElementB3 = document.getElementById('arena-summon-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
         var guardian, _t3;
         return _regenerator().w(function (_context3) {
           while (1) switch (_context3.p = _context3.n) {
@@ -16795,7 +16797,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee3, null, [[0, 2]]);
       })));
-      (_document$getElementB3 = document.getElementById('arena-pve-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+      (_document$getElementB4 = document.getElementById('arena-pve-btn')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
         var selected, result, _t4;
         return _regenerator().w(function (_context4) {
           while (1) switch (_context4.p = _context4.n) {
@@ -16825,7 +16827,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee4, null, [[1, 3]]);
       })));
-      (_document$getElementB4 = document.getElementById('arena-pvp-btn')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+      (_document$getElementB5 = document.getElementById('arena-pvp-btn')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
         var selected, opponents, _t5;
         return _regenerator().w(function (_context5) {
           while (1) switch (_context5.p = _context5.n) {
@@ -16855,7 +16857,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee5, null, [[1, 3]]);
       })));
-      (_document$getElementB5 = document.getElementById('arena-save-cloud')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+      (_document$getElementB6 = document.getElementById('arena-save-cloud')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
         var state, _t6;
         return _regenerator().w(function (_context6) {
           while (1) switch (_context6.p = _context6.n) {
@@ -16877,7 +16879,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee6, null, [[0, 2]]);
       })));
-      (_document$getElementB6 = document.getElementById('arena-load-cloud')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+      (_document$getElementB7 = document.getElementById('arena-load-cloud')) === null || _document$getElementB7 === void 0 || _document$getElementB7.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
         var data, _t7;
         return _regenerator().w(function (_context7) {
           while (1) switch (_context7.p = _context7.n) {

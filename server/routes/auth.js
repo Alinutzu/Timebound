@@ -65,4 +65,62 @@ router.post('/login', (req, res) => {
   }
 });
 
+router.post('/guest', (req, res) => {
+  try {
+    const guestId = Math.random().toString(36).slice(2, 10);
+    const username = `guest_${guestId}`;
+    const email = `guest_${guestId}@temp.local`;
+    const password = Math.random().toString(36).slice(2, 18);
+
+    const hash = bcrypt.hashSync(password, 10);
+    const result = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)').run(username, email, hash);
+
+    const user = { id: result.lastInsertRowid, username };
+    const token = generateToken(user);
+
+    db.prepare('INSERT INTO leaderboard (user_id, username) VALUES (?, ?)').run(user.id, username);
+
+    res.status(201).json({ token, user: { id: user.id, username }, isGuest: true });
+  } catch (err) {
+    console.error('Guest error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+const { authMiddleware } = require('../auth');
+
+router.post('/convert', authMiddleware, (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'All fields required' });
+    }
+
+    if (username.length < 3 || username.length > 20) {
+      return res.status(400).json({ error: 'Username must be 3-20 characters' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+
+    const existing = db.prepare('SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?').get(username, email, req.user.id);
+    if (existing) {
+      return res.status(409).json({ error: 'Username or email already taken' });
+    }
+
+    const hash = bcrypt.hashSync(password, 10);
+    db.prepare('UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?').run(username, email, hash, req.user.id);
+    db.prepare('UPDATE leaderboard SET username = ? WHERE user_id = ?').run(username, req.user.id);
+
+    const token = generateToken({ id: req.user.id, username });
+
+    res.json({ token, user: { id: req.user.id, username }, isGuest: false });
+  } catch (err) {
+    console.error('Convert error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

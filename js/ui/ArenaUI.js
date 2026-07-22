@@ -12,17 +12,60 @@ class ArenaUI {
     }
     this.guardians = [];
     this.opponents = [];
+    this.isGuest = false;
+    this.connecting = false;
     this.render();
   }
 
   render() {
     const token = api.getToken();
+    if (!token && !this.connecting) {
+      this.autoGuest();
+      return;
+    }
     this.container.innerHTML = `
       <div class="arena-container">
-        ${token ? this.renderDashboard() : this.renderLogin()}
+        ${this.connecting ? this.renderConnecting() : (token ? this.renderDashboard() : this.renderLogin())}
       </div>
     `;
     this.bindEvents();
+  }
+
+  async autoGuest() {
+    this.connecting = true;
+    this.container.innerHTML = `
+      <div class="arena-container">
+        <div class="arena-connecting">
+          <div class="loading-spinner"></div>
+          <p>Connecting to Arena...</p>
+        </div>
+      </div>
+    `;
+    try {
+      const data = await api.guest();
+      api.setToken(data.token);
+      this.isGuest = data.isGuest;
+      this.connecting = false;
+      this.render();
+    } catch (err) {
+      this.connecting = false;
+      this.container.innerHTML = `
+        <div class="arena-container">
+          ${this.renderLogin()}
+          <p class="arena-error">Could not connect. Try again.</p>
+        </div>
+      `;
+      this.bindEvents();
+    }
+  }
+
+  renderConnecting() {
+    return `
+      <div class="arena-connecting">
+        <div class="loading-spinner"></div>
+        <p>Connecting to Arena...</p>
+      </div>
+    `;
   }
 
   renderLogin() {
@@ -50,14 +93,16 @@ class ArenaUI {
   renderDashboard() {
     return `
       <div class="arena-header">
-        <h2>⚔️ Arena</h2>
+        <h2>⚔️ Arena ${this.isGuest ? '<span class="arena-guest-badge">GUEST</span>' : ''}</h2>
         <div class="arena-header-actions">
           <span id="arena-username-display"></span>
+          ${this.isGuest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Register</button>' : ''}
           <button class="btn btn-small btn-secondary" id="arena-save-cloud">☁️ Save</button>
           <button class="btn btn-small btn-secondary" id="arena-load-cloud">☁️ Load</button>
           <button class="btn btn-small btn-danger" id="arena-logout">Logout</button>
         </div>
       </div>
+      ${this.isGuest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : ''}
       <div class="arena-dashboard">
         <div class="arena-section" id="arena-guardians-section">
           <div class="arena-section-header">
@@ -141,8 +186,12 @@ class ArenaUI {
   bindDashboardEvents() {
     document.getElementById('arena-logout')?.addEventListener('click', () => {
       api.clearToken();
+      this.isGuest = false;
       this.render();
     });
+
+    const registerBtn = document.getElementById('arena-register-btn') || document.getElementById('arena-register-btn-banner');
+    registerBtn?.addEventListener('click', () => this.showRegisterForm());
 
     document.getElementById('arena-summon-btn')?.addEventListener('click', async () => {
       try {
@@ -348,6 +397,48 @@ class ArenaUI {
     } catch (err) {
       document.getElementById('arena-leaderboard-list').innerHTML = `<p class="arena-error">Failed to load leaderboard</p>`;
     }
+  }
+
+  showRegisterForm() {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+      <div class="modal-content arena-register-modal">
+        <h2>📝 Register Your Account</h2>
+        <p>Convert your guest progress to a permanent account!</p>
+        <form id="arena-convert-form">
+          <input type="text" id="arena-convert-username" placeholder="Username" required>
+          <input type="email" id="arena-convert-email" placeholder="Email" required>
+          <input type="password" id="arena-convert-password" placeholder="Password (min 6 chars)" required>
+          <div class="arena-convert-actions">
+            <button type="submit" class="btn btn-primary">Register</button>
+            <button type="button" class="btn btn-secondary" id="arena-convert-cancel">Cancel</button>
+          </div>
+        </form>
+        <p class="arena-error" id="arena-convert-error"></p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('#arena-convert-cancel').addEventListener('click', () => overlay.remove());
+    overlay.querySelector('#arena-convert-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('arena-convert-username').value;
+      const email = document.getElementById('arena-convert-email').value;
+      const password = document.getElementById('arena-convert-password').value;
+      const errorEl = document.getElementById('arena-convert-error');
+
+      try {
+        const data = await api.convertGuest(username, email, password);
+        api.setToken(data.token);
+        this.isGuest = false;
+        overlay.remove();
+        this.showNotification('Account created! Progress saved permanently.', 'success');
+        this.render();
+      } catch (err) {
+        errorEl.textContent = err.message;
+      }
+    });
   }
 
   showBattleResult(result) {

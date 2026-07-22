@@ -19,6 +19,7 @@ class ArenaUI {
     this.pveCooldown = 0;
     this.pvpCooldown = 0;
     this.cooldownTimer = null;
+    this.autoSaveTimer = null;
     this.render();
   }
 
@@ -28,6 +29,36 @@ class ArenaUI {
 
   static calculateLevelUpCost(level) {
     return Math.floor(ArenaUI.LEVELUP_BASE_COST * Math.pow(ArenaUI.LEVELUP_COST_MULTIPLIER, level));
+  }
+
+  async autoLoadCloud() {
+    try {
+      const data = await api.loadCloud();
+      if (data.state) {
+        stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: data.state } });
+        this.showNotification('☁️ Cloud save loaded', 'info');
+      }
+    } catch (e) {}
+  }
+
+  async autoSave() {
+    if (!api.getToken()) return;
+    try {
+      const state = stateManager.getState();
+      await api.saveCloud(state);
+    } catch (e) {}
+  }
+
+  startAutoSave() {
+    this.stopAutoSave();
+    this.autoSaveTimer = setInterval(() => this.autoSave(), 30000);
+  }
+
+  stopAutoSave() {
+    if (this.autoSaveTimer) {
+      clearInterval(this.autoSaveTimer);
+      this.autoSaveTimer = null;
+    }
   }
 
   startCooldownTimer() {
@@ -90,6 +121,7 @@ class ArenaUI {
       this.isGuest = data.isGuest;
       this.connecting = false;
       this.render();
+      await this.autoLoadCloud();
     } catch (err) {
       this.connecting = false;
       this.container.innerHTML = `
@@ -231,6 +263,7 @@ class ArenaUI {
         api.setToken(data.token);
         this.isGuest = false;
         this.render();
+        await this.autoLoadCloud();
       } catch (err) {
         errorEl.textContent = err.message;
       }
@@ -239,6 +272,7 @@ class ArenaUI {
 
   bindDashboardEvents() {
     document.getElementById('arena-logout')?.addEventListener('click', () => {
+      this.stopAutoSave();
       api.clearToken();
       this.isGuest = false;
       this.connecting = false;
@@ -326,6 +360,7 @@ class ArenaUI {
   }
 
   async loadDashboard() {
+    this.startAutoSave();
     const username = JSON.parse(atob(api.getToken().split('.')[1])).username;
     document.getElementById('arena-username-display').textContent = `👤 ${username}`;
     try {
@@ -537,8 +572,9 @@ class ArenaUI {
         api.setToken(data.token);
         this.isGuest = false;
         overlay.remove();
-        this.showNotification('Account created! Progress saved permanently.', 'success');
         this.render();
+        await this.autoLoadCloud();
+        this.showNotification('Account created! Progress saved permanently.', 'success');
       } catch (err) {
         errorEl.textContent = err.message;
       }

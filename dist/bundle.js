@@ -16624,29 +16624,118 @@ var ArenaUI = /*#__PURE__*/function () {
     this.pveCooldown = 0;
     this.pvpCooldown = 0;
     this.cooldownTimer = null;
+    this.autoSaveTimer = null;
     this.render();
   }
   return _createClass(ArenaUI, [{
+    key: "autoLoadCloud",
+    value: function () {
+      var _autoLoadCloud = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        var data, _t;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.p = _context.n) {
+            case 0:
+              _context.p = 0;
+              _context.n = 1;
+              return _api["default"].loadCloud();
+            case 1:
+              data = _context.v;
+              if (data.state) {
+                _StateManager["default"].dispatch({
+                  type: 'LOAD_STATE',
+                  payload: {
+                    state: data.state
+                  }
+                });
+                this.showNotification('☁️ Cloud save loaded', 'info');
+              }
+              _context.n = 3;
+              break;
+            case 2:
+              _context.p = 2;
+              _t = _context.v;
+            case 3:
+              return _context.a(2);
+          }
+        }, _callee, this, [[0, 2]]);
+      }));
+      function autoLoadCloud() {
+        return _autoLoadCloud.apply(this, arguments);
+      }
+      return autoLoadCloud;
+    }()
+  }, {
+    key: "autoSave",
+    value: function () {
+      var _autoSave = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+        var state, _t2;
+        return _regenerator().w(function (_context2) {
+          while (1) switch (_context2.p = _context2.n) {
+            case 0:
+              if (_api["default"].getToken()) {
+                _context2.n = 1;
+                break;
+              }
+              return _context2.a(2);
+            case 1:
+              _context2.p = 1;
+              state = _StateManager["default"].getState();
+              _context2.n = 2;
+              return _api["default"].saveCloud(state);
+            case 2:
+              _context2.n = 4;
+              break;
+            case 3:
+              _context2.p = 3;
+              _t2 = _context2.v;
+            case 4:
+              return _context2.a(2);
+          }
+        }, _callee2, null, [[1, 3]]);
+      }));
+      function autoSave() {
+        return _autoSave.apply(this, arguments);
+      }
+      return autoSave;
+    }()
+  }, {
+    key: "startAutoSave",
+    value: function startAutoSave() {
+      var _this = this;
+      this.stopAutoSave();
+      this.autoSaveTimer = setInterval(function () {
+        return _this.autoSave();
+      }, 30000);
+    }
+  }, {
+    key: "stopAutoSave",
+    value: function stopAutoSave() {
+      if (this.autoSaveTimer) {
+        clearInterval(this.autoSaveTimer);
+        this.autoSaveTimer = null;
+      }
+    }
+  }, {
     key: "startCooldownTimer",
     value: function startCooldownTimer() {
-      var _this = this;
+      var _this2 = this;
       if (this.cooldownTimer) clearInterval(this.cooldownTimer);
       this.cooldownTimer = setInterval(function () {
         var pveBtn = document.getElementById('arena-pve-btn');
         var pvpBtn = document.getElementById('arena-pvp-btn');
         var updated = false;
-        if (_this.pveCooldown > 0) {
-          _this.pveCooldown--;
-          if (pveBtn) pveBtn.textContent = "\u23F3 ".concat(_this.pveCooldown, "s");
+        if (_this2.pveCooldown > 0) {
+          _this2.pveCooldown--;
+          if (pveBtn) pveBtn.textContent = "\u23F3 ".concat(_this2.pveCooldown, "s");
           updated = true;
         } else if (pveBtn) {
           pveBtn.textContent = '⚔️ Train (PvE)';
           pveBtn.disabled = false;
           pveBtn.classList.remove('btn-disabled');
         }
-        if (_this.pvpCooldown > 0) {
-          _this.pvpCooldown--;
-          if (pvpBtn) pvpBtn.textContent = "\u23F3 ".concat(_this.pvpCooldown, "s");
+        if (_this2.pvpCooldown > 0) {
+          _this2.pvpCooldown--;
+          if (pvpBtn) pvpBtn.textContent = "\u23F3 ".concat(_this2.pvpCooldown, "s");
           updated = true;
         } else if (pvpBtn) {
           pvpBtn.textContent = '🔥 Find Opponent (PvP)';
@@ -16654,8 +16743,8 @@ var ArenaUI = /*#__PURE__*/function () {
           pvpBtn.classList.remove('btn-disabled');
         }
         if (!updated) {
-          clearInterval(_this.cooldownTimer);
-          _this.cooldownTimer = null;
+          clearInterval(_this2.cooldownTimer);
+          _this2.cooldownTimer = null;
         }
       }, 1000);
     }
@@ -16669,34 +16758,37 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "autoGuest",
     value: function () {
-      var _autoGuest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-        var data, _t;
-        return _regenerator().w(function (_context) {
-          while (1) switch (_context.p = _context.n) {
+      var _autoGuest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+        var data, _t3;
+        return _regenerator().w(function (_context3) {
+          while (1) switch (_context3.p = _context3.n) {
             case 0:
               this.connecting = true;
               this.container.innerHTML = "\n      <div class=\"arena-container\">\n        <div class=\"arena-connecting\">\n          <div class=\"loading-spinner\"></div>\n          <p>Connecting to Arena...</p>\n        </div>\n      </div>\n    ";
-              _context.p = 1;
-              _context.n = 2;
+              _context3.p = 1;
+              _context3.n = 2;
               return _api["default"].guest();
             case 2:
-              data = _context.v;
+              data = _context3.v;
               _api["default"].setToken(data.token);
               this.isGuest = data.isGuest;
               this.connecting = false;
               this.render();
-              _context.n = 4;
-              break;
+              _context3.n = 3;
+              return this.autoLoadCloud();
             case 3:
-              _context.p = 3;
-              _t = _context.v;
+              _context3.n = 5;
+              break;
+            case 4:
+              _context3.p = 4;
+              _t3 = _context3.v;
               this.connecting = false;
               this.container.innerHTML = "\n        <div class=\"arena-container\">\n          ".concat(this.renderLogin(), "\n          <p class=\"arena-error\">Could not connect. Try again.</p>\n        </div>\n      ");
               this.bindEvents();
-            case 4:
-              return _context.a(2);
+            case 5:
+              return _context3.a(2);
           }
-        }, _callee, this, [[1, 3]]);
+        }, _callee3, this, [[1, 4]]);
       }));
       function autoGuest() {
         return _autoGuest.apply(this, arguments);
@@ -16733,7 +16825,7 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "bindAuthEvents",
     value: function bindAuthEvents() {
       var _document$getElementB,
-        _this2 = this;
+        _this3 = this;
       var tabs = this.container.querySelectorAll('.arena-auth-btn');
       var emailField = document.getElementById('arena-email');
       tabs.forEach(function (tab) {
@@ -16746,50 +16838,53 @@ var ArenaUI = /*#__PURE__*/function () {
         });
       });
       (_document$getElementB = document.getElementById('arena-guest-btn')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
-        _this2.autoGuest();
+        _this3.autoGuest();
       });
       document.getElementById('arena-auth-form').addEventListener('submit', /*#__PURE__*/function () {
-        var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(e) {
-          var username, password, errorEl, active, data, email, _t2;
-          return _regenerator().w(function (_context2) {
-            while (1) switch (_context2.p = _context2.n) {
+        var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(e) {
+          var username, password, errorEl, active, data, email, _t4;
+          return _regenerator().w(function (_context4) {
+            while (1) switch (_context4.p = _context4.n) {
               case 0:
                 e.preventDefault();
                 username = document.getElementById('arena-username').value;
                 password = document.getElementById('arena-password').value;
                 errorEl = document.getElementById('arena-error');
-                active = _this2.container.querySelector('.arena-auth-btn.active');
-                _context2.p = 1;
+                active = _this3.container.querySelector('.arena-auth-btn.active');
+                _context4.p = 1;
                 if (!(active.dataset.auth === 'register')) {
-                  _context2.n = 3;
+                  _context4.n = 3;
                   break;
                 }
                 email = document.getElementById('arena-email').value;
-                _context2.n = 2;
+                _context4.n = 2;
                 return _api["default"].register(username, email, password);
               case 2:
-                data = _context2.v;
-                _context2.n = 5;
+                data = _context4.v;
+                _context4.n = 5;
                 break;
               case 3:
-                _context2.n = 4;
+                _context4.n = 4;
                 return _api["default"].login(username, password);
               case 4:
-                data = _context2.v;
+                data = _context4.v;
               case 5:
                 _api["default"].setToken(data.token);
-                _this2.isGuest = false;
-                _this2.render();
-                _context2.n = 7;
-                break;
+                _this3.isGuest = false;
+                _this3.render();
+                _context4.n = 6;
+                return _this3.autoLoadCloud();
               case 6:
-                _context2.p = 6;
-                _t2 = _context2.v;
-                errorEl.textContent = _t2.message;
+                _context4.n = 8;
+                break;
               case 7:
-                return _context2.a(2);
+                _context4.p = 7;
+                _t4 = _context4.v;
+                errorEl.textContent = _t4.message;
+              case 8:
+                return _context4.a(2);
             }
-          }, _callee2, null, [[1, 6]]);
+          }, _callee4, null, [[1, 7]]);
         }));
         return function (_x) {
           return _ref.apply(this, arguments);
@@ -16800,153 +16895,154 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "bindDashboardEvents",
     value: function bindDashboardEvents() {
       var _document$getElementB2,
-        _this3 = this,
+        _this4 = this,
         _document$getElementB3,
         _document$getElementB4,
         _document$getElementB5,
         _document$getElementB6,
         _document$getElementB7;
       (_document$getElementB2 = document.getElementById('arena-logout')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', function () {
+        _this4.stopAutoSave();
         _api["default"].clearToken();
-        _this3.isGuest = false;
-        _this3.connecting = false;
-        _this3.render();
+        _this4.isGuest = false;
+        _this4.connecting = false;
+        _this4.render();
       });
       var registerBtn = document.getElementById('arena-register-btn') || document.getElementById('arena-register-btn-banner');
       registerBtn === null || registerBtn === void 0 || registerBtn.addEventListener('click', function () {
-        return _this3.showRegisterForm();
+        return _this4.showRegisterForm();
       });
-      (_document$getElementB3 = document.getElementById('arena-summon-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-        var result, _t3;
-        return _regenerator().w(function (_context3) {
-          while (1) switch (_context3.p = _context3.n) {
+      (_document$getElementB3 = document.getElementById('arena-summon-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+        var result, _t5;
+        return _regenerator().w(function (_context5) {
+          while (1) switch (_context5.p = _context5.n) {
             case 0:
-              _context3.p = 0;
-              _context3.n = 1;
+              _context5.p = 0;
+              _context5.n = 1;
               return _api["default"].summonGuardian();
             case 1:
-              result = _context3.v;
-              _this3.gems = result.gems;
-              _this3.updateResourceDisplay();
-              _this3.showNotification("\u2728 Summoned ".concat(result.guardian.name, " (").concat(result.guardian.rarity, ")"), 'success');
-              _this3.loadGuardians();
-              _context3.n = 3;
+              result = _context5.v;
+              _this4.gems = result.gems;
+              _this4.updateResourceDisplay();
+              _this4.showNotification("\u2728 Summoned ".concat(result.guardian.name, " (").concat(result.guardian.rarity, ")"), 'success');
+              _this4.loadGuardians();
+              _context5.n = 3;
               break;
             case 2:
-              _context3.p = 2;
-              _t3 = _context3.v;
-              _this3.showNotification(_t3.message, 'warning');
+              _context5.p = 2;
+              _t5 = _context5.v;
+              _this4.showNotification(_t5.message, 'warning');
             case 3:
-              return _context3.a(2);
+              return _context5.a(2);
           }
-        }, _callee3, null, [[0, 2]]);
+        }, _callee5, null, [[0, 2]]);
       })));
-      (_document$getElementB4 = document.getElementById('arena-pve-btn')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
-        var selected, btn, result, data, _t4;
-        return _regenerator().w(function (_context4) {
-          while (1) switch (_context4.p = _context4.n) {
+      (_document$getElementB4 = document.getElementById('arena-pve-btn')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+        var selected, btn, result, data, _t6;
+        return _regenerator().w(function (_context6) {
+          while (1) switch (_context6.p = _context6.n) {
             case 0:
-              selected = _this3.getSelectedGuardianIds();
+              selected = _this4.getSelectedGuardianIds();
               if (!(selected.length === 0)) {
-                _context4.n = 1;
+                _context6.n = 1;
                 break;
               }
-              return _context4.a(2, _this3.showNotification('Select at least one guardian', 'warning'));
+              return _context6.a(2, _this4.showNotification('Select at least one guardian', 'warning'));
             case 1:
               btn = document.getElementById('arena-pve-btn');
               btn.disabled = true;
               btn.classList.add('btn-disabled');
-              _context4.p = 2;
-              _context4.n = 3;
+              _context6.p = 2;
+              _context6.n = 3;
               return _api["default"].battlePvE(selected);
             case 3:
-              result = _context4.v;
-              if (result.cooldown) _this3.pveCooldown = result.cooldown;
-              if (result.gems != null) _this3.gems = result.gems;
-              _this3.updateResourceDisplay();
-              _this3.showBattleResult(result);
-              _this3.loadGuardians();
-              _this3.startCooldownTimer();
-              _context4.n = 5;
+              result = _context6.v;
+              if (result.cooldown) _this4.pveCooldown = result.cooldown;
+              if (result.gems != null) _this4.gems = result.gems;
+              _this4.updateResourceDisplay();
+              _this4.showBattleResult(result);
+              _this4.loadGuardians();
+              _this4.startCooldownTimer();
+              _context6.n = 5;
               break;
             case 4:
-              _context4.p = 4;
-              _t4 = _context4.v;
+              _context6.p = 4;
+              _t6 = _context6.v;
               btn.disabled = false;
               btn.classList.remove('btn-disabled');
-              data = _t4.message.match(/\d+/);
+              data = _t6.message.match(/\d+/);
               if (data) {
-                _this3.pveCooldown = parseInt(data[0]);
-                _this3.startCooldownTimer();
+                _this4.pveCooldown = parseInt(data[0]);
+                _this4.startCooldownTimer();
               }
-              _this3.showNotification(_t4.message, 'warning');
+              _this4.showNotification(_t6.message, 'warning');
             case 5:
-              return _context4.a(2);
-          }
-        }, _callee4, null, [[2, 4]]);
-      })));
-      (_document$getElementB5 = document.getElementById('arena-pvp-btn')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-        var selected, opponents, _t5;
-        return _regenerator().w(function (_context5) {
-          while (1) switch (_context5.p = _context5.n) {
-            case 0:
-              selected = _this3.getSelectedGuardianIds();
-              if (!(selected.length === 0)) {
-                _context5.n = 1;
-                break;
-              }
-              return _context5.a(2, _this3.showNotification('Select at least one guardian', 'warning'));
-            case 1:
-              _context5.p = 1;
-              _this3.showNotification('Searching for opponent...', 'info');
-              _context5.n = 2;
-              return _api["default"].getOpponents();
-            case 2:
-              opponents = _context5.v;
-              _this3.renderOpponents(opponents, selected);
-              _context5.n = 4;
-              break;
-            case 3:
-              _context5.p = 3;
-              _t5 = _context5.v;
-              _this3.showNotification(_t5.message, 'warning');
-            case 4:
-              return _context5.a(2);
-          }
-        }, _callee5, null, [[1, 3]]);
-      })));
-      (_document$getElementB6 = document.getElementById('arena-save-cloud')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-        var state, _t6;
-        return _regenerator().w(function (_context6) {
-          while (1) switch (_context6.p = _context6.n) {
-            case 0:
-              _context6.p = 0;
-              state = _StateManager["default"].getState();
-              _context6.n = 1;
-              return _api["default"].saveCloud(state);
-            case 1:
-              _this3.showNotification('Game saved to cloud!', 'success');
-              _context6.n = 3;
-              break;
-            case 2:
-              _context6.p = 2;
-              _t6 = _context6.v;
-              _this3.showNotification(_t6.message, 'warning');
-            case 3:
               return _context6.a(2);
           }
-        }, _callee6, null, [[0, 2]]);
+        }, _callee6, null, [[2, 4]]);
       })));
-      (_document$getElementB7 = document.getElementById('arena-load-cloud')) === null || _document$getElementB7 === void 0 || _document$getElementB7.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
-        var data, _t7;
+      (_document$getElementB5 = document.getElementById('arena-pvp-btn')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+        var selected, opponents, _t7;
         return _regenerator().w(function (_context7) {
           while (1) switch (_context7.p = _context7.n) {
             case 0:
-              _context7.p = 0;
-              _context7.n = 1;
+              selected = _this4.getSelectedGuardianIds();
+              if (!(selected.length === 0)) {
+                _context7.n = 1;
+                break;
+              }
+              return _context7.a(2, _this4.showNotification('Select at least one guardian', 'warning'));
+            case 1:
+              _context7.p = 1;
+              _this4.showNotification('Searching for opponent...', 'info');
+              _context7.n = 2;
+              return _api["default"].getOpponents();
+            case 2:
+              opponents = _context7.v;
+              _this4.renderOpponents(opponents, selected);
+              _context7.n = 4;
+              break;
+            case 3:
+              _context7.p = 3;
+              _t7 = _context7.v;
+              _this4.showNotification(_t7.message, 'warning');
+            case 4:
+              return _context7.a(2);
+          }
+        }, _callee7, null, [[1, 3]]);
+      })));
+      (_document$getElementB6 = document.getElementById('arena-save-cloud')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+        var state, _t8;
+        return _regenerator().w(function (_context8) {
+          while (1) switch (_context8.p = _context8.n) {
+            case 0:
+              _context8.p = 0;
+              state = _StateManager["default"].getState();
+              _context8.n = 1;
+              return _api["default"].saveCloud(state);
+            case 1:
+              _this4.showNotification('Game saved to cloud!', 'success');
+              _context8.n = 3;
+              break;
+            case 2:
+              _context8.p = 2;
+              _t8 = _context8.v;
+              _this4.showNotification(_t8.message, 'warning');
+            case 3:
+              return _context8.a(2);
+          }
+        }, _callee8, null, [[0, 2]]);
+      })));
+      (_document$getElementB7 = document.getElementById('arena-load-cloud')) === null || _document$getElementB7 === void 0 || _document$getElementB7.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+        var data, _t9;
+        return _regenerator().w(function (_context9) {
+          while (1) switch (_context9.p = _context9.n) {
+            case 0:
+              _context9.p = 0;
+              _context9.n = 1;
               return _api["default"].loadCloud();
             case 1:
-              data = _context7.v;
+              data = _context9.v;
               if (data.state) {
                 _StateManager["default"].dispatch({
                   type: 'LOAD_STATE',
@@ -16954,50 +17050,51 @@ var ArenaUI = /*#__PURE__*/function () {
                     state: data.state
                   }
                 });
-                _this3.showNotification('Game loaded from cloud!', 'success');
+                _this4.showNotification('Game loaded from cloud!', 'success');
               }
-              _context7.n = 3;
+              _context9.n = 3;
               break;
             case 2:
-              _context7.p = 2;
-              _t7 = _context7.v;
-              _this3.showNotification(_t7.message, 'warning');
+              _context9.p = 2;
+              _t9 = _context9.v;
+              _this4.showNotification(_t9.message, 'warning');
             case 3:
-              return _context7.a(2);
+              return _context9.a(2);
           }
-        }, _callee7, null, [[0, 2]]);
+        }, _callee9, null, [[0, 2]]);
       })));
     }
   }, {
     key: "loadDashboard",
     value: function () {
-      var _loadDashboard = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
-        var username, user, _t8;
-        return _regenerator().w(function (_context8) {
-          while (1) switch (_context8.p = _context8.n) {
+      var _loadDashboard = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+        var username, user, _t0;
+        return _regenerator().w(function (_context0) {
+          while (1) switch (_context0.p = _context0.n) {
             case 0:
+              this.startAutoSave();
               username = JSON.parse(atob(_api["default"].getToken().split('.')[1])).username;
               document.getElementById('arena-username-display').textContent = "\uD83D\uDC64 ".concat(username);
-              _context8.p = 1;
-              _context8.n = 2;
+              _context0.p = 1;
+              _context0.n = 2;
               return _api["default"].getUser();
             case 2:
-              user = _context8.v;
+              user = _context0.v;
               this.energy = user.energy || 0;
               this.gems = user.gems || 0;
               this.updateResourceDisplay();
-              _context8.n = 4;
+              _context0.n = 4;
               break;
             case 3:
-              _context8.p = 3;
-              _t8 = _context8.v;
+              _context0.p = 3;
+              _t0 = _context0.v;
             case 4:
-              _context8.n = 5;
+              _context0.n = 5;
               return Promise.all([this.loadGuardians(), this.loadLeaderboard()]);
             case 5:
-              return _context8.a(2);
+              return _context0.a(2);
           }
-        }, _callee8, this, [[1, 3]]);
+        }, _callee0, this, [[1, 3]]);
       }));
       function loadDashboard() {
         return _loadDashboard.apply(this, arguments);
@@ -17015,27 +17112,27 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "loadGuardians",
     value: function () {
-      var _loadGuardians = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
-        var _t9;
-        return _regenerator().w(function (_context9) {
-          while (1) switch (_context9.p = _context9.n) {
+      var _loadGuardians = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
+        var _t1;
+        return _regenerator().w(function (_context1) {
+          while (1) switch (_context1.p = _context1.n) {
             case 0:
-              _context9.p = 0;
-              _context9.n = 1;
+              _context1.p = 0;
+              _context1.n = 1;
               return _api["default"].getGuardians();
             case 1:
-              this.guardians = _context9.v;
+              this.guardians = _context1.v;
               this.renderGuardians();
-              _context9.n = 3;
+              _context1.n = 3;
               break;
             case 2:
-              _context9.p = 2;
-              _t9 = _context9.v;
+              _context1.p = 2;
+              _t1 = _context1.v;
               document.getElementById('arena-guardians-list').innerHTML = "<p class=\"arena-error\">Failed to load guardians</p>";
             case 3:
-              return _context9.a(2);
+              return _context1.a(2);
           }
-        }, _callee9, this, [[0, 2]]);
+        }, _callee1, this, [[0, 2]]);
       }));
       function loadGuardians() {
         return _loadGuardians.apply(this, arguments);
@@ -17045,7 +17142,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "renderGuardians",
     value: function renderGuardians() {
-      var _this4 = this;
+      var _this5 = this;
       var list = document.getElementById('arena-guardians-list');
       if (this.guardians.length === 0) {
         list.innerHTML = "<p class=\"arena-empty\">No guardians yet. Summon one!</p>";
@@ -17053,59 +17150,59 @@ var ArenaUI = /*#__PURE__*/function () {
       }
       list.innerHTML = this.guardians.map(function (g) {
         var cost = ArenaUI.calculateLevelUpCost(g.level);
-        var canAfford = _this4.energy >= cost;
+        var canAfford = _this5.energy >= cost;
         var maxLevel = g.level >= 50;
         return "\n      <div class=\"arena-guardian-card ".concat(g.rarity, "\" data-id=\"").concat(g.id, "\">\n        <div class=\"arena-guardian-info\">\n          <span class=\"arena-guardian-name\">").concat(g.name, "</span>\n          <span class=\"arena-guardian-rarity ").concat(g.rarity, "\">").concat(g.rarity, "</span>\n        </div>\n        <div class=\"arena-guardian-stats\">\n          <span>\u2764\uFE0F ").concat(g.hp, "/").concat(g.max_hp, "</span>\n          <span>\u2694\uFE0F ").concat(g.attack, "</span>\n          <span>\uD83D\uDEE1\uFE0F ").concat(g.defense, "</span>\n          <span>\u2B06\uFE0F Lv.").concat(g.level, "</span>\n        </div>\n        <div class=\"arena-guardian-actions\">\n          <input type=\"checkbox\" class=\"arena-guardian-select\" data-id=\"").concat(g.id, "\">\n          ").concat(maxLevel ? '<button class="btn btn-small btn-secondary" disabled>MAX</button>' : "<button class=\"btn btn-small btn-primary levelup-btn ".concat(canAfford ? '' : 'btn-disabled', "\" data-id=\"").concat(g.id, "\" ").concat(canAfford ? '' : 'disabled', ">\u26A1").concat(cost.toLocaleString(), "</button>"), "\n          <button class=\"btn btn-small btn-danger release-btn\" data-id=\"").concat(g.id, "\">Release</button>\n        </div>\n      </div>\n    ");
       }).join('');
       list.querySelectorAll('.levelup-btn').forEach(function (btn) {
-        btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
-          var result, _t0;
-          return _regenerator().w(function (_context0) {
-            while (1) switch (_context0.p = _context0.n) {
+        btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
+          var result, _t10;
+          return _regenerator().w(function (_context10) {
+            while (1) switch (_context10.p = _context10.n) {
               case 0:
-                _context0.p = 0;
-                _context0.n = 1;
+                _context10.p = 0;
+                _context10.n = 1;
                 return _api["default"].levelUpGuardian(parseInt(btn.dataset.id));
               case 1:
-                result = _context0.v;
-                _this4.energy = result.energy;
-                _this4.updateEnergyDisplay();
-                _this4.showNotification("".concat(result.guardian.name, " \u2192 Lv.").concat(result.guardian.level, "! (-\u26A1").concat(result.cost.toLocaleString(), ")"), 'success');
-                _this4.loadGuardians();
-                _context0.n = 3;
+                result = _context10.v;
+                _this5.energy = result.energy;
+                _this5.updateEnergyDisplay();
+                _this5.showNotification("".concat(result.guardian.name, " \u2192 Lv.").concat(result.guardian.level, "! (-\u26A1").concat(result.cost.toLocaleString(), ")"), 'success');
+                _this5.loadGuardians();
+                _context10.n = 3;
                 break;
               case 2:
-                _context0.p = 2;
-                _t0 = _context0.v;
-                _this4.showNotification(_t0.message, 'warning');
+                _context10.p = 2;
+                _t10 = _context10.v;
+                _this5.showNotification(_t10.message, 'warning');
               case 3:
-                return _context0.a(2);
+                return _context10.a(2);
             }
-          }, _callee0, null, [[0, 2]]);
+          }, _callee10, null, [[0, 2]]);
         })));
       });
       list.querySelectorAll('.release-btn').forEach(function (btn) {
-        btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
-          var _t1;
-          return _regenerator().w(function (_context1) {
-            while (1) switch (_context1.p = _context1.n) {
+        btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
+          var _t11;
+          return _regenerator().w(function (_context11) {
+            while (1) switch (_context11.p = _context11.n) {
               case 0:
-                _context1.p = 0;
-                _context1.n = 1;
+                _context11.p = 0;
+                _context11.n = 1;
                 return _api["default"].releaseGuardian(parseInt(btn.dataset.id));
               case 1:
-                _this4.showNotification('Guardian released', 'info');
-                _this4.loadGuardians();
-                _context1.n = 3;
+                _this5.showNotification('Guardian released', 'info');
+                _this5.loadGuardians();
+                _context11.n = 3;
                 break;
               case 2:
-                _context1.p = 2;
-                _t1 = _context1.v;
-                _this4.showNotification(_t1.message, 'warning');
+                _context11.p = 2;
+                _t11 = _context11.v;
+                _this5.showNotification(_t11.message, 'warning');
               case 3:
-                return _context1.a(2);
+                return _context11.a(2);
             }
-          }, _callee1, null, [[0, 2]]);
+          }, _callee11, null, [[0, 2]]);
         })));
       });
     }
@@ -17119,7 +17216,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "renderOpponents",
     value: function renderOpponents(opponents, selectedGuardianIds) {
-      var _this5 = this;
+      var _this6 = this;
       var list = document.getElementById('arena-opponents-list');
       if (opponents.length === 0) {
         list.innerHTML = "<p class=\"arena-empty\">No opponents found. Try again later!</p>";
@@ -17129,57 +17226,57 @@ var ArenaUI = /*#__PURE__*/function () {
         return "\n          <div class=\"arena-opponent-card\">\n            <div class=\"arena-opponent-info\">\n              <strong>".concat(o.username, "</strong>\n              <span>Rating: ").concat(o.rating, "</span>\n              <span>Power: ").concat(o.guardian_power, "</span>\n              <span>W:").concat(o.wins, " L:").concat(o.losses, "</span>\n            </div>\n            <button class=\"btn btn-danger btn-small challenge-btn\" data-defender=\"").concat(o.user_id, "\">Challenge!</button>\n          </div>\n        ");
       }).join(''), "\n      </div>\n    ");
       list.querySelectorAll('.challenge-btn').forEach(function (btn) {
-        btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
-          var result, data, _t10;
-          return _regenerator().w(function (_context10) {
-            while (1) switch (_context10.p = _context10.n) {
+        btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12() {
+          var result, data, _t12;
+          return _regenerator().w(function (_context12) {
+            while (1) switch (_context12.p = _context12.n) {
               case 0:
                 btn.disabled = true;
-                _context10.p = 1;
-                _context10.n = 2;
+                _context12.p = 1;
+                _context12.n = 2;
                 return _api["default"].battlePvP(selectedGuardianIds, parseInt(btn.dataset.defender));
               case 2:
-                result = _context10.v;
-                if (result.cooldown) _this5.pvpCooldown = result.cooldown;
-                if (result.gems != null) _this5.gems = result.gems;
-                _this5.updateResourceDisplay();
-                _this5.showBattleResult(result);
-                _this5.loadGuardians();
-                _this5.loadLeaderboard();
-                _this5.startCooldownTimer();
-                _context10.n = 4;
+                result = _context12.v;
+                if (result.cooldown) _this6.pvpCooldown = result.cooldown;
+                if (result.gems != null) _this6.gems = result.gems;
+                _this6.updateResourceDisplay();
+                _this6.showBattleResult(result);
+                _this6.loadGuardians();
+                _this6.loadLeaderboard();
+                _this6.startCooldownTimer();
+                _context12.n = 4;
                 break;
               case 3:
-                _context10.p = 3;
-                _t10 = _context10.v;
-                data = _t10.message.match(/\d+/);
+                _context12.p = 3;
+                _t12 = _context12.v;
+                data = _t12.message.match(/\d+/);
                 if (data) {
-                  _this5.pvpCooldown = parseInt(data[0]);
-                  _this5.startCooldownTimer();
+                  _this6.pvpCooldown = parseInt(data[0]);
+                  _this6.startCooldownTimer();
                 }
-                _this5.showNotification(_t10.message, 'warning');
+                _this6.showNotification(_t12.message, 'warning');
               case 4:
-                return _context10.a(2);
+                return _context12.a(2);
             }
-          }, _callee10, null, [[1, 3]]);
+          }, _callee12, null, [[1, 3]]);
         })));
       });
     }
   }, {
     key: "loadLeaderboard",
     value: function () {
-      var _loadLeaderboard = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
-        var _yield$Promise$all, _yield$Promise$all2, leaderboard, myRank, rankEl, list, _t11;
-        return _regenerator().w(function (_context11) {
-          while (1) switch (_context11.p = _context11.n) {
+      var _loadLeaderboard = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13() {
+        var _yield$Promise$all, _yield$Promise$all2, leaderboard, myRank, rankEl, list, _t13;
+        return _regenerator().w(function (_context13) {
+          while (1) switch (_context13.p = _context13.n) {
             case 0:
-              _context11.p = 0;
-              _context11.n = 1;
+              _context13.p = 0;
+              _context13.n = 1;
               return Promise.all([_api["default"].getLeaderboard(20), _api["default"].getMyRank()["catch"](function () {
                 return null;
               })]);
             case 1:
-              _yield$Promise$all = _context11.v;
+              _yield$Promise$all = _context13.v;
               _yield$Promise$all2 = _slicedToArray(_yield$Promise$all, 2);
               leaderboard = _yield$Promise$all2[0];
               myRank = _yield$Promise$all2[1];
@@ -17191,16 +17288,16 @@ var ArenaUI = /*#__PURE__*/function () {
               list.innerHTML = "\n        <table class=\"arena-leaderboard-table\">\n          <thead>\n            <tr><th>#</th><th>Player</th><th>Rating</th><th>W/L</th><th>Power</th></tr>\n          </thead>\n          <tbody>\n            ".concat(leaderboard.entries.map(function (e, i) {
                 return "\n              <tr>\n                <td>".concat(i + 1 + leaderboard.offset, "</td>\n                <td>").concat(e.username, "</td>\n                <td>").concat(e.rating, "</td>\n                <td>").concat(e.wins, "/").concat(e.losses, "</td>\n                <td>").concat(e.guardian_power, "</td>\n              </tr>\n            ");
               }).join(''), "\n          </tbody>\n        </table>\n      ");
-              _context11.n = 3;
+              _context13.n = 3;
               break;
             case 2:
-              _context11.p = 2;
-              _t11 = _context11.v;
+              _context13.p = 2;
+              _t13 = _context13.v;
               document.getElementById('arena-leaderboard-list').innerHTML = "<p class=\"arena-error\">Failed to load leaderboard</p>";
             case 3:
-              return _context11.a(2);
+              return _context13.a(2);
           }
-        }, _callee11, null, [[0, 2]]);
+        }, _callee13, null, [[0, 2]]);
       }));
       function loadLeaderboard() {
         return _loadLeaderboard.apply(this, arguments);
@@ -17210,7 +17307,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "showRegisterForm",
     value: function showRegisterForm() {
-      var _this6 = this;
+      var _this7 = this;
       var overlay = document.createElement('div');
       overlay.className = 'modal-overlay';
       overlay.innerHTML = "\n      <div class=\"modal-content arena-register-modal\">\n        <h2>\uD83D\uDCDD Register Your Account</h2>\n        <p>Convert your guest progress to a permanent account!</p>\n        <form id=\"arena-convert-form\">\n          <input type=\"text\" id=\"arena-convert-username\" placeholder=\"Username\" required>\n          <input type=\"email\" id=\"arena-convert-email\" placeholder=\"Email\" required>\n          <input type=\"password\" id=\"arena-convert-password\" placeholder=\"Password (min 6 chars)\" required>\n          <div class=\"arena-convert-actions\">\n            <button type=\"submit\" class=\"btn btn-primary\">Register</button>\n            <button type=\"button\" class=\"btn btn-secondary\" id=\"arena-convert-cancel\">Cancel</button>\n          </div>\n        </form>\n        <p class=\"arena-error\" id=\"arena-convert-error\"></p>\n      </div>\n    ";
@@ -17219,36 +17316,39 @@ var ArenaUI = /*#__PURE__*/function () {
         return overlay.remove();
       });
       overlay.querySelector('#arena-convert-form').addEventListener('submit', /*#__PURE__*/function () {
-        var _ref0 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(e) {
-          var username, email, password, errorEl, data, _t12;
-          return _regenerator().w(function (_context12) {
-            while (1) switch (_context12.p = _context12.n) {
+        var _ref0 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(e) {
+          var username, email, password, errorEl, data, _t14;
+          return _regenerator().w(function (_context14) {
+            while (1) switch (_context14.p = _context14.n) {
               case 0:
                 e.preventDefault();
                 username = document.getElementById('arena-convert-username').value;
                 email = document.getElementById('arena-convert-email').value;
                 password = document.getElementById('arena-convert-password').value;
                 errorEl = document.getElementById('arena-convert-error');
-                _context12.p = 1;
-                _context12.n = 2;
+                _context14.p = 1;
+                _context14.n = 2;
                 return _api["default"].convertGuest(username, email, password);
               case 2:
-                data = _context12.v;
+                data = _context14.v;
                 _api["default"].setToken(data.token);
-                _this6.isGuest = false;
+                _this7.isGuest = false;
                 overlay.remove();
-                _this6.showNotification('Account created! Progress saved permanently.', 'success');
-                _this6.render();
-                _context12.n = 4;
-                break;
+                _this7.render();
+                _context14.n = 3;
+                return _this7.autoLoadCloud();
               case 3:
-                _context12.p = 3;
-                _t12 = _context12.v;
-                errorEl.textContent = _t12.message;
+                _this7.showNotification('Account created! Progress saved permanently.', 'success');
+                _context14.n = 5;
+                break;
               case 4:
-                return _context12.a(2);
+                _context14.p = 4;
+                _t14 = _context14.v;
+                errorEl.textContent = _t14.message;
+              case 5:
+                return _context14.a(2);
             }
-          }, _callee12, null, [[1, 3]]);
+          }, _callee14, null, [[1, 4]]);
         }));
         return function (_x2) {
           return _ref0.apply(this, arguments);

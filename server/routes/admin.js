@@ -138,24 +138,6 @@ function checkIPWhitelist(req) {
   return { allowed };
 }
 
-function checkCSRF(req) {
-  if (req.method === 'GET') return { allowed: true };
-  const origin = req.headers['origin'];
-  const referer = req.headers['referer'];
-  const ALLOWED_ORIGINS = [
-    'https://alinutzu.github.io',
-    'http://localhost:3000',
-    'http://localhost:5000',
-  ];
-  if (!origin && !referer) return { allowed: true };
-  const check = origin || referer || '';
-  const allowed = ALLOWED_ORIGINS.some(o => check.startsWith(o));
-  if (!allowed) {
-    auditLog('system', 'CSRF check failed', { origin, referer });
-  }
-  return { allowed };
-}
-
 function auditLog(action, detail, extra = {}) {
   try {
     const entry = {
@@ -169,17 +151,8 @@ function auditLog(action, detail, extra = {}) {
 }
 
 function basicAuth(req, res, next) {
-  const ipCheck = checkIPWhitelist(req);
-  if (!ipCheck.allowed) {
-    return res.status(403).json({ error: 'Access denied by IP whitelist' });
-  }
-
-  const csrfCheck = checkCSRF(req);
-  if (!csrfCheck.allowed) {
-    return res.status(403).json({ error: 'CSRF validation failed' });
-  }
-
   const ip = getClientIP(req);
+
   const rateCheck = checkRateLimit(ip);
   if (!rateCheck.allowed) {
     return res.status(429).json({
@@ -200,13 +173,9 @@ function basicAuth(req, res, next) {
 
   const config = loadConfig();
 
-  const userMatch = crypto.timingSafeEqual(
-    Buffer.from(user || ''),
-    Buffer.from(config.username || '')
-  );
   const passMatch = bcrypt.compareSync(pass || '', config.password_hash || '');
 
-  if (!userMatch || !passMatch) {
+  if (user !== config.username || !passMatch) {
     recordFailedAttempt(ip);
     const remaining = MAX_ATTEMPTS - (loginAttempts.get(ip)?.count || 0);
     auditLog('auth', 'Failed login attempt', { ip, user, remaining: Math.max(0, remaining) });

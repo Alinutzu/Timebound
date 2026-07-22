@@ -242,8 +242,15 @@ function init() {
 }
 
 async function loadDashboard() {
-  const data = await api('/dashboard');
   const el = document.getElementById('tab-dashboard');
+  let data;
+  try {
+    data = await api('/dashboard');
+  } catch (e) {
+    if (e.message === 'locked' || e.message === 'unauthorized') return;
+    el.innerHTML = `<p style="color:#f85149;padding:20px">Failed to load dashboard</p>`;
+    return;
+  }
   el.innerHTML = `
     <div class="stats">
       <div class="stat"><div class="value">${escapeHtml(data.totalUsers)}</div><div class="label">Total Users</div></div>
@@ -286,6 +293,14 @@ let usersPage = 1;
 async function loadUsers(fromSearch) {
   const el = document.getElementById('tab-users');
   const q = fromSearch ? (document.getElementById('user-search')?.value || '') : '';
+  let data;
+  try {
+    data = await api(`/users?page=${usersPage}&search=${encodeURIComponent(q)}`);
+  } catch (e) {
+    if (e.message === 'locked' || e.message === 'unauthorized') return;
+    el.innerHTML = `<p style="color:#f85149;padding:20px">Failed to load users</p>`;
+    return;
+  }
   el.innerHTML = `
     <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
       <input class="search" id="user-search" placeholder="Search username or email..." value="${escapeHtml(q)}">
@@ -328,15 +343,23 @@ async function deleteUser(id) {
       alert(data.error || 'Failed to delete user');
       return;
     }
-    loadUsers(true);
+    usersPage = 1;
+    await loadUsers();
   } catch (err) {
     alert('Connection error');
   }
 }
 
 async function loadGuardians() {
-  const data = await api('/guardians');
   const el = document.getElementById('tab-guardians');
+  let data;
+  try {
+    data = await api('/guardians');
+  } catch (e) {
+    if (e.message === 'locked' || e.message === 'unauthorized') return;
+    el.innerHTML = `<p style="color:#f85149;padding:20px">Failed to load guardians</p>`;
+    return;
+  }
   const rarityColors = {common:'#8b949e',rare:'#58a6ff',epic:'#d2a8ff',legendary:'#f0883e'};
   el.innerHTML = `
     <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
@@ -366,8 +389,15 @@ async function loadGuardians() {
 }
 
 async function loadBattles() {
-  const data = await api('/battles');
   const el = document.getElementById('tab-battles');
+  let data;
+  try {
+    data = await api('/battles');
+  } catch (e) {
+    if (e.message === 'locked' || e.message === 'unauthorized') return;
+    el.innerHTML = `<p style="color:#f85149;padding:20px">Failed to load battles</p>`;
+    return;
+  }
   el.innerHTML = `
     <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr))">
       ${data.winRate.map(w => `

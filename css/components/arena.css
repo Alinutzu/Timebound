@@ -180,6 +180,17 @@
   white-space: nowrap;
 }
 
+.arena-gems {
+  background: linear-gradient(135deg, #8b5cf633, #6366f133);
+  border: 1px solid #8b5cf6;
+  color: #a78bfa;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
 .btn-disabled {
   opacity: 0.5;
   cursor: not-allowed !important;

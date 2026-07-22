@@ -21,6 +21,7 @@ const GUARDIAN_NAMES = [
 
 const BASE_LEVELUP_COST = 10000;
 const MAX_GUARDIAN_LEVEL = 50;
+const SUMMON_COST = 50;
 
 router.get('/', authMiddleware, (req, res) => {
   try {
@@ -33,8 +34,12 @@ router.get('/', authMiddleware, (req, res) => {
 
 router.post('/summon', authMiddleware, (req, res) => {
   try {
-    const user = db.prepare('SELECT id FROM users WHERE id = ?').get(req.user.id);
+    const user = db.prepare('SELECT id, gems FROM users WHERE id = ?').get(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (user.gems < SUMMON_COST) {
+      return res.status(400).json({ error: `Summon costs ${SUMMON_COST} gems`, cost: SUMMON_COST, gems: user.gems });
+    }
 
     const count = db.prepare('SELECT COUNT(*) as c FROM guardians WHERE user_id = ?').get(req.user.id).c;
     if (count >= 20) {
@@ -58,11 +63,14 @@ router.post('/summon', authMiddleware, (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(req.user.id, guardianKey, name, rarity, stats.baseAtk, stats.baseDef, stats.baseHp, stats.baseHp);
 
+    db.prepare('UPDATE users SET gems = gems - ? WHERE id = ?').run(SUMMON_COST, req.user.id);
+
     const guardian = db.prepare('SELECT * FROM guardians WHERE id = ?').get(result.lastInsertRowid);
+    const updatedUser = db.prepare('SELECT gems FROM users WHERE id = ?').get(req.user.id);
 
     updateLeaderboardPower(req.user.id);
 
-    res.status(201).json(guardian);
+    res.status(201).json({ guardian, gems: updatedUser.gems, cost: SUMMON_COST });
   } catch (err) {
     console.error('Summon error:', err);
     res.status(500).json({ error: 'Server error' });

@@ -16620,6 +16620,7 @@ var ArenaUI = /*#__PURE__*/function () {
     this.isGuest = false;
     this.connecting = false;
     this.energy = 0;
+    this.gems = 0;
     this.pveCooldown = 0;
     this.pvpCooldown = 0;
     this.cooldownTimer = null;
@@ -16715,7 +16716,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "renderDashboard",
     value: function renderDashboard() {
-      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena ".concat(this.isGuest ? '<span class="arena-guest-badge">GUEST</span>' : '', "</h2>\n        <div class=\"arena-header-actions\">\n          <span id=\"arena-energy-display\" class=\"arena-energy\">\u26A1 ").concat(this.energy.toLocaleString(), "</span>\n          <span id=\"arena-username-display\"></span>\n          ").concat(this.isGuest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Register</button>' : '', "\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-save-cloud\">\u2601\uFE0F Save</button>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-load-cloud\">\u2601\uFE0F Load</button>\n          <button class=\"btn btn-small btn-danger\" id=\"arena-logout\">Logout</button>\n        </div>\n      </div>\n      ").concat(this.isGuest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : '', "\n      <div class=\"arena-dashboard\">\n        <div class=\"arena-section\" id=\"arena-guardians-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDEE1\uFE0F My Guardians</h3>\n            <button class=\"btn btn-primary\" id=\"arena-summon-btn\">\u2728 Summon (0 \uD83D\uDC8E)</button>\n          </div>\n          <div id=\"arena-guardians-list\" class=\"arena-guardians-list\">\n            <p class=\"arena-loading\">Loading guardians...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-battle-section\">\n          <div class=\"arena-section-header\">\n            <h3>\u2694\uFE0F Battle</h3>\n          </div>\n          <div class=\"arena-battle-actions\">\n            <button class=\"btn btn-success\" id=\"arena-pve-btn\">\u2694\uFE0F Train (PvE)</button>\n            <button class=\"btn btn-danger\" id=\"arena-pvp-btn\">\uD83D\uDD25 Find Opponent (PvP)</button>\n          </div>\n          <div id=\"arena-battle-result\"></div>\n          <div id=\"arena-opponents-list\"></div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-leaderboard-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83C\uDFC6 Leaderboard</h3>\n            <span id=\"arena-my-rank\"></span>\n          </div>\n          <div id=\"arena-leaderboard-list\" class=\"arena-leaderboard-list\">\n            <p class=\"arena-loading\">Loading leaderboard...</p>\n          </div>\n        </div>\n      </div>\n    ");
+      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena ".concat(this.isGuest ? '<span class="arena-guest-badge">GUEST</span>' : '', "</h2>\n        <div class=\"arena-header-actions\">\n          <span id=\"arena-gems-display\" class=\"arena-gems\">\uD83D\uDC8E ").concat(this.gems.toLocaleString(), "</span>\n          <span id=\"arena-energy-display\" class=\"arena-energy\">\u26A1 ").concat(this.energy.toLocaleString(), "</span>\n          <span id=\"arena-username-display\"></span>\n          ").concat(this.isGuest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Register</button>' : '', "\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-save-cloud\">\u2601\uFE0F Save</button>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-load-cloud\">\u2601\uFE0F Load</button>\n          <button class=\"btn btn-small btn-danger\" id=\"arena-logout\">Logout</button>\n        </div>\n      </div>\n      ").concat(this.isGuest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : '', "\n      <div class=\"arena-dashboard\">\n        <div class=\"arena-section\" id=\"arena-guardians-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDEE1\uFE0F My Guardians</h3>\n            <button class=\"btn btn-primary\" id=\"arena-summon-btn\">\u2728 Summon (\uD83D\uDC8E").concat(ArenaUI.SUMMON_COST, ")</button>\n          </div>\n          <div id=\"arena-guardians-list\" class=\"arena-guardians-list\">\n            <p class=\"arena-loading\">Loading guardians...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-battle-section\">\n          <div class=\"arena-section-header\">\n            <h3>\u2694\uFE0F Battle</h3>\n          </div>\n          <div class=\"arena-battle-actions\">\n            <button class=\"btn btn-success\" id=\"arena-pve-btn\">\u2694\uFE0F Train (PvE)</button>\n            <button class=\"btn btn-danger\" id=\"arena-pvp-btn\">\uD83D\uDD25 Find Opponent (PvP)</button>\n          </div>\n          <div id=\"arena-battle-result\"></div>\n          <div id=\"arena-opponents-list\"></div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-leaderboard-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83C\uDFC6 Leaderboard</h3>\n            <span id=\"arena-my-rank\"></span>\n          </div>\n          <div id=\"arena-leaderboard-list\" class=\"arena-leaderboard-list\">\n            <p class=\"arena-loading\">Loading leaderboard...</p>\n          </div>\n        </div>\n      </div>\n    ");
     }
   }, {
     key: "bindEvents",
@@ -16816,7 +16817,7 @@ var ArenaUI = /*#__PURE__*/function () {
         return _this3.showRegisterForm();
       });
       (_document$getElementB3 = document.getElementById('arena-summon-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
-        var guardian, _t3;
+        var result, _t3;
         return _regenerator().w(function (_context3) {
           while (1) switch (_context3.p = _context3.n) {
             case 0:
@@ -16824,8 +16825,10 @@ var ArenaUI = /*#__PURE__*/function () {
               _context3.n = 1;
               return _api["default"].summonGuardian();
             case 1:
-              guardian = _context3.v;
-              _this3.showNotification("\u2728 Summoned ".concat(guardian.name, " (").concat(guardian.rarity, ")"), 'success');
+              result = _context3.v;
+              _this3.gems = result.gems;
+              _this3.updateResourceDisplay();
+              _this3.showNotification("\u2728 Summoned ".concat(result.guardian.name, " (").concat(result.guardian.rarity, ")"), 'success');
               _this3.loadGuardians();
               _context3.n = 3;
               break;
@@ -16859,6 +16862,8 @@ var ArenaUI = /*#__PURE__*/function () {
             case 3:
               result = _context4.v;
               if (result.cooldown) _this3.pveCooldown = result.cooldown;
+              if (result.gems != null) _this3.gems = result.gems;
+              _this3.updateResourceDisplay();
               _this3.showBattleResult(result);
               _this3.loadGuardians();
               _this3.startCooldownTimer();
@@ -16979,7 +16984,8 @@ var ArenaUI = /*#__PURE__*/function () {
             case 2:
               user = _context8.v;
               this.energy = user.energy || 0;
-              this.updateEnergyDisplay();
+              this.gems = user.gems || 0;
+              this.updateResourceDisplay();
               _context8.n = 4;
               break;
             case 3:
@@ -16999,10 +17005,12 @@ var ArenaUI = /*#__PURE__*/function () {
       return loadDashboard;
     }()
   }, {
-    key: "updateEnergyDisplay",
-    value: function updateEnergyDisplay() {
-      var el = document.getElementById('arena-energy-display');
-      if (el) el.textContent = "\u26A1 ".concat(this.energy.toLocaleString());
+    key: "updateResourceDisplay",
+    value: function updateResourceDisplay() {
+      var energyEl = document.getElementById('arena-energy-display');
+      if (energyEl) energyEl.textContent = "\u26A1 ".concat(this.energy.toLocaleString());
+      var gemsEl = document.getElementById('arena-gems-display');
+      if (gemsEl) gemsEl.textContent = "\uD83D\uDC8E ".concat(this.gems.toLocaleString());
     }
   }, {
     key: "loadGuardians",
@@ -17133,6 +17141,8 @@ var ArenaUI = /*#__PURE__*/function () {
               case 2:
                 result = _context10.v;
                 if (result.cooldown) _this5.pvpCooldown = result.cooldown;
+                if (result.gems != null) _this5.gems = result.gems;
+                _this5.updateResourceDisplay();
                 _this5.showBattleResult(result);
                 _this5.loadGuardians();
                 _this5.loadLeaderboard();
@@ -17256,7 +17266,7 @@ var ArenaUI = /*#__PURE__*/function () {
       var diff = playerPower - enemyPower;
       var closeCall = Math.abs(diff) < 50;
       var enemyName = result.enemyName || (result.defender ? "@".concat(result.defender) : 'Enemy');
-      el.innerHTML = "\n      <div class=\"arena-battle-result ".concat(won ? 'victory' : 'defeat', " ").concat(closeCall ? 'close-call' : '', "\">\n        <div class=\"battle-animation\">\n          <div class=\"battle-emblem\">").concat(won ? '🏆' : '💀', "</div>\n          ").concat(closeCall ? '<div class="battle-close-call">⚡ CLOSE CALL!</div>' : '', "\n        </div>\n        <h3 class=\"battle-title ").concat(won ? 'victory-title' : 'defeat-title', "\">\n          ").concat(won ? 'VICTORY' : 'DEFEAT', "\n        </h3>\n        <div class=\"battle-vs\">").concat(won ? 'You beat' : 'You lost to', " <strong>").concat(enemyName, "</strong></div>\n        <p class=\"battle-message\">").concat(result.message || '', "</p>\n        <div class=\"battle-stats-grid\">\n          <div class=\"battle-stat-card ").concat(won ? 'win' : '', "\">\n            <span class=\"stat-label\">\u2694\uFE0F Your Power</span>\n            <span class=\"stat-value\">").concat(playerPower.toLocaleString(), "</span>\n          </div>\n          <div class=\"battle-stat-card vs-divider\">\n            <span class=\"stat-label\">\u26A1</span>\n            <span class=\"stat-value\">VS</span>\n          </div>\n          <div class=\"battle-stat-card ").concat(won ? '' : 'win', "\">\n            <span class=\"stat-label\">\uD83D\uDC79 ").concat(enemyName, "</span>\n            <span class=\"stat-value\">").concat(enemyPower.toLocaleString(), "</span>\n          </div>\n        </div>\n        <div class=\"battle-rewards\">\n          ").concat(result.expReward ? "<span class=\"reward-badge\">\u2B50 +".concat(result.expReward, " EXP</span>") : '', "\n          ").concat(result.gemsReward ? "<span class=\"reward-badge\">\uD83D\uDC8E +".concat(result.gemsReward, " Gems</span>") : '', "\n          ").concat(ratingChange ? "<span class=\"reward-badge ".concat(ratingChange > 0 ? 'rating-up' : 'rating-down', "\">\uD83D\uDCCA ").concat(ratingChange > 0 ? '+' : '').concat(ratingChange, " Rating</span>") : '', "\n          ").concat(result.cooldown ? "<span class=\"reward-badge cooldown-badge\">\u23F3 ".concat(result.cooldown, "s cooldown</span>") : '', "\n        </div>\n      </div>\n    ");
+      el.innerHTML = "\n      <div class=\"arena-battle-result ".concat(won ? 'victory' : 'defeat', " ").concat(closeCall ? 'close-call' : '', "\">\n        <div class=\"battle-animation\">\n          <div class=\"battle-emblem\">").concat(won ? '🏆' : '💀', "</div>\n          ").concat(closeCall ? '<div class="battle-close-call">⚡ CLOSE CALL!</div>' : '', "\n        </div>\n        <h3 class=\"battle-title ").concat(won ? 'victory-title' : 'defeat-title', "\">\n          ").concat(won ? 'VICTORY' : 'DEFEAT', "\n        </h3>\n        <div class=\"battle-vs\">").concat(won ? 'You beat' : 'You lost to', " <strong>").concat(enemyName, "</strong></div>\n        <p class=\"battle-message\">").concat(result.message || '', "</p>\n        <div class=\"battle-stats-grid\">\n          <div class=\"battle-stat-card ").concat(won ? 'win' : '', "\">\n            <span class=\"stat-label\">\u2694\uFE0F Your Power</span>\n            <span class=\"stat-value\">").concat(playerPower.toLocaleString(), "</span>\n          </div>\n          <div class=\"battle-stat-card vs-divider\">\n            <span class=\"stat-label\">\u26A1</span>\n            <span class=\"stat-value\">VS</span>\n          </div>\n          <div class=\"battle-stat-card ").concat(won ? '' : 'win', "\">\n            <span class=\"stat-label\">\uD83D\uDC79 ").concat(enemyName, "</span>\n            <span class=\"stat-value\">").concat(enemyPower.toLocaleString(), "</span>\n          </div>\n        </div>\n        <div class=\"battle-rewards\">\n          ").concat(result.expReward ? "<span class=\"reward-badge\">\u2B50 +".concat(result.expReward, " EXP</span>") : '', "\n          ").concat(result.gemsReward ? "<span class=\"reward-badge\">\uD83D\uDC8E +".concat(result.gemsReward, "</span>") : '', "\n          ").concat(result.gemsWager ? "<span class=\"reward-badge ".concat(result.result === 'win' ? 'rating-up' : 'rating-down', "\">\uD83D\uDC8E ").concat(result.result === 'win' ? '+' : '-').concat(result.gemsWager, " Wager</span>") : '', "\n          ").concat(ratingChange ? "<span class=\"reward-badge ".concat(ratingChange > 0 ? 'rating-up' : 'rating-down', "\">\uD83D\uDCCA ").concat(ratingChange > 0 ? '+' : '').concat(ratingChange, " Rating</span>") : '', "\n          ").concat(result.cooldown ? "<span class=\"reward-badge cooldown-badge\">\u23F3 ".concat(result.cooldown, "s cooldown</span>") : '', "\n        </div>\n      </div>\n    ");
       if (won) {
         var _el$querySelector;
         (_el$querySelector = el.querySelector('.battle-emblem')) === null || _el$querySelector === void 0 || _el$querySelector.animate([{
@@ -17306,6 +17316,7 @@ var ArenaUI = /*#__PURE__*/function () {
     }
   }]);
 }();
+_defineProperty(ArenaUI, "SUMMON_COST", 50);
 _defineProperty(ArenaUI, "LEVELUP_BASE_COST", 10000);
 _defineProperty(ArenaUI, "LEVELUP_COST_MULTIPLIER", 1.5);
 var _default = exports["default"] = ArenaUI;

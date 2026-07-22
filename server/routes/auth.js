@@ -122,7 +122,7 @@ const { authMiddleware } = require('../auth');
 
 router.get('/me', authMiddleware, (req, res) => {
   try {
-    const user = db.prepare('SELECT id, username, energy FROM users WHERE id = ?').get(req.user.id);
+    const user = db.prepare('SELECT id, username, energy, gems, gems_won, gems_lost FROM users WHERE id = ?').get(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(user);
   } catch (err) {

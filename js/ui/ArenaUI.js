@@ -15,12 +15,14 @@ class ArenaUI {
     this.isGuest = false;
     this.connecting = false;
     this.energy = 0;
+    this.gems = 0;
     this.pveCooldown = 0;
     this.pvpCooldown = 0;
     this.cooldownTimer = null;
     this.render();
   }
 
+  static SUMMON_COST = 50;
   static LEVELUP_BASE_COST = 10000;
   static LEVELUP_COST_MULTIPLIER = 1.5;
 
@@ -140,6 +142,7 @@ class ArenaUI {
       <div class="arena-header">
         <h2>⚔️ Arena ${this.isGuest ? '<span class="arena-guest-badge">GUEST</span>' : ''}</h2>
         <div class="arena-header-actions">
+          <span id="arena-gems-display" class="arena-gems">💎 ${this.gems.toLocaleString()}</span>
           <span id="arena-energy-display" class="arena-energy">⚡ ${this.energy.toLocaleString()}</span>
           <span id="arena-username-display"></span>
           ${this.isGuest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Register</button>' : ''}
@@ -153,7 +156,7 @@ class ArenaUI {
         <div class="arena-section" id="arena-guardians-section">
           <div class="arena-section-header">
             <h3>🛡️ My Guardians</h3>
-            <button class="btn btn-primary" id="arena-summon-btn">✨ Summon (0 💎)</button>
+            <button class="btn btn-primary" id="arena-summon-btn">✨ Summon (💎${ArenaUI.SUMMON_COST})</button>
           </div>
           <div id="arena-guardians-list" class="arena-guardians-list">
             <p class="arena-loading">Loading guardians...</p>
@@ -247,8 +250,10 @@ class ArenaUI {
 
     document.getElementById('arena-summon-btn')?.addEventListener('click', async () => {
       try {
-        const guardian = await api.summonGuardian();
-        this.showNotification(`✨ Summoned ${guardian.name} (${guardian.rarity})`, 'success');
+        const result = await api.summonGuardian();
+        this.gems = result.gems;
+        this.updateResourceDisplay();
+        this.showNotification(`✨ Summoned ${result.guardian.name} (${result.guardian.rarity})`, 'success');
         this.loadGuardians();
       } catch (err) {
         this.showNotification(err.message, 'warning');
@@ -266,6 +271,8 @@ class ArenaUI {
       try {
         const result = await api.battlePvE(selected);
         if (result.cooldown) this.pveCooldown = result.cooldown;
+        if (result.gems != null) this.gems = result.gems;
+        this.updateResourceDisplay();
         this.showBattleResult(result);
         this.loadGuardians();
         this.startCooldownTimer();
@@ -324,14 +331,17 @@ class ArenaUI {
     try {
       const user = await api.getUser();
       this.energy = user.energy || 0;
-      this.updateEnergyDisplay();
+      this.gems = user.gems || 0;
+      this.updateResourceDisplay();
     } catch (e) {}
     await Promise.all([this.loadGuardians(), this.loadLeaderboard()]);
   }
 
-  updateEnergyDisplay() {
-    const el = document.getElementById('arena-energy-display');
-    if (el) el.textContent = `⚡ ${this.energy.toLocaleString()}`;
+  updateResourceDisplay() {
+    const energyEl = document.getElementById('arena-energy-display');
+    if (energyEl) energyEl.textContent = `⚡ ${this.energy.toLocaleString()}`;
+    const gemsEl = document.getElementById('arena-gems-display');
+    if (gemsEl) gemsEl.textContent = `💎 ${this.gems.toLocaleString()}`;
   }
 
   async loadGuardians() {
@@ -439,6 +449,8 @@ class ArenaUI {
         try {
           const result = await api.battlePvP(selectedGuardianIds, parseInt(btn.dataset.defender));
           if (result.cooldown) this.pvpCooldown = result.cooldown;
+          if (result.gems != null) this.gems = result.gems;
+          this.updateResourceDisplay();
           this.showBattleResult(result);
           this.loadGuardians();
           this.loadLeaderboard();
@@ -570,7 +582,8 @@ class ArenaUI {
         </div>
         <div class="battle-rewards">
           ${result.expReward ? `<span class="reward-badge">⭐ +${result.expReward} EXP</span>` : ''}
-          ${result.gemsReward ? `<span class="reward-badge">💎 +${result.gemsReward} Gems</span>` : ''}
+          ${result.gemsReward ? `<span class="reward-badge">💎 +${result.gemsReward}</span>` : ''}
+          ${result.gemsWager ? `<span class="reward-badge ${result.result === 'win' ? 'rating-up' : 'rating-down'}">💎 ${result.result === 'win' ? '+' : '-'}${result.gemsWager} Wager</span>` : ''}
           ${ratingChange ? `<span class="reward-badge ${ratingChange > 0 ? 'rating-up' : 'rating-down'}">📊 ${ratingChange > 0 ? '+' : ''}${ratingChange} Rating</span>` : ''}
           ${result.cooldown ? `<span class="reward-badge cooldown-badge">⏳ ${result.cooldown}s cooldown</span>` : ''}
         </div>

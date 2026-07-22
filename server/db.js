@@ -80,5 +80,14 @@ if (!userCols.includes('last_pve_at')) {
 if (!userCols.includes('last_pvp_at')) {
   db.exec("ALTER TABLE users ADD COLUMN last_pvp_at INTEGER DEFAULT 0");
 }
+if (!userCols.includes('gems')) {
+  db.exec("ALTER TABLE users ADD COLUMN gems INTEGER DEFAULT 0");
+}
+if (!userCols.includes('gems_won')) {
+  db.exec("ALTER TABLE users ADD COLUMN gems_won INTEGER DEFAULT 0");
+}
+if (!userCols.includes('gems_lost')) {
+  db.exec("ALTER TABLE users ADD COLUMN gems_lost INTEGER DEFAULT 0");
+}
 
 module.exports = db;

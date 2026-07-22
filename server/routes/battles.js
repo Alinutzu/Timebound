@@ -94,7 +94,8 @@ router.post('/pve', authMiddleware, (req, res) => {
     const gemsReward = won ? Math.floor(Math.random() * 5) + 3 : Math.floor(Math.random() * 2);
 
     const battleOps = db.transaction(() => {
-      db.prepare('UPDATE users SET last_pve_at = ? WHERE id = ?').run(Math.floor(Date.now() / 1000), req.user.id);
+      db.prepare('UPDATE users SET last_pve_at = ?, gems = gems + ?, gems_won = gems_won + ? WHERE id = ?')
+        .run(Math.floor(Date.now() / 1000), gemsReward, won ? gemsReward : 0, req.user.id);
 
       if (won) {
         guardians.forEach(g => {
@@ -113,6 +114,7 @@ router.post('/pve', authMiddleware, (req, res) => {
     battleOps();
 
     const updatedGuardians = db.prepare(`SELECT id, level, attack, defense, hp FROM guardians WHERE id IN (${placeholders})`).all(...guardianIds);
+    const updatedUser = db.prepare('SELECT gems FROM users WHERE id = ?').get(req.user.id);
 
     res.json({
       result: won ? 'win' : 'loss',
@@ -121,6 +123,7 @@ router.post('/pve', authMiddleware, (req, res) => {
       enemyName,
       expReward,
       gemsReward,
+      gems: updatedUser.gems,
       guardians: updatedGuardians,
       cooldown: cooldownSec,
       message: won
@@ -177,8 +180,27 @@ router.post('/pvp/challenge', authMiddleware, (req, res) => {
     const attackerChange = attackerWon ? Math.floor(10 + Math.random() * 15) : -Math.floor(5 + Math.random() * 10);
     const defenderChange = attackerWon ? -Math.floor(5 + Math.random() * 10) : Math.floor(8 + Math.random() * 12);
 
+    const attackerData = db.prepare('SELECT gems FROM users WHERE id = ?').get(req.user.id);
+    const defenderData = db.prepare('SELECT gems FROM users WHERE id = ?').get(defenderId);
+    const defenderGems = defenderData?.gems || 0;
+    const attackerGems = attackerData?.gems || 0;
+    let gemsWager = Math.min(Math.max(Math.floor(defenderGems * 0.1), 0), 50);
+    if (defenderGems > 0 && defenderGems < 5) gemsWager = defenderGems;
+
     const battleOps = db.transaction(() => {
       db.prepare('UPDATE users SET last_pvp_at = ? WHERE id = ?').run(Math.floor(Date.now() / 1000), req.user.id);
+
+      if (attackerWon && gemsWager > 0) {
+        db.prepare('UPDATE users SET gems = gems + ?, gems_won = gems_won + ? WHERE id = ?').run(gemsWager, gemsWager, req.user.id);
+        db.prepare('UPDATE users SET gems = MAX(0, gems - ?), gems_lost = gems_lost + ? WHERE id = ?').run(gemsWager, gemsWager, defenderId);
+      } else if (!attackerWon) {
+        const attackerGemsToLose = Math.min(Math.max(Math.floor(attackerGems * 0.1), 0), 50);
+        const actualLoss = attackerGems > 0 && attackerGems < 5 ? attackerGems : Math.min(attackerGemsToLose, attackerGems);
+        if (actualLoss > 0) {
+          db.prepare('UPDATE users SET gems = MAX(0, gems - ?), gems_lost = gems_lost + ? WHERE id = ?').run(actualLoss, actualLoss, req.user.id);
+          db.prepare('UPDATE users SET gems = gems + ?, gems_won = gems_won + ? WHERE id = ?').run(actualLoss, actualLoss, defenderId);
+        }
+      }
 
       db.prepare('UPDATE leaderboard SET wins = wins + ?, losses = losses + ?, rating = MAX(0, rating + ?) WHERE user_id = ?')
         .run(attackerWon ? 1 : 0, attackerWon ? 0 : 1, attackerChange, req.user.id);
@@ -189,13 +211,14 @@ router.post('/pvp/challenge', authMiddleware, (req, res) => {
       db.prepare(`INSERT INTO battles (attacker_id, defender_id, attacker_guardian_ids, result, attacker_hp_remaining, defender_hp_remaining, exp_reward, gems_reward) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
         .run(req.user.id, defenderId, JSON.stringify(guardianIds), attackerWon ? 'win' : 'loss',
           Math.floor(attackerRoll), Math.floor(defenderRoll),
-          Math.floor(attackerPower * 0.2) + 30, attackerWon ? Math.floor(Math.random() * 8) + 2 : Math.floor(Math.random() * 3));
+          Math.floor(attackerPower * 0.2) + 30, gemsWager);
     });
 
     battleOps();
 
     const attackerRating = db.prepare('SELECT rating FROM leaderboard WHERE user_id = ?').get(req.user.id).rating;
     const defenderRating = db.prepare('SELECT rating FROM leaderboard WHERE user_id = ?').get(defenderId).rating;
+    const newAttackerGems = db.prepare('SELECT gems FROM users WHERE id = ?').get(req.user.id).gems;
 
     res.json({
       result: attackerWon ? 'win' : 'loss',
@@ -205,6 +228,8 @@ router.post('/pvp/challenge', authMiddleware, (req, res) => {
       defenderChange,
       attackerRating,
       defenderRating,
+      gems: newAttackerGems,
+      gemsWager,
       cooldown: cooldownSec
     });
   } catch (err) {

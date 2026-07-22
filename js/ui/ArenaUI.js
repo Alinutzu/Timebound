@@ -306,6 +306,7 @@ class ArenaUI {
         const result = await api.battlePvE(selected);
         if (result.cooldown) this.pveCooldown = result.cooldown;
         if (result.gems != null) this.gems = result.gems;
+        if (result.energy != null) this.energy = result.energy;
         this.updateResourceDisplay();
         this.showBattleResult(result);
         this.loadGuardians();
@@ -619,6 +620,7 @@ class ArenaUI {
         <div class="battle-rewards">
           ${result.expReward ? `<span class="reward-badge">⭐ +${result.expReward} EXP</span>` : ''}
           ${result.gemsReward ? `<span class="reward-badge">💎 +${result.gemsReward}</span>` : ''}
+          ${result.energyReward ? `<span class="reward-badge">⚡ +${result.energyReward}</span>` : ''}
           ${result.gemsWager ? `<span class="reward-badge ${result.result === 'win' ? 'rating-up' : 'rating-down'}">💎 ${result.result === 'win' ? '+' : '-'}${result.gemsWager} Wager</span>` : ''}
           ${ratingChange ? `<span class="reward-badge ${ratingChange > 0 ? 'rating-up' : 'rating-down'}">📊 ${ratingChange > 0 ? '+' : ''}${ratingChange} Rating</span>` : ''}
           ${result.cooldown ? `<span class="reward-badge cooldown-badge">⏳ ${result.cooldown}s cooldown</span>` : ''}

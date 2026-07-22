@@ -92,10 +92,11 @@ router.post('/pve', authMiddleware, (req, res) => {
     const won = playerRoll > enemyRoll;
     const expReward = won ? Math.floor(playerPower * 0.3) + 50 : Math.floor(playerPower * 0.05) + 10;
     const gemsReward = won ? Math.floor(Math.random() * 5) + 3 : Math.floor(Math.random() * 2);
+    const energyReward = won ? Math.floor(playerPower * 2) + 500 : Math.floor(playerPower * 0.5) + 100;
 
     const battleOps = db.transaction(() => {
-      db.prepare('UPDATE users SET last_pve_at = ?, gems = gems + ?, gems_won = gems_won + ? WHERE id = ?')
-        .run(Math.floor(Date.now() / 1000), gemsReward, won ? gemsReward : 0, req.user.id);
+      db.prepare('UPDATE users SET last_pve_at = ?, energy = energy + ?, gems = gems + ?, gems_won = gems_won + ? WHERE id = ?')
+        .run(Math.floor(Date.now() / 1000), energyReward, gemsReward, won ? gemsReward : 0, req.user.id);
 
       if (won) {
         guardians.forEach(g => {
@@ -114,7 +115,7 @@ router.post('/pve', authMiddleware, (req, res) => {
     battleOps();
 
     const updatedGuardians = db.prepare(`SELECT id, level, attack, defense, hp FROM guardians WHERE id IN (${placeholders})`).all(...guardianIds);
-    const updatedUser = db.prepare('SELECT gems FROM users WHERE id = ?').get(req.user.id);
+    const updatedUser = db.prepare('SELECT gems, energy FROM users WHERE id = ?').get(req.user.id);
 
     res.json({
       result: won ? 'win' : 'loss',
@@ -123,7 +124,9 @@ router.post('/pve', authMiddleware, (req, res) => {
       enemyName,
       expReward,
       gemsReward,
+      energyReward,
       gems: updatedUser.gems,
+      energy: updatedUser.energy,
       guardians: updatedGuardians,
       cooldown: cooldownSec,
       message: won

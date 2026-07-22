@@ -72,7 +72,18 @@ db.exec(`
 
 const userCols = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
 if (!userCols.includes('energy')) {
-  db.exec("ALTER TABLE users ADD COLUMN energy INTEGER DEFAULT 10000");
+  db.exec("ALTER TABLE users ADD COLUMN energy INTEGER DEFAULT 100000");
+} else {
+  db.exec("UPDATE users SET energy = 100000 WHERE energy = 10000");
+}
+if (!userCols.includes('gems')) {
+  db.exec("ALTER TABLE users ADD COLUMN gems INTEGER DEFAULT 60");
+}
+if (!userCols.includes('gems_won')) {
+  db.exec("ALTER TABLE users ADD COLUMN gems_won INTEGER DEFAULT 0");
+}
+if (!userCols.includes('gems_lost')) {
+  db.exec("ALTER TABLE users ADD COLUMN gems_lost INTEGER DEFAULT 0");
 }
 if (!userCols.includes('last_pve_at')) {
   db.exec("ALTER TABLE users ADD COLUMN last_pve_at INTEGER DEFAULT 0");

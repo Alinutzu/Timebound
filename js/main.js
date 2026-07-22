@@ -23,6 +23,7 @@ import QuestsUI from './ui/QuestsUI.js';
 import AchievementsUI from './ui/AchievementsUI.js';
 import BossesUI from './ui/BossesUI.js';
 import ShopUI from './ui/ShopUI.js';
+import ArenaUI from './ui/ArenaUI.js';
 import StatisticsUI from './ui/StatisticsUI.js';
 import DailyRewardUI from './ui/DailyRewardUI.js';
 import AutomationUI from './ui/AutomationUI.js';
@@ -159,6 +160,7 @@ function initUI() {
     new PuzzleUI('puzzle-game-container');
     new ShopUI('shop-container');
     new StatisticsUI('statistics-container');
+    new ArenaUI('arena-container');
     
     // Update last save time
     updateLastSaveTime();

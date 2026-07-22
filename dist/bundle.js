@@ -431,7 +431,7 @@ if (_config["default"].DEBUG_MODE) {
 }
 var _default = exports["default"] = game;
 
-},{"../config.js":1,"../systems/AchievementSystem.js":18,"../systems/AscensionSystem.js":19,"../systems/AutomationSystem.js":20,"../systems/BossSystem.js":21,"../systems/DailyRewardSystem.js":22,"../systems/GuardianSystem.js":23,"../systems/QuestSystem.js":26,"../systems/RealmSystem.js":27,"../systems/ShopSystem.js":28,"../systems/StatisticsSystem.js":29,"../systems/StructureSystem.js":30,"../systems/TutorialSystem.js":31,"../systems/UpgradeQueueSystem.js":32,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./SaveManager.js":5,"./StateManager.js":6,"./TickManager.js":7}],4:[function(require,module,exports){
+},{"../config.js":1,"../systems/AchievementSystem.js":19,"../systems/AscensionSystem.js":20,"../systems/AutomationSystem.js":21,"../systems/BossSystem.js":22,"../systems/DailyRewardSystem.js":23,"../systems/GuardianSystem.js":24,"../systems/QuestSystem.js":27,"../systems/RealmSystem.js":28,"../systems/ShopSystem.js":29,"../systems/StatisticsSystem.js":30,"../systems/StructureSystem.js":31,"../systems/TutorialSystem.js":32,"../systems/UpgradeQueueSystem.js":33,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./SaveManager.js":5,"./StateManager.js":6,"./TickManager.js":7}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -712,7 +712,7 @@ var ResourceManager = /*#__PURE__*/function () {
 var resourceManager = new ResourceManager();
 var _default = exports["default"] = resourceManager;
 
-},{"../utils/Logger.js":59}],5:[function(require,module,exports){
+},{"../utils/Logger.js":61}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1223,7 +1223,7 @@ var SaveManager = /*#__PURE__*/function () {
 var saveManager = new SaveManager();
 var _default = exports["default"] = saveManager;
 
-},{"../config.js":1,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./StateManager.js":6}],6:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./StateManager.js":6}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2211,7 +2211,7 @@ var StateManager = /*#__PURE__*/function () {
 var stateManager = new StateManager();
 var _default = exports["default"] = stateManager;
 
-},{"../config.js":1,"../utils/EventBus.js":57,"../utils/Logger.js":59}],7:[function(require,module,exports){
+},{"../config.js":1,"../utils/EventBus.js":59,"../utils/Logger.js":61}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2693,7 +2693,7 @@ var TickManager = /*#__PURE__*/function () {
 var tickManager = new TickManager();
 var _default = exports["default"] = tickManager;
 
-},{"../config.js":1,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./ResourceManager.js":4,"./StateManager.js":6}],8:[function(require,module,exports){
+},{"../config.js":1,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./ResourceManager.js":4,"./StateManager.js":6}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3504,7 +3504,7 @@ var ACHIEVEMENTS = {
 };
 var _default = exports["default"] = ACHIEVEMENTS;
 
-},{"../core/StateManager.js":6,"../systems/StructureSystem.js":30}],9:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/StructureSystem.js":31}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7721,6 +7721,7 @@ var _QuestsUI = _interopRequireDefault(require("./ui/QuestsUI.js"));
 var _AchievementsUI = _interopRequireDefault(require("./ui/AchievementsUI.js"));
 var _BossesUI = _interopRequireDefault(require("./ui/BossesUI.js"));
 var _ShopUI = _interopRequireDefault(require("./ui/ShopUI.js"));
+var _ArenaUI = _interopRequireDefault(require("./ui/ArenaUI.js"));
 var _StatisticsUI = _interopRequireDefault(require("./ui/StatisticsUI.js"));
 var _DailyRewardUI = _interopRequireDefault(require("./ui/DailyRewardUI.js"));
 var _AutomationUI = _interopRequireDefault(require("./ui/AutomationUI.js"));
@@ -7881,6 +7882,7 @@ function initUI() {
   new _PuzzleUI["default"]('puzzle-game-container');
   new _ShopUI["default"]('shop-container');
   new _StatisticsUI["default"]('statistics-container');
+  new _ArenaUI["default"]('arena-container');
 
   // Update last save time
   updateLastSaveTime();
@@ -8295,7 +8297,142 @@ document.addEventListener('click', function (e) {
 });
 // ===== SFÂRȘIT HAPTIC FEEDBACK =====
 
-},{"./config.js":1,"./core/Game.js":3,"./core/StateManager.js":6,"./systems/MiniGameAchievementSystem.js":24,"./systems/NotificationManager.js":25,"./ui/AchievementsUI.js":34,"./ui/AutomationUI.js":35,"./ui/BadgeManager.js":36,"./ui/BossesUI.js":37,"./ui/ConfirmModal.js":38,"./ui/DailyRewardUI.js":39,"./ui/GuardiansUI.js":40,"./ui/ModalManager.js":42,"./ui/NotificationManager.js":43,"./ui/PuzzleUI.js":44,"./ui/QuestsUI.js":45,"./ui/ShopUI.js":46,"./ui/StatisticsUI.js":47,"./ui/StructuresUI.js":48,"./ui/TabManager.js":49,"./ui/UpgradesUI.js":50,"./ui/components/ResourceDisplay.js":51,"./utils/EventBus.js":57,"./utils/Formatters.js":58,"./utils/Logger.js":59,"./utils/NotificationHelper.js":60}],18:[function(require,module,exports){
+},{"./config.js":1,"./core/Game.js":3,"./core/StateManager.js":6,"./systems/MiniGameAchievementSystem.js":25,"./systems/NotificationManager.js":26,"./ui/AchievementsUI.js":35,"./ui/ArenaUI.js":36,"./ui/AutomationUI.js":37,"./ui/BadgeManager.js":38,"./ui/BossesUI.js":39,"./ui/ConfirmModal.js":40,"./ui/DailyRewardUI.js":41,"./ui/GuardiansUI.js":42,"./ui/ModalManager.js":44,"./ui/NotificationManager.js":45,"./ui/PuzzleUI.js":46,"./ui/QuestsUI.js":47,"./ui/ShopUI.js":48,"./ui/StatisticsUI.js":49,"./ui/StructuresUI.js":50,"./ui/TabManager.js":51,"./ui/UpgradesUI.js":52,"./ui/components/ResourceDisplay.js":53,"./utils/EventBus.js":59,"./utils/Formatters.js":60,"./utils/Logger.js":61,"./utils/NotificationHelper.js":62}],18:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+var API_BASE = 'http://familyhub.go.ro:3000/api';
+function getToken() {
+  return localStorage.getItem('arena_token');
+}
+function setToken(token) {
+  localStorage.setItem('arena_token', token);
+}
+function clearToken() {
+  localStorage.removeItem('arena_token');
+}
+function request(_x, _x2) {
+  return _request.apply(this, arguments);
+}
+function _request() {
+  _request = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(method, path) {
+    var body,
+      opts,
+      token,
+      res,
+      data,
+      _args = arguments;
+    return _regenerator().w(function (_context) {
+      while (1) switch (_context.n) {
+        case 0:
+          body = _args.length > 2 && _args[2] !== undefined ? _args[2] : null;
+          opts = {
+            method: method,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          };
+          token = getToken();
+          if (token) {
+            opts.headers['Authorization'] = "Bearer ".concat(token);
+          }
+          if (body) {
+            opts.body = JSON.stringify(body);
+          }
+          _context.n = 1;
+          return fetch("".concat(API_BASE).concat(path), opts);
+        case 1:
+          res = _context.v;
+          _context.n = 2;
+          return res.json();
+        case 2:
+          data = _context.v;
+          if (res.ok) {
+            _context.n = 3;
+            break;
+          }
+          throw new Error(data.error || 'Request failed');
+        case 3:
+          return _context.a(2, data);
+      }
+    }, _callee);
+  }));
+  return _request.apply(this, arguments);
+}
+var _default = exports["default"] = {
+  getToken: getToken,
+  setToken: setToken,
+  clearToken: clearToken,
+  // Auth
+  register: function register(username, email, password) {
+    return request('POST', '/auth/register', {
+      username: username,
+      email: email,
+      password: password
+    });
+  },
+  login: function login(username, password) {
+    return request('POST', '/auth/login', {
+      username: username,
+      password: password
+    });
+  },
+  // Guardians
+  getGuardians: function getGuardians() {
+    return request('GET', '/guardians');
+  },
+  summonGuardian: function summonGuardian() {
+    return request('POST', '/guardians/summon');
+  },
+  levelUpGuardian: function levelUpGuardian(id) {
+    return request('POST', "/guardians/".concat(id, "/levelup"));
+  },
+  releaseGuardian: function releaseGuardian(id) {
+    return request('DELETE', "/guardians/".concat(id));
+  },
+  // Battles
+  battlePvE: function battlePvE(guardianIds) {
+    return request('POST', '/battles/pve', {
+      guardianIds: guardianIds
+    });
+  },
+  battlePvP: function battlePvP(guardianIds, defenderId) {
+    return request('POST', '/battles/pvp/challenge', {
+      guardianIds: guardianIds,
+      defenderId: defenderId
+    });
+  },
+  // Leaderboard
+  getLeaderboard: function getLeaderboard() {
+    var limit = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 50;
+    var offset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    return request('GET', "/leaderboard?limit=".concat(limit, "&offset=").concat(offset));
+  },
+  getMyRank: function getMyRank() {
+    return request('GET', '/leaderboard/me');
+  },
+  getOpponents: function getOpponents() {
+    return request('GET', '/leaderboard/opponents');
+  },
+  // Save
+  saveCloud: function saveCloud(state) {
+    return request('POST', '/save', {
+      state: state
+    });
+  },
+  loadCloud: function loadCloud() {
+    return request('GET', '/save');
+  }
+};
+
+},{}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8805,7 +8942,7 @@ window.claimAchievement = function (achievementKey) {
 };
 var _default = exports["default"] = achievementSystem;
 
-},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../data/achievements.js":8,"../utils/EventBus.js":57,"../utils/Logger.js":59}],19:[function(require,module,exports){
+},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../data/achievements.js":8,"../utils/EventBus.js":59,"../utils/Logger.js":61}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9162,7 +9299,7 @@ var AscensionSystem = /*#__PURE__*/function () {
 var ascensionSystem = new AscensionSystem();
 var _default = exports["default"] = ascensionSystem;
 
-},{"../config.js":1,"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeSystem.js":33}],20:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeSystem.js":34}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9705,7 +9842,7 @@ var AutomationSystem = /*#__PURE__*/function () {
 var automationSystem = new AutomationSystem();
 var _default = exports["default"] = automationSystem;
 
-},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./GuardianSystem.js":23,"./QuestSystem.js":26,"./StructureSystem.js":30,"./UpgradeQueueSystem.js":32,"./UpgradeSystem.js":33}],21:[function(require,module,exports){
+},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24,"./QuestSystem.js":27,"./StructureSystem.js":31,"./UpgradeQueueSystem.js":33,"./UpgradeSystem.js":34}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10323,7 +10460,7 @@ var BossSystem = /*#__PURE__*/function () {
 var bossSystem = new BossSystem();
 var _default = exports["default"] = bossSystem;
 
-},{"../core/StateManager.js":6,"../data/bosses.js":9,"../data/guardians.js":10,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./GuardianSystem.js":23,"./StructureSystem.js":30}],22:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/bosses.js":9,"../data/guardians.js":10,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24,"./StructureSystem.js":31}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10707,7 +10844,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
 var dailyRewardSystem = new DailyRewardSystem();
 var _default = exports["default"] = dailyRewardSystem;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./GuardianSystem.js":23}],23:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11197,7 +11334,7 @@ var GuardianSystem = /*#__PURE__*/function () {
 var guardianSystem = new GuardianSystem();
 var _default = exports["default"] = guardianSystem;
 
-},{"../config.js":1,"../core/StateManager.js":6,"../data/guardians.js":10,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeSystem.js":33}],24:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":6,"../data/guardians.js":10,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeSystem.js":34}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11556,7 +11693,7 @@ var MiniGameAchievementSystem = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameAchievementSystem();
 
-},{"../core/StateManager.js":6,"../data/miniGameAchievements.js":11,"../utils/EventBus.js":57,"../utils/Logger.js":59}],25:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/miniGameAchievements.js":11,"../utils/EventBus.js":59,"../utils/Logger.js":61}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11753,7 +11890,7 @@ var NotificationManager = /*#__PURE__*/function () {
 var notificationManager = new NotificationManager();
 var _default = exports["default"] = notificationManager;
 
-},{"../utils/EventBus.js":57,"../utils/Logger.js":59}],26:[function(require,module,exports){
+},{"../utils/EventBus.js":59,"../utils/Logger.js":61}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12427,7 +12564,7 @@ var QuestSystem = /*#__PURE__*/function () {
 var questSystem = new QuestSystem();
 var _default = exports["default"] = questSystem;
 
-},{"../config.js":1,"../core/StateManager.js":6,"../data/quests.js":12,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeSystem.js":33}],27:[function(require,module,exports){
+},{"../config.js":1,"../core/StateManager.js":6,"../data/quests.js":12,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeSystem.js":34}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12769,7 +12906,7 @@ var RealmSystem = /*#__PURE__*/function () {
 var realmSystem = new RealmSystem();
 var _default = exports["default"] = realmSystem;
 
-},{"../core/StateManager.js":6,"../data/realms.js":13,"../utils/EventBus.js":57,"../utils/Logger.js":59}],28:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/realms.js":13,"../utils/EventBus.js":59,"../utils/Logger.js":61}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13382,7 +13519,7 @@ var ShopSystem = /*#__PURE__*/function () {
 var shopSystem = new ShopSystem();
 var _default = exports["default"] = shopSystem;
 
-},{"../core/StateManager.js":6,"../data/guardians.js":10,"../data/shop.js":14,"../ui/games/DailySpinGame.js":54,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./GuardianSystem.js":23}],29:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/guardians.js":10,"../data/shop.js":14,"../ui/games/DailySpinGame.js":56,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13897,7 +14034,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
 var statisticsSystem = new StatisticsSystem();
 var _default = exports["default"] = statisticsSystem;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Formatters.js":58,"../utils/Logger.js":59,"./AchievementSystem.js":18,"./BossSystem.js":21,"./GuardianSystem.js":23,"./StructureSystem.js":30,"./UpgradeSystem.js":33}],30:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"../utils/Logger.js":61,"./AchievementSystem.js":19,"./BossSystem.js":22,"./GuardianSystem.js":24,"./StructureSystem.js":31,"./UpgradeSystem.js":34}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14461,7 +14598,7 @@ var StructureSystem = /*#__PURE__*/function () {
 var structureSystem = new StructureSystem();
 var _default = exports["default"] = structureSystem;
 
-},{"../core/StateManager.js":6,"../data/structures.js":15,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./GuardianSystem.js":23,"./UpgradeSystem.js":33}],31:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/structures.js":15,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24,"./UpgradeSystem.js":34}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15061,7 +15198,7 @@ var TutorialSystem = /*#__PURE__*/function () {
 var tutorialSystem = new TutorialSystem();
 var _default = exports["default"] = tutorialSystem;
 
-},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeSystem.js":33}],32:[function(require,module,exports){
+},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeSystem.js":34}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15593,7 +15730,7 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
 var upgradeQueueSystem = new UpgradeQueueSystem();
 var _default = exports["default"] = upgradeQueueSystem;
 
-},{"../config.js":1,"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeSystem.js":33}],33:[function(require,module,exports){
+},{"../config.js":1,"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeSystem.js":34}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16217,7 +16354,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
 var upgradeSystem = new UpgradeSystem();
 var _default = exports["default"] = upgradeSystem;
 
-},{"../core/StateManager.js":6,"../data/upgrades.js":16,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./UpgradeQueueSystem.js":32}],34:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/upgrades.js":16,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeQueueSystem.js":33}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16428,7 +16565,510 @@ window.claimAchievement = function (key) {
 };
 var _default = exports["default"] = AchievementsUI;
 
-},{"../core/StateManager.js":6,"../data/achievements.js":8,"../systems/AchievementSystem.js":18,"../utils/EventBus.js":57,"./MiniGameStatsUI.js":41}],35:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/achievements.js":8,"../systems/AchievementSystem.js":19,"../utils/EventBus.js":59,"./MiniGameStatsUI.js":43}],36:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
+var _api = _interopRequireDefault(require("../services/api.js"));
+var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
+var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
+var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+var ArenaUI = /*#__PURE__*/function () {
+  function ArenaUI(containerId) {
+    _classCallCheck(this, ArenaUI);
+    this.container = document.getElementById(containerId);
+    if (!this.container) {
+      console.error('ArenaUI: container not found');
+      return;
+    }
+    this.guardians = [];
+    this.opponents = [];
+    this.render();
+  }
+  return _createClass(ArenaUI, [{
+    key: "render",
+    value: function render() {
+      var token = _api["default"].getToken();
+      this.container.innerHTML = "\n      <div class=\"arena-container\">\n        ".concat(token ? this.renderDashboard() : this.renderLogin(), "\n      </div>\n    ");
+      this.bindEvents();
+    }
+  }, {
+    key: "renderLogin",
+    value: function renderLogin() {
+      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena</h2>\n        <p>Battle other players with your guardians!</p>\n      </div>\n      <div class=\"arena-login\">\n        <div class=\"arena-login-tabs\">\n          <button class=\"arena-auth-btn active\" data-auth=\"login\">Login</button>\n          <button class=\"arena-auth-btn\" data-auth=\"register\">Register</button>\n        </div>\n        <form id=\"arena-auth-form\">\n          <input type=\"text\" id=\"arena-username\" placeholder=\"Username\" required>\n          <input type=\"email\" id=\"arena-email\" placeholder=\"Email (only for register)\" style=\"display:none\">\n          <input type=\"password\" id=\"arena-password\" placeholder=\"Password\" required>\n          <button type=\"submit\" class=\"btn btn-primary btn-large\">Connect</button>\n        </form>\n        <p class=\"arena-error\" id=\"arena-error\"></p>\n      </div>\n    ";
+    }
+  }, {
+    key: "renderDashboard",
+    value: function renderDashboard() {
+      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena</h2>\n        <div class=\"arena-header-actions\">\n          <span id=\"arena-username-display\"></span>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-save-cloud\">\u2601\uFE0F Save</button>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-load-cloud\">\u2601\uFE0F Load</button>\n          <button class=\"btn btn-small btn-danger\" id=\"arena-logout\">Logout</button>\n        </div>\n      </div>\n      <div class=\"arena-dashboard\">\n        <div class=\"arena-section\" id=\"arena-guardians-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDEE1\uFE0F My Guardians</h3>\n            <button class=\"btn btn-primary\" id=\"arena-summon-btn\">\u2728 Summon (0 \uD83D\uDC8E)</button>\n          </div>\n          <div id=\"arena-guardians-list\" class=\"arena-guardians-list\">\n            <p class=\"arena-loading\">Loading guardians...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-battle-section\">\n          <div class=\"arena-section-header\">\n            <h3>\u2694\uFE0F Battle</h3>\n          </div>\n          <div class=\"arena-battle-actions\">\n            <button class=\"btn btn-success\" id=\"arena-pve-btn\">\u2694\uFE0F Train (PvE)</button>\n            <button class=\"btn btn-danger\" id=\"arena-pvp-btn\">\uD83D\uDD25 Find Opponent (PvP)</button>\n          </div>\n          <div id=\"arena-battle-result\"></div>\n          <div id=\"arena-opponents-list\"></div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-leaderboard-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83C\uDFC6 Leaderboard</h3>\n            <span id=\"arena-my-rank\"></span>\n          </div>\n          <div id=\"arena-leaderboard-list\" class=\"arena-leaderboard-list\">\n            <p class=\"arena-loading\">Loading leaderboard...</p>\n          </div>\n        </div>\n      </div>\n    ";
+    }
+  }, {
+    key: "bindEvents",
+    value: function bindEvents() {
+      var token = _api["default"].getToken();
+      if (!token) {
+        this.bindAuthEvents();
+      } else {
+        this.bindDashboardEvents();
+        this.loadDashboard();
+      }
+    }
+  }, {
+    key: "bindAuthEvents",
+    value: function bindAuthEvents() {
+      var _this = this;
+      var tabs = this.container.querySelectorAll('.arena-auth-btn');
+      var emailField = document.getElementById('arena-email');
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          tabs.forEach(function (t) {
+            return t.classList.remove('active');
+          });
+          tab.classList.add('active');
+          emailField.style.display = tab.dataset.auth === 'register' ? 'block' : 'none';
+        });
+      });
+      document.getElementById('arena-auth-form').addEventListener('submit', /*#__PURE__*/function () {
+        var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(e) {
+          var username, password, errorEl, active, data, email, _t;
+          return _regenerator().w(function (_context) {
+            while (1) switch (_context.p = _context.n) {
+              case 0:
+                e.preventDefault();
+                username = document.getElementById('arena-username').value;
+                password = document.getElementById('arena-password').value;
+                errorEl = document.getElementById('arena-error');
+                active = _this.container.querySelector('.arena-auth-btn.active');
+                _context.p = 1;
+                if (!(active.dataset.auth === 'register')) {
+                  _context.n = 3;
+                  break;
+                }
+                email = document.getElementById('arena-email').value;
+                _context.n = 2;
+                return _api["default"].register(username, email, password);
+              case 2:
+                data = _context.v;
+                _context.n = 5;
+                break;
+              case 3:
+                _context.n = 4;
+                return _api["default"].login(username, password);
+              case 4:
+                data = _context.v;
+              case 5:
+                _api["default"].setToken(data.token);
+                _this.render();
+                _context.n = 7;
+                break;
+              case 6:
+                _context.p = 6;
+                _t = _context.v;
+                errorEl.textContent = _t.message;
+              case 7:
+                return _context.a(2);
+            }
+          }, _callee, null, [[1, 6]]);
+        }));
+        return function (_x) {
+          return _ref.apply(this, arguments);
+        };
+      }());
+    }
+  }, {
+    key: "bindDashboardEvents",
+    value: function bindDashboardEvents() {
+      var _document$getElementB,
+        _this2 = this,
+        _document$getElementB2,
+        _document$getElementB3,
+        _document$getElementB4,
+        _document$getElementB5,
+        _document$getElementB6;
+      (_document$getElementB = document.getElementById('arena-logout')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
+        _api["default"].clearToken();
+        _this2.render();
+      });
+      (_document$getElementB2 = document.getElementById('arena-summon-btn')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+        var guardian, _t2;
+        return _regenerator().w(function (_context2) {
+          while (1) switch (_context2.p = _context2.n) {
+            case 0:
+              _context2.p = 0;
+              _context2.n = 1;
+              return _api["default"].summonGuardian();
+            case 1:
+              guardian = _context2.v;
+              _this2.showNotification("\u2728 Summoned ".concat(guardian.name, " (").concat(guardian.rarity, ")"), 'success');
+              _this2.loadGuardians();
+              _context2.n = 3;
+              break;
+            case 2:
+              _context2.p = 2;
+              _t2 = _context2.v;
+              _this2.showNotification(_t2.message, 'warning');
+            case 3:
+              return _context2.a(2);
+          }
+        }, _callee2, null, [[0, 2]]);
+      })));
+      (_document$getElementB3 = document.getElementById('arena-pve-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+        var selected, result, _t3;
+        return _regenerator().w(function (_context3) {
+          while (1) switch (_context3.p = _context3.n) {
+            case 0:
+              selected = _this2.getSelectedGuardianIds();
+              if (!(selected.length === 0)) {
+                _context3.n = 1;
+                break;
+              }
+              return _context3.a(2, _this2.showNotification('Select at least one guardian', 'warning'));
+            case 1:
+              _context3.p = 1;
+              _context3.n = 2;
+              return _api["default"].battlePvE(selected);
+            case 2:
+              result = _context3.v;
+              _this2.showBattleResult(result);
+              _this2.loadGuardians();
+              _context3.n = 4;
+              break;
+            case 3:
+              _context3.p = 3;
+              _t3 = _context3.v;
+              _this2.showNotification(_t3.message, 'warning');
+            case 4:
+              return _context3.a(2);
+          }
+        }, _callee3, null, [[1, 3]]);
+      })));
+      (_document$getElementB4 = document.getElementById('arena-pvp-btn')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
+        var selected, opponents, _t4;
+        return _regenerator().w(function (_context4) {
+          while (1) switch (_context4.p = _context4.n) {
+            case 0:
+              selected = _this2.getSelectedGuardianIds();
+              if (!(selected.length === 0)) {
+                _context4.n = 1;
+                break;
+              }
+              return _context4.a(2, _this2.showNotification('Select at least one guardian', 'warning'));
+            case 1:
+              _context4.p = 1;
+              _this2.showNotification('Searching for opponent...', 'info');
+              _context4.n = 2;
+              return _api["default"].getOpponents();
+            case 2:
+              opponents = _context4.v;
+              _this2.renderOpponents(opponents, selected);
+              _context4.n = 4;
+              break;
+            case 3:
+              _context4.p = 3;
+              _t4 = _context4.v;
+              _this2.showNotification(_t4.message, 'warning');
+            case 4:
+              return _context4.a(2);
+          }
+        }, _callee4, null, [[1, 3]]);
+      })));
+      (_document$getElementB5 = document.getElementById('arena-save-cloud')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+        var state, _t5;
+        return _regenerator().w(function (_context5) {
+          while (1) switch (_context5.p = _context5.n) {
+            case 0:
+              _context5.p = 0;
+              state = _StateManager["default"].getState();
+              _context5.n = 1;
+              return _api["default"].saveCloud(state);
+            case 1:
+              _this2.showNotification('Game saved to cloud!', 'success');
+              _context5.n = 3;
+              break;
+            case 2:
+              _context5.p = 2;
+              _t5 = _context5.v;
+              _this2.showNotification(_t5.message, 'warning');
+            case 3:
+              return _context5.a(2);
+          }
+        }, _callee5, null, [[0, 2]]);
+      })));
+      (_document$getElementB6 = document.getElementById('arena-load-cloud')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+        var data, _t6;
+        return _regenerator().w(function (_context6) {
+          while (1) switch (_context6.p = _context6.n) {
+            case 0:
+              _context6.p = 0;
+              _context6.n = 1;
+              return _api["default"].loadCloud();
+            case 1:
+              data = _context6.v;
+              if (data.state) {
+                _StateManager["default"].dispatch({
+                  type: 'LOAD_STATE',
+                  payload: {
+                    state: data.state
+                  }
+                });
+                _this2.showNotification('Game loaded from cloud!', 'success');
+              }
+              _context6.n = 3;
+              break;
+            case 2:
+              _context6.p = 2;
+              _t6 = _context6.v;
+              _this2.showNotification(_t6.message, 'warning');
+            case 3:
+              return _context6.a(2);
+          }
+        }, _callee6, null, [[0, 2]]);
+      })));
+    }
+  }, {
+    key: "loadDashboard",
+    value: function () {
+      var _loadDashboard = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+        return _regenerator().w(function (_context7) {
+          while (1) switch (_context7.n) {
+            case 0:
+              document.getElementById('arena-username-display').textContent = "\uD83D\uDC64 ".concat(JSON.parse(atob(_api["default"].getToken().split('.')[1])).username);
+              _context7.n = 1;
+              return Promise.all([this.loadGuardians(), this.loadLeaderboard()]);
+            case 1:
+              return _context7.a(2);
+          }
+        }, _callee7, this);
+      }));
+      function loadDashboard() {
+        return _loadDashboard.apply(this, arguments);
+      }
+      return loadDashboard;
+    }()
+  }, {
+    key: "loadGuardians",
+    value: function () {
+      var _loadGuardians = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+        var _t7;
+        return _regenerator().w(function (_context8) {
+          while (1) switch (_context8.p = _context8.n) {
+            case 0:
+              _context8.p = 0;
+              _context8.n = 1;
+              return _api["default"].getGuardians();
+            case 1:
+              this.guardians = _context8.v;
+              this.renderGuardians();
+              _context8.n = 3;
+              break;
+            case 2:
+              _context8.p = 2;
+              _t7 = _context8.v;
+              document.getElementById('arena-guardians-list').innerHTML = "<p class=\"arena-error\">Failed to load guardians</p>";
+            case 3:
+              return _context8.a(2);
+          }
+        }, _callee8, this, [[0, 2]]);
+      }));
+      function loadGuardians() {
+        return _loadGuardians.apply(this, arguments);
+      }
+      return loadGuardians;
+    }()
+  }, {
+    key: "renderGuardians",
+    value: function renderGuardians() {
+      var _this3 = this;
+      var list = document.getElementById('arena-guardians-list');
+      if (this.guardians.length === 0) {
+        list.innerHTML = "<p class=\"arena-empty\">No guardians yet. Summon one!</p>";
+        return;
+      }
+      list.innerHTML = this.guardians.map(function (g) {
+        return "\n      <div class=\"arena-guardian-card ".concat(g.rarity, "\" data-id=\"").concat(g.id, "\">\n        <div class=\"arena-guardian-info\">\n          <span class=\"arena-guardian-name\">").concat(g.name, "</span>\n          <span class=\"arena-guardian-rarity ").concat(g.rarity, "\">").concat(g.rarity, "</span>\n        </div>\n        <div class=\"arena-guardian-stats\">\n          <span>\u2764\uFE0F ").concat(g.hp, "/").concat(g.max_hp, "</span>\n          <span>\u2694\uFE0F ").concat(g.attack, "</span>\n          <span>\uD83D\uDEE1\uFE0F ").concat(g.defense, "</span>\n          <span>\u2B06\uFE0F Lv.").concat(g.level, "</span>\n        </div>\n        <div class=\"arena-guardian-actions\">\n          <input type=\"checkbox\" class=\"arena-guardian-select\" data-id=\"").concat(g.id, "\">\n          <button class=\"btn btn-small btn-primary levelup-btn\" data-id=\"").concat(g.id, "\">Level Up</button>\n          <button class=\"btn btn-small btn-danger release-btn\" data-id=\"").concat(g.id, "\">Release</button>\n        </div>\n      </div>\n    ");
+      }).join('');
+      list.querySelectorAll('.levelup-btn').forEach(function (btn) {
+        btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+          var updated, _t8;
+          return _regenerator().w(function (_context9) {
+            while (1) switch (_context9.p = _context9.n) {
+              case 0:
+                _context9.p = 0;
+                _context9.n = 1;
+                return _api["default"].levelUpGuardian(parseInt(btn.dataset.id));
+              case 1:
+                updated = _context9.v;
+                _this3.showNotification("".concat(updated.name, " is now level ").concat(updated.level, "!"), 'success');
+                _this3.loadGuardians();
+                _context9.n = 3;
+                break;
+              case 2:
+                _context9.p = 2;
+                _t8 = _context9.v;
+                _this3.showNotification(_t8.message, 'warning');
+              case 3:
+                return _context9.a(2);
+            }
+          }, _callee9, null, [[0, 2]]);
+        })));
+      });
+      list.querySelectorAll('.release-btn').forEach(function (btn) {
+        btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+          var _t9;
+          return _regenerator().w(function (_context0) {
+            while (1) switch (_context0.p = _context0.n) {
+              case 0:
+                _context0.p = 0;
+                _context0.n = 1;
+                return _api["default"].releaseGuardian(parseInt(btn.dataset.id));
+              case 1:
+                _this3.showNotification('Guardian released', 'info');
+                _this3.loadGuardians();
+                _context0.n = 3;
+                break;
+              case 2:
+                _context0.p = 2;
+                _t9 = _context0.v;
+                _this3.showNotification(_t9.message, 'warning');
+              case 3:
+                return _context0.a(2);
+            }
+          }, _callee0, null, [[0, 2]]);
+        })));
+      });
+    }
+  }, {
+    key: "getSelectedGuardianIds",
+    value: function getSelectedGuardianIds() {
+      return Array.from(this.container.querySelectorAll('.arena-guardian-select:checked')).map(function (cb) {
+        return parseInt(cb.dataset.id);
+      });
+    }
+  }, {
+    key: "renderOpponents",
+    value: function renderOpponents(opponents, selectedGuardianIds) {
+      var _this4 = this;
+      var list = document.getElementById('arena-opponents-list');
+      if (opponents.length === 0) {
+        list.innerHTML = "<p class=\"arena-empty\">No opponents found. Try again later!</p>";
+        return;
+      }
+      list.innerHTML = "\n      <h4>Select opponent:</h4>\n      <div class=\"arena-opponents-grid\">\n        ".concat(opponents.map(function (o) {
+        return "\n          <div class=\"arena-opponent-card\">\n            <div class=\"arena-opponent-info\">\n              <strong>".concat(o.username, "</strong>\n              <span>Rating: ").concat(o.rating, "</span>\n              <span>Power: ").concat(o.guardian_power, "</span>\n              <span>W:").concat(o.wins, " L:").concat(o.losses, "</span>\n            </div>\n            <button class=\"btn btn-danger btn-small challenge-btn\" data-defender=\"").concat(o.user_id, "\">Challenge!</button>\n          </div>\n        ");
+      }).join(''), "\n      </div>\n    ");
+      list.querySelectorAll('.challenge-btn').forEach(function (btn) {
+        btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
+          var result, _t0;
+          return _regenerator().w(function (_context1) {
+            while (1) switch (_context1.p = _context1.n) {
+              case 0:
+                _context1.p = 0;
+                _context1.n = 1;
+                return _api["default"].battlePvP(selectedGuardianIds, parseInt(btn.dataset.defender));
+              case 1:
+                result = _context1.v;
+                _this4.showBattleResult(result);
+                _this4.loadGuardians();
+                _this4.loadLeaderboard();
+                _context1.n = 3;
+                break;
+              case 2:
+                _context1.p = 2;
+                _t0 = _context1.v;
+                _this4.showNotification(_t0.message, 'warning');
+              case 3:
+                return _context1.a(2);
+            }
+          }, _callee1, null, [[0, 2]]);
+        })));
+      });
+    }
+  }, {
+    key: "loadLeaderboard",
+    value: function () {
+      var _loadLeaderboard = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
+        var _yield$Promise$all, _yield$Promise$all2, leaderboard, myRank, rankEl, list, _t1;
+        return _regenerator().w(function (_context10) {
+          while (1) switch (_context10.p = _context10.n) {
+            case 0:
+              _context10.p = 0;
+              _context10.n = 1;
+              return Promise.all([_api["default"].getLeaderboard(20), _api["default"].getMyRank()["catch"](function () {
+                return null;
+              })]);
+            case 1:
+              _yield$Promise$all = _context10.v;
+              _yield$Promise$all2 = _slicedToArray(_yield$Promise$all, 2);
+              leaderboard = _yield$Promise$all2[0];
+              myRank = _yield$Promise$all2[1];
+              rankEl = document.getElementById('arena-my-rank');
+              if (myRank) {
+                rankEl.textContent = "#".concat(myRank.rank, " | Rating: ").concat(myRank.rating, " | W:").concat(myRank.wins, " L:").concat(myRank.losses);
+              }
+              list = document.getElementById('arena-leaderboard-list');
+              list.innerHTML = "\n        <table class=\"arena-leaderboard-table\">\n          <thead>\n            <tr><th>#</th><th>Player</th><th>Rating</th><th>W/L</th><th>Power</th></tr>\n          </thead>\n          <tbody>\n            ".concat(leaderboard.entries.map(function (e, i) {
+                return "\n              <tr>\n                <td>".concat(i + 1 + leaderboard.offset, "</td>\n                <td>").concat(e.username, "</td>\n                <td>").concat(e.rating, "</td>\n                <td>").concat(e.wins, "/").concat(e.losses, "</td>\n                <td>").concat(e.guardian_power, "</td>\n              </tr>\n            ");
+              }).join(''), "\n          </tbody>\n        </table>\n      ");
+              _context10.n = 3;
+              break;
+            case 2:
+              _context10.p = 2;
+              _t1 = _context10.v;
+              document.getElementById('arena-leaderboard-list').innerHTML = "<p class=\"arena-error\">Failed to load leaderboard</p>";
+            case 3:
+              return _context10.a(2);
+          }
+        }, _callee10, null, [[0, 2]]);
+      }));
+      function loadLeaderboard() {
+        return _loadLeaderboard.apply(this, arguments);
+      }
+      return loadLeaderboard;
+    }()
+  }, {
+    key: "showBattleResult",
+    value: function showBattleResult(result) {
+      var el = document.getElementById('arena-battle-result');
+      var won = result.result === 'win';
+      el.innerHTML = "\n      <div class=\"arena-battle-result ".concat(won ? 'victory' : 'defeat', "\">\n        <h3>").concat(won ? '🎉 Victory!' : '💀 Defeat...', "</h3>\n        <p>").concat(result.message || '', "</p>\n        <div class=\"arena-battle-stats\">\n          <span>\u2694\uFE0F Your power: ").concat(result.playerPower || result.attackerPower, "</span>\n          <span>\uD83D\uDC79 Enemy power: ").concat(result.enemyPower || result.defenderPower, "</span>\n          ").concat(result.expReward ? "<span>\u2B50 EXP gained: +".concat(result.expReward, "</span>") : '', "\n          ").concat(result.gemsReward ? "<span>\uD83D\uDC8E Gems: +".concat(result.gemsReward, "</span>") : '', "\n          ").concat(result.ratingChange ? "<span>\uD83D\uDCCA Rating: ".concat(result.ratingChange > 0 ? '+' : '').concat(result.ratingChange, "</span>") : '', "\n        </div>\n      </div>\n    ");
+      el.scrollIntoView({
+        behavior: 'smooth'
+      });
+    }
+  }, {
+    key: "showNotification",
+    value: function showNotification(message, type) {
+      _EventBus["default"].emit('notification:show', {
+        message: message,
+        type: type,
+        duration: 3000
+      });
+    }
+  }]);
+}();
+var _default = exports["default"] = ArenaUI;
+
+},{"../core/StateManager.js":6,"../services/api.js":18,"../utils/EventBus.js":59,"../utils/Formatters.js":60}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16499,7 +17139,7 @@ window.toggleAutomation = function (featureKey) {
 new AutomationUI();
 var _default = exports["default"] = AutomationUI;
 
-},{"../systems/AutomationSystem.js":20,"../utils/EventBus.js":57}],36:[function(require,module,exports){
+},{"../systems/AutomationSystem.js":21,"../utils/EventBus.js":59}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16664,7 +17304,7 @@ var BadgeManager = /*#__PURE__*/function () {
 var badgeManager = new BadgeManager();
 var _default = exports["default"] = badgeManager;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59}],37:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16826,7 +17466,7 @@ window.challengeBoss = function (bossKey) {
 };
 var _default = exports["default"] = BossesUI;
 
-},{"../core/StateManager.js":6,"../systems/BossSystem.js":21,"../utils/EventBus.js":57,"../utils/Formatters.js":58}],38:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/BossSystem.js":22,"../utils/EventBus.js":59,"../utils/Formatters.js":60}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16906,7 +17546,7 @@ var ConfirmModal = /*#__PURE__*/function () {
 var confirmModal = new ConfirmModal();
 var _default = exports["default"] = confirmModal;
 
-},{}],39:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16994,7 +17634,7 @@ var DailyRewardUI = /*#__PURE__*/function () {
 new DailyRewardUI();
 var _default = exports["default"] = DailyRewardUI;
 
-},{"../systems/DailyRewardSystem.js":22,"../utils/EventBus.js":57}],40:[function(require,module,exports){
+},{"../systems/DailyRewardSystem.js":23,"../utils/EventBus.js":59}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17176,7 +17816,7 @@ var GuardiansUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = GuardiansUI;
 
-},{"../core/StateManager.js":6,"../systems/GuardianSystem.js":23,"../utils/EventBus.js":57,"../utils/Formatters.js":58,"./ConfirmModal.js":38}],41:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/GuardianSystem.js":24,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"./ConfirmModal.js":40}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17307,7 +17947,7 @@ var MiniGameStatsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameStatsUI();
 
-},{"../data/miniGameAchievements.js":11,"../systems/MiniGameAchievementSystem.js":24,"../utils/Formatters.js":58}],42:[function(require,module,exports){
+},{"../data/miniGameAchievements.js":11,"../systems/MiniGameAchievementSystem.js":25,"../utils/Formatters.js":60}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17426,7 +18066,7 @@ var ModalManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ModalManager;
 
-},{"../utils/EventBus.js":57,"../utils/Logger.js":59}],43:[function(require,module,exports){
+},{"../utils/EventBus.js":59,"../utils/Logger.js":61}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17551,7 +18191,7 @@ var NotificationManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = NotificationManager;
 
-},{"../utils/EventBus.js":57,"../utils/Logger.js":59}],44:[function(require,module,exports){
+},{"../utils/EventBus.js":59,"../utils/Logger.js":61}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18074,7 +18714,7 @@ var PuzzleUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = PuzzleUI;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":57,"../utils/Logger.js":59,"./games/DailySpinGame.js":54,"./games/Game2048.js":55,"./games/Match3Game.js":56}],45:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./games/DailySpinGame.js":56,"./games/Game2048.js":57,"./games/Match3Game.js":58}],47:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18236,7 +18876,7 @@ window.claimQuest = function (questId) {
 };
 var _default = exports["default"] = QuestsUI;
 
-},{"../core/StateManager.js":6,"../systems/QuestSystem.js":26,"../utils/EventBus.js":57,"../utils/Formatters.js":58}],46:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/QuestSystem.js":27,"../utils/EventBus.js":59,"../utils/Formatters.js":60}],48:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18368,7 +19008,7 @@ window.watchAd = function (adType) {
 };
 var _default = exports["default"] = ShopUI;
 
-},{"../systems/ShopSystem.js":28,"../utils/EventBus.js":57,"../utils/Formatters.js":58}],47:[function(require,module,exports){
+},{"../systems/ShopSystem.js":29,"../utils/EventBus.js":59,"../utils/Formatters.js":60}],49:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18485,7 +19125,7 @@ var StatisticsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StatisticsUI;
 
-},{"../systems/StatisticsSystem.js":29,"../utils/EventBus.js":57,"./MiniGameStatsUI.js":41}],48:[function(require,module,exports){
+},{"../systems/StatisticsSystem.js":30,"../utils/EventBus.js":59,"./MiniGameStatsUI.js":43}],50:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18811,7 +19451,7 @@ var StructuresUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructuresUI;
 
-},{"../core/StateManager.js":6,"../systems/RealmSystem.js":27,"../systems/StructureSystem.js":30,"../utils/EventBus.js":57,"../utils/Formatters.js":58,"./components/StructureCard.js":52}],49:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/RealmSystem.js":28,"../systems/StructureSystem.js":31,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"./components/StructureCard.js":54}],51:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18908,7 +19548,7 @@ var TabManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = TabManager;
 
-},{"../utils/EventBus.js":57,"../utils/Logger.js":59}],50:[function(require,module,exports){
+},{"../utils/EventBus.js":59,"../utils/Logger.js":61}],52:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19150,7 +19790,7 @@ var UpgradesUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = UpgradesUI;
 
-},{"../core/StateManager.js":6,"../systems/UpgradeQueueSystem.js":32,"../systems/UpgradeSystem.js":33,"../utils/EventBus.js":57,"../utils/Formatters.js":58,"./components/UpgradeQueueDisplay.js":53}],51:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../systems/UpgradeQueueSystem.js":33,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"./components/UpgradeQueueDisplay.js":55}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19291,7 +19931,7 @@ var ResourceDisplay = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ResourceDisplay;
 
-},{"../../core/StateManager.js":6,"../../utils/EventBus.js":57,"../../utils/Formatters.js":58}],52:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../utils/EventBus.js":59,"../../utils/Formatters.js":60}],54:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19577,7 +20217,7 @@ var StructureCard = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructureCard;
 
-},{"../../core/StateManager.js":6,"../../systems/StructureSystem.js":30,"../../utils/EventBus.js":57,"../../utils/Formatters.js":58}],53:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../systems/StructureSystem.js":31,"../../utils/EventBus.js":59,"../../utils/Formatters.js":60}],55:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19721,7 +20361,7 @@ window.cancelQueuedUpgrade = function (upgradeKey) {
 };
 var _default = exports["default"] = UpgradeQueueDisplay;
 
-},{"../../systems/UpgradeQueueSystem.js":32,"../../systems/UpgradeSystem.js":33,"../../utils/EventBus.js":57,"../../utils/Formatters.js":58}],54:[function(require,module,exports){
+},{"../../systems/UpgradeQueueSystem.js":33,"../../systems/UpgradeSystem.js":34,"../../utils/EventBus.js":59,"../../utils/Formatters.js":60}],56:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20148,7 +20788,7 @@ var DailySpinGame = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new DailySpinGame();
 
-},{"../../core/StateManager.js":6,"../../utils/EventBus.js":57,"../../utils/Logger.js":59}],55:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../utils/EventBus.js":59,"../../utils/Logger.js":61}],57:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20488,7 +21128,7 @@ var Game2048 = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new Game2048();
 
-},{"../../core/StateManager.js":6,"../../utils/EventBus.js":57,"../../utils/Logger.js":59}],56:[function(require,module,exports){
+},{"../../core/StateManager.js":6,"../../utils/EventBus.js":59,"../../utils/Logger.js":61}],58:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21304,7 +21944,7 @@ var Match3Game = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Match3Game;
 
-},{"../../utils/EventBus.js":57,"../../utils/Logger.js":59}],57:[function(require,module,exports){
+},{"../../utils/EventBus.js":59,"../../utils/Logger.js":61}],59:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21477,7 +22117,7 @@ var EventBus = /*#__PURE__*/function () {
 var eventBus = new EventBus();
 var _default = exports["default"] = eventBus;
 
-},{"../config.js":1}],58:[function(require,module,exports){
+},{"../config.js":1}],60:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21665,7 +22305,7 @@ var Formatters = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Formatters;
 
-},{}],59:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21848,7 +22488,7 @@ var Logger = /*#__PURE__*/function () {
 var logger = new Logger();
 var _default = exports["default"] = logger;
 
-},{"../config.js":1}],60:[function(require,module,exports){
+},{"../config.js":1}],62:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21890,4 +22530,4 @@ var _default = exports["default"] = {
   }
 };
 
-},{"../config/NotificationConfig.js":2,"../systems/NotificationManager.js":25}]},{},[17]);
+},{"../config/NotificationConfig.js":2,"../systems/NotificationManager.js":26}]},{},[17]);

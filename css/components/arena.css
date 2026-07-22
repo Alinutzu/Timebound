@@ -1,0 +1,246 @@
+.arena-container {
+  padding: var(--spacing-lg);
+}
+
+.arena-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.arena-header h2 {
+  margin: 0;
+}
+
+.arena-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.arena-login {
+  max-width: 400px;
+  margin: var(--spacing-xl) auto;
+  background: var(--bg-secondary);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-lg);
+}
+
+.arena-login-tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.arena-auth-btn {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-tertiary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.arena-auth-btn.active {
+  background: var(--accent);
+  color: white;
+}
+
+#arena-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+#arena-auth-form input {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.arena-error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: var(--spacing-sm);
+}
+
+.arena-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.arena-section {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.arena-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.arena-section-header h3 {
+  margin: 0;
+}
+
+.arena-loading {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: var(--spacing-lg);
+}
+
+.arena-empty {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: var(--spacing-md);
+  font-style: italic;
+}
+
+.arena-guardians-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.arena-guardian-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  border: 2px solid var(--border-color);
+}
+
+.arena-guardian-card.common { border-color: #9ca3af; }
+.arena-guardian-card.uncommon { border-color: #10b981; }
+.arena-guardian-card.rare { border-color: #3b82f6; }
+.arena-guardian-card.epic { border-color: #8b5cf6; }
+.arena-guardian-card.legendary { border-color: #f59e0b; }
+
+.arena-guardian-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.arena-guardian-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.arena-guardian-rarity {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.arena-guardian-rarity.common { background: #9ca3af33; color: #9ca3af; }
+.arena-guardian-rarity.uncommon { background: #10b98133; color: #10b981; }
+.arena-guardian-rarity.rare { background: #3b82f633; color: #3b82f6; }
+.arena-guardian-rarity.epic { background: #8b5cf633; color: #8b5cf6; }
+.arena-guardian-rarity.legendary { background: #f59e0b33; color: #f59e0b; }
+
+.arena-guardian-stats {
+  display: flex;
+  gap: var(--spacing-md);
+  font-size: 0.875rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.arena-guardian-actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.arena-guardian-select {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.arena-battle-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.arena-battle-result {
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.arena-battle-result.victory {
+  background: linear-gradient(135deg, #10b98133, #05966933);
+  border: 2px solid #10b981;
+}
+
+.arena-battle-result.defeat {
+  background: linear-gradient(135deg, #ef444433, #dc262633);
+  border: 2px solid #ef4444;
+}
+
+.arena-battle-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  justify-content: center;
+  margin-top: var(--spacing-md);
+}
+
+.arena-opponents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.arena-opponent-card {
+  background: var(--bg-primary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.arena-opponent-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.875rem;
+}
+
+.arena-leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.arena-leaderboard-table th,
+.arena-leaderboard-table td {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.arena-leaderboard-table th {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.arena-leaderboard-table tr:hover td {
+  background: var(--bg-tertiary);
+}

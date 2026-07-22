@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="css/components/tooltips.css">
     <link rel="stylesheet" href="css/components/tutorial.css">
     <link rel="stylesheet" href="css/components/upgrade-queue.css">
+    <link rel="stylesheet" href="css/components/arena.css">
     <link rel="stylesheet" href="css/components/puzzle.css">
     <link rel="stylesheet" href="css/mobile.css">
 
@@ -90,6 +91,10 @@
                 <button class="tab-btn" data-tab="guardians">
                     🐉 Guardians
                     <span class="tab-badge" id="guardians-badge" style="display: none;">!</span>
+                </button>
+                <button class="tab-btn" data-tab="arena">
+                    ⚔️ Arena
+                    <span class="tab-badge" id="arena-badge" style="display: none;"></span>
                 </button>
                 <button class="tab-btn" data-tab="quests">
                     📜 Quests
@@ -160,7 +165,14 @@
                     </div>
                 </div>
 
-                                <!-- Quests Tab -->
+                <!-- Arena Tab -->
+                <div class="tab-panel" id="tab-arena">
+                    <div id="arena-container">
+                        <!-- Rendered by ArenaUI.js -->
+                    </div>
+                </div>
+
+                <!-- Quests Tab -->
                 <div class="tab-panel" id="tab-quests">
                     <div class="quests-header">
                         <h2>📜 Daily Quests</h2>

@@ -515,6 +515,10 @@ document.addEventListener('touchend', e => {
 });
 
 function handleSwipe() {
+  // Disable swipe on mobile — bottom nav is the primary navigation
+  const bottomNav = document.getElementById('bottom-nav');
+  if (bottomNav && getComputedStyle(bottomNav).display !== 'none') return;
+  
   const diff = touchEndX - touchStartX;
   if (Math.abs(diff) < 50) return; // Minimum swipe distance
   

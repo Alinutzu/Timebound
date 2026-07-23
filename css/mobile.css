@@ -273,7 +273,7 @@ input, textarea {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color, #30363d);
     padding: 4px 0;
-    padding-bottom: max(4px, env(safe-area-inset-bottom));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
     z-index: 100;
     justify-content: space-around;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
@@ -285,7 +285,7 @@ input, textarea {
     align-items: center;
     justify-content: center;
     gap: 2px;
-    padding: 6px 4px;
+    padding: 8px 4px 6px;
     min-width: 0;
     flex: 1;
     background: transparent;
@@ -296,6 +296,7 @@ input, textarea {
     transition: color 0.2s;
     position: relative;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   
   .bottom-nav-btn:active {

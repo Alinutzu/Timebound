@@ -392,6 +392,26 @@ class UpgradeQueueSystem {
   }
   
   /**
+   * Check if upgrade is currently active or queued
+   */
+  getUpgradeStatus(upgradeKey) {
+    const state = stateManager.getState();
+
+    if (state.upgradeQueue?.activeUpgrade?.upgradeKey === upgradeKey) {
+      return 'active';
+    }
+
+    const inQueue = state.upgradeQueue?.queue?.some(
+      item => item.upgradeKey === upgradeKey
+    );
+    if (inQueue) {
+      return 'queued';
+    }
+
+    return 'available';
+  }
+
+  /**
    * Get queue info
    */
   getQueueInfo() {

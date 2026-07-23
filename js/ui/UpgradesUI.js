@@ -4,7 +4,6 @@
 
 import upgradeSystem from '../systems/UpgradeSystem.js';
 import upgradeQueueSystem from '../systems/UpgradeQueueSystem.js';
-import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import Formatters from '../utils/Formatters.js';
 import UpgradeQueueDisplay from './components/UpgradeQueueDisplay.js';
@@ -84,6 +83,8 @@ class UpgradesUI {
     const isUnlocked = upgradeSystem.isUnlocked(upgradeKey);
     const isMaxed = upgradeSystem.isMaxed(upgradeKey);
     const canAfford = upgradeSystem.canAfford(upgradeKey);
+    const upgradeStatus = upgradeQueueSystem.getUpgradeStatus(upgradeKey);
+    const isInProgress = upgradeStatus === 'active' || upgradeStatus === 'queued';
     const effect = upgrade.getDescription(level);
     const upgradeTime = upgradeQueueSystem.getUpgradeTimeFormatted(upgradeKey, level + 1);
     
@@ -93,7 +94,8 @@ class UpgradesUI {
     
     if (!isUnlocked) card.classList.add('locked');
     if (isMaxed) card.classList.add('maxed');
-    if (!canAfford && !isMaxed) card.classList.add('unaffordable');
+    if (isInProgress) card.classList.add('in-progress');
+    if (!canAfford && !isMaxed && !isInProgress) card.classList.add('unaffordable');
     
     card.innerHTML = `
       <div class="upgrade-header">
@@ -128,8 +130,8 @@ class UpgradesUI {
         
         <button class="btn btn-primary" 
                 data-upgrade="${upgradeKey}" 
-                ${!isUnlocked || !canAfford ? 'disabled' : ''}>
-          ${level === 0 ? 'Unlock' : 'Upgrade'}
+                ${!isUnlocked || !canAfford || isInProgress ? 'disabled' : ''}>
+          ${isInProgress ? (upgradeStatus === 'active' ? '⏳ In Progress' : '📋 Queued') : (level === 0 ? 'Unlock' : 'Upgrade')}
         </button>
       ` : `
         <div class="upgrade-maxed">
@@ -159,6 +161,8 @@ class UpgradesUI {
     const isUnlocked = upgradeSystem.isUnlocked(upgradeKey);
     const canAfford = upgradeSystem.canAfford(upgradeKey);
     const isMaxed = upgradeSystem.isMaxed(upgradeKey);
+    const upgradeStatus = upgradeQueueSystem.getUpgradeStatus(upgradeKey);
+    const isInProgress = upgradeStatus === 'active' || upgradeStatus === 'queued';
     const cost = upgradeSystem.getCost(upgradeKey);
 
     const hadMaxedDiv = card.querySelector('.upgrade-maxed');
@@ -175,15 +179,29 @@ class UpgradesUI {
       return;
     }
 
+    if (isInProgress && !card.classList.contains('in-progress')) {
+      const newCard = this.createUpgradeCard(upgradeKey);
+      card.parentNode.replaceChild(newCard, card);
+      return;
+    }
+
+    if (!isInProgress && card.classList.contains('in-progress')) {
+      const newCard = this.createUpgradeCard(upgradeKey);
+      card.parentNode.replaceChild(newCard, card);
+      return;
+    }
+
     card.classList.toggle('locked', !isUnlocked);
-    card.classList.toggle('unaffordable', !canAfford && !isMaxed);
+    card.classList.toggle('unaffordable', !canAfford && !isMaxed && !isInProgress);
     card.classList.toggle('maxed', isMaxed);
 
     const btn = card.querySelector('.btn');
     if (btn) {
-      btn.disabled = !isUnlocked || !canAfford;
+      btn.disabled = !isUnlocked || !canAfford || isInProgress;
       if (!isMaxed) {
-        btn.textContent = level === 0 ? 'Unlock' : 'Upgrade';
+        btn.textContent = isInProgress
+          ? (upgradeStatus === 'active' ? '⏳ In Progress' : '📋 Queued')
+          : (level === 0 ? 'Unlock' : 'Upgrade');
       }
     }
 

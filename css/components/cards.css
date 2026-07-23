@@ -134,7 +134,13 @@
     background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(16, 185, 129, 0.1) 100%);
 }
 
-.upgrade-card:hover:not(.locked):not(.maxed) {
+.upgrade-card.in-progress {
+    opacity: 0.7;
+    border-color: var(--info);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(99, 102, 241, 0.08) 100%);
+}
+
+.upgrade-card:hover:not(.locked):not(.maxed):not(.in-progress) {
     border-color: var(--accent);
     box-shadow: var(--shadow-xl);
 }

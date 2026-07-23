@@ -15809,17 +15809,37 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
     }
 
     /**
+     * Check if upgrade is currently active or queued
+     */
+  }, {
+    key: "getUpgradeStatus",
+    value: function getUpgradeStatus(upgradeKey) {
+      var _state$upgradeQueue1, _state$upgradeQueue10;
+      var state = _StateManager["default"].getState();
+      if (((_state$upgradeQueue1 = state.upgradeQueue) === null || _state$upgradeQueue1 === void 0 || (_state$upgradeQueue1 = _state$upgradeQueue1.activeUpgrade) === null || _state$upgradeQueue1 === void 0 ? void 0 : _state$upgradeQueue1.upgradeKey) === upgradeKey) {
+        return 'active';
+      }
+      var inQueue = (_state$upgradeQueue10 = state.upgradeQueue) === null || _state$upgradeQueue10 === void 0 || (_state$upgradeQueue10 = _state$upgradeQueue10.queue) === null || _state$upgradeQueue10 === void 0 ? void 0 : _state$upgradeQueue10.some(function (item) {
+        return item.upgradeKey === upgradeKey;
+      });
+      if (inQueue) {
+        return 'queued';
+      }
+      return 'available';
+    }
+
+    /**
      * Get queue info
      */
   }, {
     key: "getQueueInfo",
     value: function getQueueInfo() {
-      var _state$upgradeQueue1, _state$upgradeQueue10, _state$upgradeQueue11;
+      var _state$upgradeQueue11, _state$upgradeQueue12, _state$upgradeQueue13;
       var state = _StateManager["default"].getState();
       return {
-        active: ((_state$upgradeQueue1 = state.upgradeQueue) === null || _state$upgradeQueue1 === void 0 ? void 0 : _state$upgradeQueue1.activeUpgrade) || null,
-        queue: ((_state$upgradeQueue10 = state.upgradeQueue) === null || _state$upgradeQueue10 === void 0 ? void 0 : _state$upgradeQueue10.queue) || [],
-        slots: ((_state$upgradeQueue11 = state.upgradeQueue) === null || _state$upgradeQueue11 === void 0 ? void 0 : _state$upgradeQueue11.slots) || 1,
+        active: ((_state$upgradeQueue11 = state.upgradeQueue) === null || _state$upgradeQueue11 === void 0 ? void 0 : _state$upgradeQueue11.activeUpgrade) || null,
+        queue: ((_state$upgradeQueue12 = state.upgradeQueue) === null || _state$upgradeQueue12 === void 0 ? void 0 : _state$upgradeQueue12.queue) || [],
+        slots: ((_state$upgradeQueue13 = state.upgradeQueue) === null || _state$upgradeQueue13 === void 0 ? void 0 : _state$upgradeQueue13.slots) || 1,
         remainingTime: this.getRemainingTime(),
         progress: this.getProgress()
       };
@@ -15831,9 +15851,9 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
   }, {
     key: "upgradeQueueSlots",
     value: function upgradeQueueSlots() {
-      var _state$upgradeQueue12;
+      var _state$upgradeQueue14;
       var state = _StateManager["default"].getState();
-      var currentSlots = ((_state$upgradeQueue12 = state.upgradeQueue) === null || _state$upgradeQueue12 === void 0 ? void 0 : _state$upgradeQueue12.slots) || 1;
+      var currentSlots = ((_state$upgradeQueue14 = state.upgradeQueue) === null || _state$upgradeQueue14 === void 0 ? void 0 : _state$upgradeQueue14.slots) || 1;
       if (currentSlots >= 5) {
         _Logger["default"].warn('UpgradeQueueSystem', 'Maximum queue slots reached');
         return false;
@@ -20369,7 +20389,6 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 var _UpgradeSystem = _interopRequireDefault(require("../systems/UpgradeSystem.js"));
 var _UpgradeQueueSystem = _interopRequireDefault(require("../systems/UpgradeQueueSystem.js"));
-var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
 var _UpgradeQueueDisplay = _interopRequireDefault(require("./components/UpgradeQueueDisplay.js"));
@@ -20480,6 +20499,8 @@ var UpgradesUI = /*#__PURE__*/function () {
       var isUnlocked = _UpgradeSystem["default"].isUnlocked(upgradeKey);
       var isMaxed = _UpgradeSystem["default"].isMaxed(upgradeKey);
       var canAfford = _UpgradeSystem["default"].canAfford(upgradeKey);
+      var upgradeStatus = _UpgradeQueueSystem["default"].getUpgradeStatus(upgradeKey);
+      var isInProgress = upgradeStatus === 'active' || upgradeStatus === 'queued';
       var effect = upgrade.getDescription(level);
       var upgradeTime = _UpgradeQueueSystem["default"].getUpgradeTimeFormatted(upgradeKey, level + 1);
       var card = document.createElement('div');
@@ -20487,8 +20508,9 @@ var UpgradesUI = /*#__PURE__*/function () {
       card.dataset.key = upgradeKey;
       if (!isUnlocked) card.classList.add('locked');
       if (isMaxed) card.classList.add('maxed');
-      if (!canAfford && !isMaxed) card.classList.add('unaffordable');
-      card.innerHTML = "\n      <div class=\"upgrade-header\">\n        <span class=\"upgrade-emoji\">".concat(upgrade.emoji, "</span>\n        <div class=\"upgrade-info\">\n          <h4 class=\"upgrade-name\">").concat(upgrade.name, "</h4>\n          <p class=\"upgrade-description\">").concat(upgrade.description, "</p>\n        </div>\n        <span class=\"upgrade-level\">Lv. ").concat(level, "/").concat(upgrade.maxLevel, "</span>\n      </div>\n      \n      ").concat(level > 0 ? "\n        <div class=\"upgrade-effect\">\n          ".concat(effect, "\n        </div>\n      ") : '', "\n      \n      ").concat(!isMaxed ? "\n        <div class=\"upgrade-preview\">\n          <span class=\"preview-arrow\">\u25B8</span>\n          <span class=\"preview-detail\">".concat(upgrade.getDescription(level + 1), "</span>\n        </div>\n\n        <div class=\"upgrade-cost\">\n          <span>Cost:</span>\n          <span>").concat(_Formatters["default"].formatNumber(cost), " ").concat(this.getResourceIcon(upgrade.costResource), "</span>\n        </div>\n        \n        <div class=\"upgrade-time\">\n          \u23F1\uFE0F ").concat(upgradeTime, "\n        </div>\n        \n        <button class=\"btn btn-primary\" \n                data-upgrade=\"").concat(upgradeKey, "\" \n                ").concat(!isUnlocked || !canAfford ? 'disabled' : '', ">\n          ").concat(level === 0 ? 'Unlock' : 'Upgrade', "\n        </button>\n      ") : "\n        <div class=\"upgrade-maxed\">\n          \u2705 MAXED OUT\n        </div>\n      ", "\n    ");
+      if (isInProgress) card.classList.add('in-progress');
+      if (!canAfford && !isMaxed && !isInProgress) card.classList.add('unaffordable');
+      card.innerHTML = "\n      <div class=\"upgrade-header\">\n        <span class=\"upgrade-emoji\">".concat(upgrade.emoji, "</span>\n        <div class=\"upgrade-info\">\n          <h4 class=\"upgrade-name\">").concat(upgrade.name, "</h4>\n          <p class=\"upgrade-description\">").concat(upgrade.description, "</p>\n        </div>\n        <span class=\"upgrade-level\">Lv. ").concat(level, "/").concat(upgrade.maxLevel, "</span>\n      </div>\n      \n      ").concat(level > 0 ? "\n        <div class=\"upgrade-effect\">\n          ".concat(effect, "\n        </div>\n      ") : '', "\n      \n      ").concat(!isMaxed ? "\n        <div class=\"upgrade-preview\">\n          <span class=\"preview-arrow\">\u25B8</span>\n          <span class=\"preview-detail\">".concat(upgrade.getDescription(level + 1), "</span>\n        </div>\n\n        <div class=\"upgrade-cost\">\n          <span>Cost:</span>\n          <span>").concat(_Formatters["default"].formatNumber(cost), " ").concat(this.getResourceIcon(upgrade.costResource), "</span>\n        </div>\n        \n        <div class=\"upgrade-time\">\n          \u23F1\uFE0F ").concat(upgradeTime, "\n        </div>\n        \n        <button class=\"btn btn-primary\" \n                data-upgrade=\"").concat(upgradeKey, "\" \n                ").concat(!isUnlocked || !canAfford || isInProgress ? 'disabled' : '', ">\n          ").concat(isInProgress ? upgradeStatus === 'active' ? '⏳ In Progress' : '📋 Queued' : level === 0 ? 'Unlock' : 'Upgrade', "\n        </button>\n      ") : "\n        <div class=\"upgrade-maxed\">\n          \u2705 MAXED OUT\n        </div>\n      ", "\n    ");
 
       // Bind buy button
       var buyBtn = card.querySelector('.btn');
@@ -20511,6 +20533,8 @@ var UpgradesUI = /*#__PURE__*/function () {
         var isUnlocked = _UpgradeSystem["default"].isUnlocked(upgradeKey);
         var canAfford = _UpgradeSystem["default"].canAfford(upgradeKey);
         var isMaxed = _UpgradeSystem["default"].isMaxed(upgradeKey);
+        var upgradeStatus = _UpgradeQueueSystem["default"].getUpgradeStatus(upgradeKey);
+        var isInProgress = upgradeStatus === 'active' || upgradeStatus === 'queued';
         var cost = _UpgradeSystem["default"].getCost(upgradeKey);
         var hadMaxedDiv = card.querySelector('.upgrade-maxed');
         if (isMaxed && !hadMaxedDiv) {
@@ -20523,14 +20547,24 @@ var UpgradesUI = /*#__PURE__*/function () {
           card.parentNode.replaceChild(_newCard, card);
           return;
         }
+        if (isInProgress && !card.classList.contains('in-progress')) {
+          var _newCard2 = _this2.createUpgradeCard(upgradeKey);
+          card.parentNode.replaceChild(_newCard2, card);
+          return;
+        }
+        if (!isInProgress && card.classList.contains('in-progress')) {
+          var _newCard3 = _this2.createUpgradeCard(upgradeKey);
+          card.parentNode.replaceChild(_newCard3, card);
+          return;
+        }
         card.classList.toggle('locked', !isUnlocked);
-        card.classList.toggle('unaffordable', !canAfford && !isMaxed);
+        card.classList.toggle('unaffordable', !canAfford && !isMaxed && !isInProgress);
         card.classList.toggle('maxed', isMaxed);
         var btn = card.querySelector('.btn');
         if (btn) {
-          btn.disabled = !isUnlocked || !canAfford;
+          btn.disabled = !isUnlocked || !canAfford || isInProgress;
           if (!isMaxed) {
-            btn.textContent = level === 0 ? 'Unlock' : 'Upgrade';
+            btn.textContent = isInProgress ? upgradeStatus === 'active' ? '⏳ In Progress' : '📋 Queued' : level === 0 ? 'Unlock' : 'Upgrade';
           }
         }
         var costSpan = card.querySelector('.upgrade-cost span:last-child');
@@ -20598,7 +20632,7 @@ var UpgradesUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = UpgradesUI;
 
-},{"../core/StateManager.js":6,"../systems/UpgradeQueueSystem.js":33,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"./components/UpgradeQueueDisplay.js":55}],53:[function(require,module,exports){
+},{"../systems/UpgradeQueueSystem.js":33,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"./components/UpgradeQueueDisplay.js":55}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21110,7 +21144,7 @@ var UpgradeQueueDisplay = /*#__PURE__*/function () {
     value: function update() {
       var queueInfo = _UpgradeQueueSystem["default"].getQueueInfo();
       this.updateActiveUpgrade(queueInfo.active);
-      this.updateQueue(queueInfo.queue, queueInfo.slots);
+      this.updateQueue(queueInfo.queue, queueInfo.slots, queueInfo.active);
     }
   }, {
     key: "updateActiveUpgrade",
@@ -21139,13 +21173,15 @@ var UpgradeQueueDisplay = /*#__PURE__*/function () {
   }, {
     key: "updateQueue",
     value: function updateQueue(queue, slots) {
+      var activeUpgrade = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
       var section = document.getElementById('queued-upgrades-section');
       if (!section) return;
-      if (queue.length === 0) {
+      var usedSlots = queue.length + (activeUpgrade ? 1 : 0);
+      if (usedSlots === 0) {
         section.innerHTML = "\n        <div class=\"queue-empty\">\n          <p>Queue: 0/".concat(slots, "</p>\n        </div>\n      ");
         return;
       }
-      var html = "<div class=\"queue-header\"><h4>Queued (".concat(queue.length, "/").concat(slots, ")</h4></div>");
+      var html = "<div class=\"queue-header\"><h4>Queue (".concat(usedSlots, "/").concat(slots, ")</h4></div>");
       queue.forEach(function (item, index) {
         var upgrade = _UpgradeSystem["default"].getUpgrade(item.upgradeKey);
         html += "\n        <div class=\"queued-upgrade-item\">\n          <span class=\"queue-position\">#".concat(index + 1, "</span>\n          <span class=\"upgrade-emoji\">").concat(upgrade.emoji, "</span>\n          <div class=\"upgrade-info\">\n            <p class=\"upgrade-name\">").concat(upgrade.name, "</p>\n            <p class=\"upgrade-duration\">\n              ").concat(_Formatters["default"].formatTime(item.duration), "\n            </p>\n          </div>\n          <button class=\"btn btn-small btn-danger\" onclick=\"cancelQueuedUpgrade('").concat(item.upgradeKey, "')\">\n            \u274C\n          </button>\n        </div>\n      ");

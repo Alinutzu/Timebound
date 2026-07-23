@@ -65,7 +65,7 @@ class UpgradeQueueDisplay {
     const queueInfo = upgradeQueueSystem.getQueueInfo();
     
     this.updateActiveUpgrade(queueInfo.active);
-    this.updateQueue(queueInfo.queue, queueInfo.slots);
+    this.updateQueue(queueInfo.queue, queueInfo.slots, queueInfo.active);
   }
   
   updateActiveUpgrade(activeUpgrade) {
@@ -124,11 +124,13 @@ class UpgradeQueueDisplay {
     }
   }
   
-  updateQueue(queue, slots) {
+  updateQueue(queue, slots, activeUpgrade = null) {
     const section = document.getElementById('queued-upgrades-section');
     if (!section) return;
     
-    if (queue.length === 0) {
+    const usedSlots = queue.length + (activeUpgrade ? 1 : 0);
+    
+    if (usedSlots === 0) {
       section.innerHTML = `
         <div class="queue-empty">
           <p>Queue: 0/${slots}</p>
@@ -137,7 +139,7 @@ class UpgradeQueueDisplay {
       return;
     }
     
-    let html = `<div class="queue-header"><h4>Queued (${queue.length}/${slots})</h4></div>`;
+    let html = `<div class="queue-header"><h4>Queue (${usedSlots}/${slots})</h4></div>`;
     
     queue.forEach((item, index) => {
       const upgrade = upgradeSystem.getUpgrade(item.upgradeKey);

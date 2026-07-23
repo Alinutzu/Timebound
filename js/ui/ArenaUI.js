@@ -4,6 +4,15 @@ import stateManager from '../core/StateManager.js';
 import Formatters from '../utils/Formatters.js';
 import { io } from 'socket.io-client';
 
+function isGuestToken() {
+  try {
+    const token = api.getToken();
+    if (!token) return false;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.username && payload.username.startsWith('guest_');
+  } catch { return false; }
+}
+
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
@@ -253,21 +262,22 @@ class ArenaUI {
   }
 
   renderDashboard() {
+    const guest = isGuestToken();
     return `
       <div class="arena-header">
-        <h2>⚔️ Arena ${this.isGuest ? '<span class="arena-guest-badge">GUEST</span>' : ''}</h2>
+        <h2>⚔️ Arena ${guest ? '<span class="arena-guest-badge">GUEST</span>' : ''}</h2>
         <div class="arena-header-actions">
           <span id="arena-gems-display" class="arena-gems">💎 ${this.gems.toLocaleString()}</span>
           <span id="arena-energy-display" class="arena-energy">⚡ ${this.energy.toLocaleString()}</span>
           <span id="arena-username-display"></span>
-          ${this.isGuest
+          ${guest
             ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Login / Register</button>'
             : '<button class="btn btn-small btn-danger" id="arena-logout">Logout</button>'}
           <button class="btn btn-small btn-secondary" id="arena-save-cloud">☁️ Save</button>
           <button class="btn btn-small btn-secondary" id="arena-load-cloud">☁️ Load</button>
         </div>
       </div>
-      ${this.isGuest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : ''}
+      ${guest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : ''}
       <div class="arena-dashboard">
         <div class="arena-section" id="arena-guardians-section">
           <div class="arena-section-header">
@@ -491,6 +501,7 @@ class ArenaUI {
     this.startAutoSave();
     try {
       const payload = JSON.parse(atob(api.getToken().split('.')[1]));
+      this.isGuest = isGuestToken();
       document.getElementById('arena-username-display').textContent = `👤 ${payload.username}`;
     } catch {
       this.stopAutoSave();

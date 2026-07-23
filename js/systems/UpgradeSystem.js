@@ -6,6 +6,7 @@ import UPGRADES from '../data/upgrades.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import upgradeQueueSystem from './UpgradeQueueSystem.js';
 
 class UpgradeSystem {
   constructor() {
@@ -124,7 +125,7 @@ class UpgradeSystem {
     // Check statistics requirements
     if (condition.statistics) {
       for (let [stat, required] of Object.entries(condition.statistics)) {
-        if (state.statistics[stat] < required) {
+        if ((state.statistics[stat] || 0) < required) {
           return false;
         }
       }
@@ -213,9 +214,6 @@ class UpgradeSystem {
  * Buy upgrade (increment level) - with queue support
  */
 buy(upgradeKey) {
-  // Import queue system
-  const upgradeQueueSystem = require('./UpgradeQueueSystem.js').default;
-  
   // Validate
   if (!this.isUnlocked(upgradeKey)) {
     logger.warn('UpgradeSystem', `Upgrade ${upgradeKey} is not unlocked`);
@@ -336,6 +334,11 @@ buy(upgradeKey) {
     // Tidal amplifier
     if (resource === 'tidalEnergy' && this.getLevel('tidalAmplifier') > 0) {
       multiplier *= this.getEffect('tidalAmplifier');
+    }
+
+    // Abyssal Pressure Tech bonus
+    if (resource === 'tidalEnergy' && this.getLevel('abyssalTech') > 0) {
+      multiplier *= 1.2;
     }
 
     // Solar amplifier

@@ -2020,7 +2020,7 @@ var StateManager = /*#__PURE__*/function () {
             upgradeQueue: _objectSpread(_objectSpread({}, state.upgradeQueue), {}, {
               queue: [].concat(_toConsumableArray(state.upgradeQueue.queue), [action.payload.item])
             }),
-            resources: _objectSpread(_objectSpread({}, state.resources), {}, _defineProperty({}, action.payload.item.costResource, state.resources[action.payload.item.costResource] - action.payload.item.cost))
+            resources: _objectSpread(_objectSpread({}, state.resources), {}, _defineProperty({}, action.payload.item.costResource, Math.max(state.resources[action.payload.item.costResource] - action.payload.item.cost, 0)))
           });
         case 'REMOVE_FROM_UPGRADE_QUEUE':
           return _objectSpread(_objectSpread({}, state), {}, {
@@ -2236,6 +2236,7 @@ var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _ResourceManager = _interopRequireDefault(require("./ResourceManager.js"));
 var _RealmSystem = _interopRequireDefault(require("../systems/RealmSystem.js"));
+var _UpgradeSystem = _interopRequireDefault(require("../systems/UpgradeSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -2496,6 +2497,10 @@ var TickManager = /*#__PURE__*/function () {
       if (state.realms.unlocked.includes('ocean')) {
         var _realmSystem$getRealm2;
         var pearlChance = ((_realmSystem$getRealm2 = _RealmSystem["default"].getRealm('ocean')) === null || _realmSystem$getRealm2 === void 0 || (_realmSystem$getRealm2 = _realmSystem$getRealm2.bonuses) === null || _realmSystem$getRealm2 === void 0 ? void 0 : _realmSystem$getRealm2.pearlDropChance) || 0.06;
+        var pearlHarvestEffect = upgradeSystem.getEffect('pearlHarvest');
+        if (pearlHarvestEffect && pearlHarvestEffect.pearlDropBonus) {
+          pearlChance += pearlHarvestEffect.pearlDropBonus;
+        }
         if (Math.random() < pearlChance * this.deltaTime) {
           _StateManager["default"].dispatch({
             type: 'ADD_RESOURCE',
@@ -7245,7 +7250,7 @@ var UPGRADES = {
       return 500 * Math.pow(1.6, level);
     },
     getDescription: function getDescription(level) {
-      var cap = Math.floor(500 * Math.pow(1.8, level));
+      var cap = Math.floor(500 * Math.pow(1.6, level));
       return "Mana cap: ".concat(cap.toLocaleString());
     },
     unlockCondition: {
@@ -7268,7 +7273,7 @@ var UPGRADES = {
       return 40000 * Math.pow(1.6, level);
     },
     getDescription: function getDescription(level) {
-      var cap = Math.floor(4000 * Math.pow(1.8, level));
+      var cap = Math.floor(40000 * Math.pow(1.6, level));
       return "Volcanic cap: ".concat(cap.toLocaleString());
     },
     unlockCondition: {
@@ -7294,7 +7299,7 @@ var UPGRADES = {
       return 1 + level * 0.25;
     },
     getDescription: function getDescription(level) {
-      var bonus = level * 40;
+      var bonus = level * 25;
       return "+".concat(bonus, "% Solar Panel production");
     },
     unlockCondition: {
@@ -7318,7 +7323,7 @@ var UPGRADES = {
       return 1 + level * 0.25;
     },
     getDescription: function getDescription(level) {
-      var bonus = level * 40;
+      var bonus = level * 25;
       return "+".concat(bonus, "% Wind Turbine production");
     },
     unlockCondition: {
@@ -7366,7 +7371,7 @@ var UPGRADES = {
     costResource: 'gems',
     effect: function effect(level) {
       // 0% → 100% in 10 levels
-      return Math.min(level * 5, 50);
+      return Math.min(level * 10, 100);
     },
     getDescription: function getDescription(level) {
       var percent = Math.min(level * 10, 100);
@@ -7685,7 +7690,7 @@ var UPGRADES = {
   abyssalTech: {
     id: 'abyssalTech',
     name: 'Abyssal Pressure Tech',
-    description: 'Unlocks Deep Sea Pump, boosts tidal energy by +20%.',
+    description: 'Boosts tidal energy production by +20%.',
     emoji: '⚓',
     category: 'unlock',
     maxLevel: 1,
@@ -7693,13 +7698,10 @@ var UPGRADES = {
     costMultiplier: 1.0,
     costResource: 'tidalEnergy',
     effect: function effect() {
-      return {
-        unlock: 'deepSeaPump',
-        bonus: 1.2
-      };
+      return 1.2;
     },
     getDescription: function getDescription() {
-      return 'Unlocks: Deep Sea Pump (+20% tidal energy)';
+      return '+20% tidal energy production';
     },
     unlockCondition: {
       // milestone de structură, nu valoare numerică random
@@ -15366,6 +15368,7 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _ResourceManager = _interopRequireDefault(require("../core/ResourceManager.js"));
+var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -15382,7 +15385,6 @@ function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e 
 var UpgradeQueueSystem = /*#__PURE__*/function () {
   function UpgradeQueueSystem() {
     _classCallCheck(this, UpgradeQueueSystem);
-    this.maxQueueSize = 3; // Can queue up to 3 upgrades
     this.instantLevels = 3; // First 3 levels are instant
 
     this.initializeState();
@@ -15542,8 +15544,7 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
         });
         return false;
       }
-      var upgradeSystem = require('./UpgradeSystem.js')["default"];
-      var currentLevel = upgradeSystem.getLevel(upgradeKey);
+      var currentLevel = _UpgradeSystem["default"].getLevel(upgradeKey);
       var targetLevel = currentLevel + 1;
       var upgradeTime = this.calculateUpgradeTime(upgradeKey, targetLevel);
       var queueItem = {
@@ -15649,9 +15650,8 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
       });
 
       // ===== FIX: Apply special effects (capacity updates, unlocks, etc.) =====
-      var upgradeSystem = require('./UpgradeSystem.js')["default"];
-      var newLevel = upgradeSystem.getLevel(upgrade.upgradeKey);
-      upgradeSystem.applySpecialEffects(upgrade.upgradeKey, newLevel);
+      var newLevel = _UpgradeSystem["default"].getLevel(upgrade.upgradeKey);
+      _UpgradeSystem["default"].applySpecialEffects(upgrade.upgradeKey, newLevel);
       // ===== END FIX =====
 
       // Clear active upgrade
@@ -15897,6 +15897,7 @@ var _upgrades = _interopRequireDefault(require("../data/upgrades.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _UpgradeQueueSystem = _interopRequireDefault(require("./UpgradeQueueSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -16060,7 +16061,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
           var _Object$entries5$_i = _slicedToArray(_Object$entries5[_i6], 2),
             stat = _Object$entries5$_i[0],
             _required = _Object$entries5$_i[1];
-          if (state.statistics[stat] < _required) {
+          if ((state.statistics[stat] || 0) < _required) {
             return false;
           }
         }
@@ -16151,9 +16152,6 @@ var UpgradeSystem = /*#__PURE__*/function () {
   }, {
     key: "buy",
     value: function buy(upgradeKey) {
-      // Import queue system
-      var upgradeQueueSystem = require('./UpgradeQueueSystem.js')["default"];
-
       // Validate
       if (!this.isUnlocked(upgradeKey)) {
         _Logger["default"].warn('UpgradeSystem', "Upgrade ".concat(upgradeKey, " is not unlocked"));
@@ -16185,9 +16183,9 @@ var UpgradeSystem = /*#__PURE__*/function () {
       var targetLevel = currentLevel + 1;
 
       // Check if upgrade should be queued
-      if (!upgradeQueueSystem.isInstant(upgradeKey, targetLevel)) {
+      if (!_UpgradeQueueSystem["default"].isInstant(upgradeKey, targetLevel)) {
         // Queue the upgrade
-        return upgradeQueueSystem.queueUpgrade(upgradeKey, cost, upgrade.costResource);
+        return _UpgradeQueueSystem["default"].queueUpgrade(upgradeKey, cost, upgrade.costResource);
       }
 
       // Instant upgrade (levels 1-3)
@@ -16273,6 +16271,11 @@ var UpgradeSystem = /*#__PURE__*/function () {
       // Tidal amplifier
       if (resource === 'tidalEnergy' && this.getLevel('tidalAmplifier') > 0) {
         multiplier *= this.getEffect('tidalAmplifier');
+      }
+
+      // Abyssal Pressure Tech bonus
+      if (resource === 'tidalEnergy' && this.getLevel('abyssalTech') > 0) {
+        multiplier *= 1.2;
       }
 
       // Solar amplifier
@@ -20485,7 +20488,7 @@ var UpgradesUI = /*#__PURE__*/function () {
       if (!isUnlocked) card.classList.add('locked');
       if (isMaxed) card.classList.add('maxed');
       if (!canAfford && !isMaxed) card.classList.add('unaffordable');
-      card.innerHTML = "\n      <div class=\"upgrade-header\">\n        <span class=\"upgrade-emoji\">".concat(upgrade.emoji, "</span>\n        <div class=\"upgrade-info\">\n          <h4 class=\"upgrade-name\">").concat(upgrade.name, "</h4>\n          <p class=\"upgrade-description\">").concat(upgrade.description, "</p>\n        </div>\n        <span class=\"upgrade-level\">Lv. ").concat(level, "/").concat(upgrade.maxLevel, "</span>\n      </div>\n      \n      ").concat(level > 0 ? "\n        <div class=\"upgrade-effect\">\n          ".concat(effect, "\n        </div>\n      ") : '', "\n      \n      ").concat(!isMaxed ? "\n        <div class=\"upgrade-cost\">\n          <span>Cost:</span>\n          <span>".concat(_Formatters["default"].formatNumber(cost), " ").concat(this.getResourceIcon(upgrade.costResource), "</span>\n        </div>\n        \n        <div class=\"upgrade-time\">\n          \u23F1\uFE0F ").concat(upgradeTime, "\n        </div>\n        \n        <button class=\"btn btn-primary\" \n                data-upgrade=\"").concat(upgradeKey, "\" \n                ").concat(!isUnlocked || !canAfford ? 'disabled' : '', ">\n          ").concat(level === 0 ? 'Unlock' : 'Upgrade', "\n        </button>\n      ") : "\n        <div class=\"upgrade-maxed\">\n          \u2705 MAXED OUT\n        </div>\n      ", "\n    ");
+      card.innerHTML = "\n      <div class=\"upgrade-header\">\n        <span class=\"upgrade-emoji\">".concat(upgrade.emoji, "</span>\n        <div class=\"upgrade-info\">\n          <h4 class=\"upgrade-name\">").concat(upgrade.name, "</h4>\n          <p class=\"upgrade-description\">").concat(upgrade.description, "</p>\n        </div>\n        <span class=\"upgrade-level\">Lv. ").concat(level, "/").concat(upgrade.maxLevel, "</span>\n      </div>\n      \n      ").concat(level > 0 ? "\n        <div class=\"upgrade-effect\">\n          ".concat(effect, "\n        </div>\n      ") : '', "\n      \n      ").concat(!isMaxed ? "\n        <div class=\"upgrade-preview\">\n          <span class=\"preview-arrow\">\u25B8</span>\n          <span class=\"preview-detail\">".concat(upgrade.getDescription(level + 1), "</span>\n        </div>\n\n        <div class=\"upgrade-cost\">\n          <span>Cost:</span>\n          <span>").concat(_Formatters["default"].formatNumber(cost), " ").concat(this.getResourceIcon(upgrade.costResource), "</span>\n        </div>\n        \n        <div class=\"upgrade-time\">\n          \u23F1\uFE0F ").concat(upgradeTime, "\n        </div>\n        \n        <button class=\"btn btn-primary\" \n                data-upgrade=\"").concat(upgradeKey, "\" \n                ").concat(!isUnlocked || !canAfford ? 'disabled' : '', ">\n          ").concat(level === 0 ? 'Unlock' : 'Upgrade', "\n        </button>\n      ") : "\n        <div class=\"upgrade-maxed\">\n          \u2705 MAXED OUT\n        </div>\n      ", "\n    ");
 
       // Bind buy button
       var buyBtn = card.querySelector('.btn');
@@ -20509,25 +20512,20 @@ var UpgradesUI = /*#__PURE__*/function () {
         var canAfford = _UpgradeSystem["default"].canAfford(upgradeKey);
         var isMaxed = _UpgradeSystem["default"].isMaxed(upgradeKey);
         var cost = _UpgradeSystem["default"].getCost(upgradeKey);
-
-        // Update classes
-        if (!isUnlocked) {
-          card.classList.add('locked');
-        } else {
-          card.classList.remove('locked');
+        var hadMaxedDiv = card.querySelector('.upgrade-maxed');
+        if (isMaxed && !hadMaxedDiv) {
+          var newCard = _this2.createUpgradeCard(upgradeKey);
+          card.parentNode.replaceChild(newCard, card);
+          return;
         }
-        if (!canAfford && !isMaxed) {
-          card.classList.add('unaffordable');
-        } else {
-          card.classList.remove('unaffordable');
+        if (!isMaxed && hadMaxedDiv) {
+          var _newCard = _this2.createUpgradeCard(upgradeKey);
+          card.parentNode.replaceChild(_newCard, card);
+          return;
         }
-        if (isMaxed) {
-          card.classList.add('maxed');
-        } else {
-          card.classList.remove('maxed');
-        }
-
-        // Update button state
+        card.classList.toggle('locked', !isUnlocked);
+        card.classList.toggle('unaffordable', !canAfford && !isMaxed);
+        card.classList.toggle('maxed', isMaxed);
         var btn = card.querySelector('.btn');
         if (btn) {
           btn.disabled = !isUnlocked || !canAfford;
@@ -20535,38 +20533,33 @@ var UpgradesUI = /*#__PURE__*/function () {
             btn.textContent = level === 0 ? 'Unlock' : 'Upgrade';
           }
         }
-
-        // Update cost display (dacă nu e maxed)
         var costSpan = card.querySelector('.upgrade-cost span:last-child');
         if (costSpan && !isMaxed) {
           costSpan.textContent = "".concat(_Formatters["default"].formatNumber(cost), " ").concat(_this2.getResourceIcon(upgrade.costResource));
         }
-
-        // UPDATE LEVEL TEXT
         var levelSpan = card.querySelector('.upgrade-level');
         if (levelSpan) {
           levelSpan.textContent = "Lv. ".concat(level, "/").concat(upgrade.maxLevel);
         }
-
-        // (Opțional) UPDATE EFFECT TEXT
         var effectContainer = card.querySelector('.upgrade-effect');
         if (effectContainer) {
           if (level > 0) {
             effectContainer.textContent = upgrade.getDescription(level);
-          } else {
-            // dacă vrei să dispară complet la level 0:
-            // effectContainer.textContent = '';
-            // sau un preview la level 1:
-            // effectContainer.textContent = upgrade.getDescription(1);
           }
         } else if (level > 0) {
-          // Dacă vrei să apară abia după ce trece de 0
           var newEffectDiv = document.createElement('div');
           newEffectDiv.className = 'upgrade-effect';
           newEffectDiv.textContent = upgrade.getDescription(level);
           var header = card.querySelector('.upgrade-header');
           if (header) {
             header.insertAdjacentElement('afterend', newEffectDiv);
+          }
+        }
+        var previewContainer = card.querySelector('.upgrade-preview');
+        if (previewContainer) {
+          var previewDetail = previewContainer.querySelector('.preview-detail');
+          if (previewDetail) {
+            previewDetail.textContent = upgrade.getDescription(level + 1);
           }
         }
       });
@@ -20591,7 +20584,13 @@ var UpgradesUI = /*#__PURE__*/function () {
         energy: '⚡',
         mana: '✨',
         gems: '💎',
-        crystals: '💠'
+        crystals: '💠',
+        volcanicEnergy: '🌋',
+        tidalEnergy: '🌊',
+        solarEssence: '☀️',
+        cryoEnergy: '❄️',
+        cosmicEnergy: '🌌',
+        pearls: '🦪'
       };
       return icons[resource] || '';
     }
@@ -21086,6 +21085,9 @@ var UpgradeQueueDisplay = /*#__PURE__*/function () {
         return _this.update();
       });
       _EventBus["default"].on('upgrade:sped-up', function () {
+        return _this.update();
+      });
+      _EventBus["default"].on('upgrade:slots-upgraded', function () {
         return _this.update();
       });
     }

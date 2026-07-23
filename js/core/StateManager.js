@@ -1010,8 +1010,10 @@ case 'DAILY_REWARD_MODAL_SHOWN':
           },
           resources: {
             ...state.resources,
-            [action.payload.item.costResource]: 
-              state.resources[action.payload.item.costResource] - action.payload.item.cost
+            [action.payload.item.costResource]: Math.max(
+              state.resources[action.payload.item.costResource] - action.payload.item.cost,
+              0
+            )
           }
         };
       

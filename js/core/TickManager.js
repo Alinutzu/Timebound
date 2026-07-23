@@ -8,6 +8,7 @@ import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import resourceManager from './ResourceManager.js';
 import realmSystem from '../systems/RealmSystem.js';
+import upgradeSystem from '../systems/UpgradeSystem.js';
 
 class TickManager {
   constructor() {
@@ -251,7 +252,11 @@ class TickManager {
 
   // Pearl generation (Ocean realm passive chance)
   if (state.realms.unlocked.includes('ocean')) {
-    const pearlChance = realmSystem.getRealm('ocean')?.bonuses?.pearlDropChance || 0.06;
+    let pearlChance = realmSystem.getRealm('ocean')?.bonuses?.pearlDropChance || 0.06;
+    const pearlHarvestEffect = upgradeSystem.getEffect('pearlHarvest');
+    if (pearlHarvestEffect && pearlHarvestEffect.pearlDropBonus) {
+      pearlChance += pearlHarvestEffect.pearlDropBonus;
+    }
     if (Math.random() < pearlChance * this.deltaTime) {
       stateManager.dispatch({
         type: 'ADD_RESOURCE',

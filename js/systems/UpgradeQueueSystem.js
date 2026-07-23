@@ -8,10 +8,10 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import resourceManager from '../core/ResourceManager.js';
+import upgradeSystem from './UpgradeSystem.js';
 
 class UpgradeQueueSystem {
   constructor() {
-    this.maxQueueSize = 3; // Can queue up to 3 upgrades
     this.instantLevels = 3; // First 3 levels are instant
     
     this.initializeState();
@@ -147,7 +147,6 @@ class UpgradeQueueSystem {
       return false;
     }
     
-    const upgradeSystem = require('./UpgradeSystem.js').default;
     const currentLevel = upgradeSystem.getLevel(upgradeKey);
     const targetLevel = currentLevel + 1;
     const upgradeTime = this.calculateUpgradeTime(upgradeKey, targetLevel);
@@ -252,7 +251,6 @@ class UpgradeQueueSystem {
     });
     
     // ===== FIX: Apply special effects (capacity updates, unlocks, etc.) =====
-    const upgradeSystem = require('./UpgradeSystem.js').default;
     const newLevel = upgradeSystem.getLevel(upgrade.upgradeKey);
     upgradeSystem.applySpecialEffects(upgrade.upgradeKey, newLevel);
     // ===== END FIX =====

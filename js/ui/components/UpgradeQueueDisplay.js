@@ -27,6 +27,7 @@ class UpgradeQueueDisplay {
     eventBus.on('upgrade:queued', () => this.update());
     eventBus.on('upgrade:cancelled', () => this.update());
     eventBus.on('upgrade:sped-up', () => this.update());
+    eventBus.on('upgrade:slots-upgraded', () => this.update());
   }
   
   render() {

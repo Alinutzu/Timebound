@@ -209,7 +209,7 @@ const UPGRADES = {
     },
     
     getDescription: (level) => {
-      const cap = Math.floor(500 * Math.pow(1.8, level));
+      const cap = Math.floor(500 * Math.pow(1.6, level));
       return `Mana cap: ${cap.toLocaleString()}`;
     },
     
@@ -235,7 +235,7 @@ const UPGRADES = {
     },
     
     getDescription: (level) => {
-      const cap = Math.floor(4000 * Math.pow(1.8, level));
+      const cap = Math.floor(40000 * Math.pow(1.6, level));
       return `Volcanic cap: ${cap.toLocaleString()}`;
     },
     
@@ -265,7 +265,7 @@ const UPGRADES = {
     },
     
     getDescription: (level) => {
-      const bonus = level * 40;
+      const bonus = level * 25;
       return `+${bonus}% Solar Panel production`;
     },
     
@@ -293,7 +293,7 @@ const UPGRADES = {
     },
     
     getDescription: (level) => {
-      const bonus = level * 40;
+      const bonus = level * 25;
       return `+${bonus}% Wind Turbine production`;
     },
     
@@ -346,7 +346,7 @@ const UPGRADES = {
     
     effect: (level) => {
       // 0% → 100% in 10 levels
-      return Math.min(level * 5, 50);
+      return Math.min(level * 10, 100);
     },
     
     getDescription: (level) => {
@@ -675,7 +675,7 @@ const UPGRADES = {
   abyssalTech: {
     id: 'abyssalTech',
     name: 'Abyssal Pressure Tech',
-    description: 'Unlocks Deep Sea Pump, boosts tidal energy by +20%.',
+    description: 'Boosts tidal energy production by +20%.',
     emoji: '⚓',
     category: 'unlock',
 
@@ -685,11 +685,11 @@ const UPGRADES = {
     costResource: 'tidalEnergy',
 
     effect: () => {
-      return { unlock: 'deepSeaPump', bonus: 1.2 };
+      return 1.2;
     },
 
     getDescription: () => {
-      return 'Unlocks: Deep Sea Pump (+20% tidal energy)';
+      return '+20% tidal energy production';
     },
 
     unlockCondition: {

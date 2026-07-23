@@ -112,6 +112,11 @@ class UpgradesUI {
       ` : ''}
       
       ${!isMaxed ? `
+        <div class="upgrade-preview">
+          <span class="preview-arrow">▸</span>
+          <span class="preview-detail">${upgrade.getDescription(level + 1)}</span>
+        </div>
+
         <div class="upgrade-cost">
           <span>Cost:</span>
           <span>${Formatters.formatNumber(cost)} ${this.getResourceIcon(upgrade.costResource)}</span>
@@ -156,26 +161,24 @@ class UpgradesUI {
     const isMaxed = upgradeSystem.isMaxed(upgradeKey);
     const cost = upgradeSystem.getCost(upgradeKey);
 
-    // Update classes
-    if (!isUnlocked) {
-      card.classList.add('locked');
-    } else {
-      card.classList.remove('locked');
+    const hadMaxedDiv = card.querySelector('.upgrade-maxed');
+
+    if (isMaxed && !hadMaxedDiv) {
+      const newCard = this.createUpgradeCard(upgradeKey);
+      card.parentNode.replaceChild(newCard, card);
+      return;
     }
 
-    if (!canAfford && !isMaxed) {
-      card.classList.add('unaffordable');
-    } else {
-      card.classList.remove('unaffordable');
+    if (!isMaxed && hadMaxedDiv) {
+      const newCard = this.createUpgradeCard(upgradeKey);
+      card.parentNode.replaceChild(newCard, card);
+      return;
     }
 
-    if (isMaxed) {
-      card.classList.add('maxed');
-    } else {
-      card.classList.remove('maxed');
-    }
+    card.classList.toggle('locked', !isUnlocked);
+    card.classList.toggle('unaffordable', !canAfford && !isMaxed);
+    card.classList.toggle('maxed', isMaxed);
 
-    // Update button state
     const btn = card.querySelector('.btn');
     if (btn) {
       btn.disabled = !isUnlocked || !canAfford;
@@ -184,38 +187,36 @@ class UpgradesUI {
       }
     }
 
-    // Update cost display (dacă nu e maxed)
     const costSpan = card.querySelector('.upgrade-cost span:last-child');
     if (costSpan && !isMaxed) {
       costSpan.textContent = `${Formatters.formatNumber(cost)} ${this.getResourceIcon(upgrade.costResource)}`;
     }
 
-    // UPDATE LEVEL TEXT
     const levelSpan = card.querySelector('.upgrade-level');
     if (levelSpan) {
       levelSpan.textContent = `Lv. ${level}/${upgrade.maxLevel}`;
     }
 
-    // (Opțional) UPDATE EFFECT TEXT
     const effectContainer = card.querySelector('.upgrade-effect');
     if (effectContainer) {
       if (level > 0) {
         effectContainer.textContent = upgrade.getDescription(level);
-      } else {
-        // dacă vrei să dispară complet la level 0:
-        // effectContainer.textContent = '';
-        // sau un preview la level 1:
-        // effectContainer.textContent = upgrade.getDescription(1);
       }
     } else if (level > 0) {
-      // Dacă vrei să apară abia după ce trece de 0
       const newEffectDiv = document.createElement('div');
       newEffectDiv.className = 'upgrade-effect';
       newEffectDiv.textContent = upgrade.getDescription(level);
-
       const header = card.querySelector('.upgrade-header');
       if (header) {
         header.insertAdjacentElement('afterend', newEffectDiv);
+      }
+    }
+
+    const previewContainer = card.querySelector('.upgrade-preview');
+    if (previewContainer) {
+      const previewDetail = previewContainer.querySelector('.preview-detail');
+      if (previewDetail) {
+        previewDetail.textContent = upgrade.getDescription(level + 1);
       }
     }
   });
@@ -238,7 +239,13 @@ class UpgradesUI {
       energy: '⚡',
       mana: '✨',
       gems: '💎',
-      crystals: '💠'
+      crystals: '💠',
+      volcanicEnergy: '🌋',
+      tidalEnergy: '🌊',
+      solarEssence: '☀️',
+      cryoEnergy: '❄️',
+      cosmicEnergy: '🌌',
+      pearls: '🦪'
     };
     return icons[resource] || '';
   }

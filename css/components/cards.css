@@ -199,6 +199,30 @@
     font-weight: 600;
 }
 
+.upgrade-preview {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    background: rgba(99, 102, 241, 0.08);
+    border-left: 3px solid var(--accent);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+    font-size: 0.8125rem;
+}
+
+.preview-arrow {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+}
+
+.preview-detail {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
 /* Guardian Card */
 .guardian-card {
     background: var(--bg-secondary);

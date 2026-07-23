@@ -273,6 +273,7 @@ class ArenaUI {
             <h3>🛡️ My Guardians</h3>
             <button class="btn btn-primary" id="arena-summon-btn">✨ Summon (💎${ArenaUI.SUMMON_COST})</button>
           </div>
+          ${this.gems < ArenaUI.SUMMON_COST ? '<p class="arena-insufficient" id="arena-summon-warning">💎 Insufficient gems! Complete quests or win battles to earn more.</p>' : ''}
           <div id="arena-guardians-list" class="arena-guardians-list">
             <p class="arena-loading">Loading guardians...</p>
           </div>
@@ -384,6 +385,8 @@ class ArenaUI {
 
     const registerBtn = document.getElementById('arena-register-btn') || document.getElementById('arena-register-btn-banner');
     registerBtn?.addEventListener('click', () => this.showRegisterForm());
+
+    this.updateSummonButton();
 
     document.getElementById('arena-summon-btn')?.addEventListener('click', async () => {
       try {
@@ -517,6 +520,23 @@ class ArenaUI {
     if (energyEl) energyEl.textContent = `⚡ ${this.energy.toLocaleString()}`;
     const gemsEl = document.getElementById('arena-gems-display');
     if (gemsEl) gemsEl.textContent = `💎 ${this.gems.toLocaleString()}`;
+    this.updateSummonButton();
+  }
+
+  updateSummonButton() {
+    const btn = document.getElementById('arena-summon-btn');
+    const warn = document.getElementById('arena-summon-warning');
+    if (!btn) return;
+    const canAfford = this.gems >= ArenaUI.SUMMON_COST;
+    if (canAfford) {
+      btn.disabled = false;
+      btn.classList.remove('btn-disabled');
+      if (warn) warn.style.display = 'none';
+    } else {
+      btn.disabled = true;
+      btn.classList.add('btn-disabled');
+      if (warn) warn.style.display = 'block';
+    }
   }
 
   async loadGuardians() {

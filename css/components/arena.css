@@ -135,6 +135,14 @@
   font-style: italic;
 }
 
+.arena-insufficient {
+  font-size: 0.75rem;
+  color: #f59e0b;
+  padding: 6px 0;
+  margin: 0;
+  text-align: center;
+}
+
 .arena-guardians-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

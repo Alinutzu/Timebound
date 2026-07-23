@@ -17405,7 +17405,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "renderDashboard",
     value: function renderDashboard() {
-      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena ".concat(this.isGuest ? '<span class="arena-guest-badge">GUEST</span>' : '', "</h2>\n        <div class=\"arena-header-actions\">\n          <span id=\"arena-gems-display\" class=\"arena-gems\">\uD83D\uDC8E ").concat(this.gems.toLocaleString(), "</span>\n          <span id=\"arena-energy-display\" class=\"arena-energy\">\u26A1 ").concat(this.energy.toLocaleString(), "</span>\n          <span id=\"arena-username-display\"></span>\n          ").concat(this.isGuest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Register</button>' : '', "\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-save-cloud\">\u2601\uFE0F Save</button>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-load-cloud\">\u2601\uFE0F Load</button>\n          <button class=\"btn btn-small btn-danger\" id=\"arena-logout\">Logout</button>\n        </div>\n      </div>\n      ").concat(this.isGuest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : '', "\n      <div class=\"arena-dashboard\">\n        <div class=\"arena-section\" id=\"arena-guardians-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDEE1\uFE0F My Guardians</h3>\n            <button class=\"btn btn-primary\" id=\"arena-summon-btn\">\u2728 Summon (\uD83D\uDC8E").concat(ArenaUI.SUMMON_COST, ")</button>\n          </div>\n          <div id=\"arena-guardians-list\" class=\"arena-guardians-list\">\n            <p class=\"arena-loading\">Loading guardians...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-battle-section\">\n          <div class=\"arena-section-header\">\n            <h3>\u2694\uFE0F Battle</h3>\n          </div>\n          <div class=\"arena-battle-actions\">\n            <button class=\"btn btn-success\" id=\"arena-pve-btn\">\u2694\uFE0F Train (PvE)</button>\n            <button class=\"btn btn-danger\" id=\"arena-pvp-btn\">\uD83D\uDD25 Find Opponent (PvP)</button>\n          </div>\n          <div id=\"arena-battle-result\"></div>\n          <div id=\"arena-opponents-list\"></div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-history-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDCDC Battle History</h3>\n            <button class=\"btn btn-small btn-secondary\" id=\"arena-history-toggle\">Show</button>\n          </div>\n          <div id=\"arena-history-list\" style=\"display:none\">\n            <p class=\"arena-loading\">Loading history...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-leaderboard-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83C\uDFC6 Leaderboard</h3>\n            <span id=\"arena-my-rank\"></span>\n          </div>\n          <div id=\"arena-leaderboard-list\" class=\"arena-leaderboard-list\">\n            <p class=\"arena-loading\">Loading leaderboard...</p>\n          </div>\n        </div>\n      </div>\n    ");
+      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena ".concat(this.isGuest ? '<span class="arena-guest-badge">GUEST</span>' : '', "</h2>\n        <div class=\"arena-header-actions\">\n          <span id=\"arena-gems-display\" class=\"arena-gems\">\uD83D\uDC8E ").concat(this.gems.toLocaleString(), "</span>\n          <span id=\"arena-energy-display\" class=\"arena-energy\">\u26A1 ").concat(this.energy.toLocaleString(), "</span>\n          <span id=\"arena-username-display\"></span>\n          ").concat(this.isGuest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Register</button>' : '', "\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-save-cloud\">\u2601\uFE0F Save</button>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-load-cloud\">\u2601\uFE0F Load</button>\n          <button class=\"btn btn-small btn-danger\" id=\"arena-logout\">Logout</button>\n        </div>\n      </div>\n      ").concat(this.isGuest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : '', "\n      <div class=\"arena-dashboard\">\n        <div class=\"arena-section\" id=\"arena-guardians-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDEE1\uFE0F My Guardians</h3>\n            <button class=\"btn btn-primary\" id=\"arena-summon-btn\">\u2728 Summon (\uD83D\uDC8E").concat(ArenaUI.SUMMON_COST, ")</button>\n          </div>\n          ").concat(this.gems < ArenaUI.SUMMON_COST ? '<p class="arena-insufficient" id="arena-summon-warning">💎 Insufficient gems! Complete quests or win battles to earn more.</p>' : '', "\n          <div id=\"arena-guardians-list\" class=\"arena-guardians-list\">\n            <p class=\"arena-loading\">Loading guardians...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-battle-section\">\n          <div class=\"arena-section-header\">\n            <h3>\u2694\uFE0F Battle</h3>\n          </div>\n          <div class=\"arena-battle-actions\">\n            <button class=\"btn btn-success\" id=\"arena-pve-btn\">\u2694\uFE0F Train (PvE)</button>\n            <button class=\"btn btn-danger\" id=\"arena-pvp-btn\">\uD83D\uDD25 Find Opponent (PvP)</button>\n          </div>\n          <div id=\"arena-battle-result\"></div>\n          <div id=\"arena-opponents-list\"></div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-history-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDCDC Battle History</h3>\n            <button class=\"btn btn-small btn-secondary\" id=\"arena-history-toggle\">Show</button>\n          </div>\n          <div id=\"arena-history-list\" style=\"display:none\">\n            <p class=\"arena-loading\">Loading history...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-leaderboard-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83C\uDFC6 Leaderboard</h3>\n            <span id=\"arena-my-rank\"></span>\n          </div>\n          <div id=\"arena-leaderboard-list\" class=\"arena-leaderboard-list\">\n            <p class=\"arena-loading\">Loading leaderboard...</p>\n          </div>\n        </div>\n      </div>\n    ");
     }
   }, {
     key: "bindEvents",
@@ -17520,6 +17520,7 @@ var ArenaUI = /*#__PURE__*/function () {
       registerBtn === null || registerBtn === void 0 || registerBtn.addEventListener('click', function () {
         return _this6.showRegisterForm();
       });
+      this.updateSummonButton();
       (_document$getElementB3 = document.getElementById('arena-summon-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
         var result, _t5;
         return _regenerator().w(function (_context5) {
@@ -17773,6 +17774,24 @@ var ArenaUI = /*#__PURE__*/function () {
       if (energyEl) energyEl.textContent = "\u26A1 ".concat(this.energy.toLocaleString());
       var gemsEl = document.getElementById('arena-gems-display');
       if (gemsEl) gemsEl.textContent = "\uD83D\uDC8E ".concat(this.gems.toLocaleString());
+      this.updateSummonButton();
+    }
+  }, {
+    key: "updateSummonButton",
+    value: function updateSummonButton() {
+      var btn = document.getElementById('arena-summon-btn');
+      var warn = document.getElementById('arena-summon-warning');
+      if (!btn) return;
+      var canAfford = this.gems >= ArenaUI.SUMMON_COST;
+      if (canAfford) {
+        btn.disabled = false;
+        btn.classList.remove('btn-disabled');
+        if (warn) warn.style.display = 'none';
+      } else {
+        btn.disabled = true;
+        btn.classList.add('btn-disabled');
+        if (warn) warn.style.display = 'block';
+      }
     }
   }, {
     key: "loadGuardians",

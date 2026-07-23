@@ -90,7 +90,7 @@ router.post('/login', authRateLimit, (req, res) => {
 
     const token = generateToken({ id: user.id, username: user.username });
 
-    res.json({ token, user: { id: user.id, username: user.username, energy: user.energy || 10000 } });
+    res.json({ token, user: { id: user.id, username: user.username, energy: user.energy || 100000 } });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Server error' });

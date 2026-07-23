@@ -74,9 +74,12 @@ const userCols = db.prepare("PRAGMA table_info(users)").all().map(c => c.name);
 if (!userCols.includes('energy')) {
   db.exec("ALTER TABLE users ADD COLUMN energy INTEGER DEFAULT 100000");
 }
+db.exec("UPDATE users SET energy = 100000 WHERE energy IS NULL");
+
 if (!userCols.includes('gems')) {
   db.exec("ALTER TABLE users ADD COLUMN gems INTEGER DEFAULT 60");
 }
+db.exec("UPDATE users SET gems = 60 WHERE gems IS NULL");
 if (!userCols.includes('gems_won')) {
   db.exec("ALTER TABLE users ADD COLUMN gems_won INTEGER DEFAULT 0");
 }

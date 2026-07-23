@@ -34,43 +34,51 @@ router.get('/', authMiddleware, (req, res) => {
 
 router.post('/summon', authMiddleware, (req, res) => {
   try {
-    const user = db.prepare('SELECT id, gems FROM users WHERE id = ?').get(req.user.id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    const summonOp = db.transaction(() => {
+      const user = db.prepare('SELECT id, gems FROM users WHERE id = ?').get(req.user.id);
+      if (!user) return { error: 'User not found', status: 404 };
 
-    if (user.gems < SUMMON_COST) {
-      return res.status(400).json({ error: `Summon costs ${SUMMON_COST} gems`, cost: SUMMON_COST, gems: user.gems });
+      if (user.gems < SUMMON_COST) {
+        return { error: `Summon costs ${SUMMON_COST} gems`, status: 400, cost: SUMMON_COST, gems: user.gems };
+      }
+
+      const count = db.prepare('SELECT COUNT(*) as c FROM guardians WHERE user_id = ?').get(req.user.id).c;
+      if (count >= 20) {
+        return { error: 'Guardian roster full (max 20)', status: 400 };
+      }
+
+      const roll = Math.random() * 100;
+      let rarity;
+      if (roll < 1)       rarity = 'legendary';
+      else if (roll < 5)  rarity = 'epic';
+      else if (roll < 20) rarity = 'rare';
+      else if (roll < 50) rarity = 'uncommon';
+      else                rarity = 'common';
+
+      const stats = RARITY_STATS[rarity];
+      const name = GUARDIAN_NAMES[Math.floor(Math.random() * GUARDIAN_NAMES.length)];
+      const guardianKey = `guardian_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+      const result = db.prepare(`
+        INSERT INTO guardians (user_id, guardian_key, name, rarity, attack, defense, hp, max_hp)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(req.user.id, guardianKey, name, rarity, stats.baseAtk, stats.baseDef, stats.baseHp, stats.baseHp);
+
+      db.prepare('UPDATE users SET gems = gems - ? WHERE id = ?').run(SUMMON_COST, req.user.id);
+
+      const guardian = db.prepare('SELECT * FROM guardians WHERE id = ?').get(result.lastInsertRowid);
+      const updatedUser = db.prepare('SELECT gems FROM users WHERE id = ?').get(req.user.id);
+
+      updateLeaderboardPower(req.user.id);
+
+      return { guardian, gems: updatedUser.gems, cost: SUMMON_COST };
+    });
+
+    const result = summonOp();
+    if (result.error) {
+      return res.status(result.status).json(result);
     }
-
-    const count = db.prepare('SELECT COUNT(*) as c FROM guardians WHERE user_id = ?').get(req.user.id).c;
-    if (count >= 20) {
-      return res.status(400).json({ error: 'Guardian roster full (max 20)' });
-    }
-
-    const roll = Math.random() * 100;
-    let rarity;
-    if (roll < 1)       rarity = 'legendary';
-    else if (roll < 5)  rarity = 'epic';
-    else if (roll < 20) rarity = 'rare';
-    else if (roll < 50) rarity = 'uncommon';
-    else                rarity = 'common';
-
-    const stats = RARITY_STATS[rarity];
-    const name = GUARDIAN_NAMES[Math.floor(Math.random() * GUARDIAN_NAMES.length)];
-    const guardianKey = `guardian_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-
-    const result = db.prepare(`
-      INSERT INTO guardians (user_id, guardian_key, name, rarity, attack, defense, hp, max_hp)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(req.user.id, guardianKey, name, rarity, stats.baseAtk, stats.baseDef, stats.baseHp, stats.baseHp);
-
-    db.prepare('UPDATE users SET gems = gems - ? WHERE id = ?').run(SUMMON_COST, req.user.id);
-
-    const guardian = db.prepare('SELECT * FROM guardians WHERE id = ?').get(result.lastInsertRowid);
-    const updatedUser = db.prepare('SELECT gems FROM users WHERE id = ?').get(req.user.id);
-
-    updateLeaderboardPower(req.user.id);
-
-    res.status(201).json({ guardian, gems: updatedUser.gems, cost: SUMMON_COST });
+    res.status(201).json(result);
   } catch (err) {
     console.error('Summon error:', err);
     res.status(500).json({ error: 'Server error' });

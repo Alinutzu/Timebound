@@ -1,3 +1,5 @@
+import eventBus from '../utils/EventBus.js';
+
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? '/api'
   : 'https://familyhub.go.ro/api';
@@ -33,7 +35,18 @@ async function request(method, path, body = null) {
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data.error || 'Request failed');
+    if (res.status === 401) {
+      clearToken();
+      eventBus.emit('session:expired', { message: 'Session expired. Please login again.' });
+      const err = new Error('Session expired. Please login again.');
+      err.status = 401;
+      err.data = data;
+      throw err;
+    }
+    const err = new Error(data.error || 'Request failed');
+    err.status = res.status;
+    err.data = data;
+    throw err;
   }
 
   return data;
@@ -83,6 +96,10 @@ export default {
   },
 
   // Battles
+  getBattleHistory(limit = 20) {
+    return request('GET', `/battles/history?limit=${limit}`);
+  },
+
   battlePvE(guardianIds) {
     return request('POST', '/battles/pve', { guardianIds });
   },

@@ -2,6 +2,17 @@ import api from '../services/api.js';
 import eventBus from '../utils/EventBus.js';
 import stateManager from '../core/StateManager.js';
 import Formatters from '../utils/Formatters.js';
+import { io } from 'socket.io-client';
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+const SOCKET_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : 'https://familyhub.go.ro';
 
 class ArenaUI {
   constructor(containerId) {
@@ -20,7 +31,72 @@ class ArenaUI {
     this.pvpCooldown = 0;
     this.cooldownTimer = null;
     this.autoSaveTimer = null;
+    this.socket = null;
+    this.selectedGuardianIds = new Set();
+    this.guardianDetails = null;
+
+    eventBus.on('session:expired', () => {
+      this.stopAutoSave();
+      this.disconnectSocket();
+      if (this.cooldownTimer) {
+        clearInterval(this.cooldownTimer);
+        this.cooldownTimer = null;
+      }
+      this.isGuest = false;
+      this.connecting = false;
+      if (api.getToken()) api.clearToken();
+      this.render();
+    });
+
     this.render();
+  }
+
+  connectSocket() {
+    if (this.socket?.connected) return;
+    const token = api.getToken();
+    if (!token) return;
+    this.socket = io(SOCKET_URL, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 2000,
+      reconnectionAttempts: 10
+    });
+    this.socket.on('connect', () => {
+      this.socket.emit('auth', { token });
+    });
+    this.socket.on('challenge_received', (data) => {
+      eventBus.emit('notification:show', {
+        message: `⚔️ ${data.fromUsername} challenges you!`,
+        type: 'warning',
+        duration: 8000
+      });
+    });
+    this.socket.on('battle_start', (data) => {
+      eventBus.emit('notification:show', {
+        message: `⚔️ Battle started vs ${data.opponent}!`,
+        type: 'info',
+        duration: 5000
+      });
+    });
+    this.socket.on('online_count', (count) => {
+      const badge = document.getElementById('arena-badge');
+      if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'inline' : 'none';
+      }
+    });
+    this.socket.on('auth_error', () => {
+      api.clearToken();
+      this.render();
+    });
+    this.socket.on('disconnect', () => {});
+  }
+
+  disconnectSocket() {
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+    }
   }
 
   static SUMMON_COST = 50;
@@ -45,7 +121,13 @@ class ArenaUI {
     if (!api.getToken()) return;
     try {
       const state = stateManager.getState();
-      await api.saveCloud(state);
+      const payload = JSON.stringify(state);
+      if (payload.length > 900000) {
+        const trimmed = { resources: state.resources, stats: state.stats, structures: state.structures, upgrades: state.upgrades, guardians: state.guardians };
+        await api.saveCloud(trimmed);
+      } else {
+        await api.saveCloud(state);
+      }
     } catch (e) {}
   }
 
@@ -120,6 +202,7 @@ class ArenaUI {
       api.setToken(data.token);
       this.isGuest = data.isGuest;
       this.connecting = false;
+      this.connectSocket();
       this.render();
       await this.autoLoadCloud();
     } catch (err) {
@@ -205,6 +288,15 @@ class ArenaUI {
           <div id="arena-battle-result"></div>
           <div id="arena-opponents-list"></div>
         </div>
+        <div class="arena-section" id="arena-history-section">
+          <div class="arena-section-header">
+            <h3>📜 Battle History</h3>
+            <button class="btn btn-small btn-secondary" id="arena-history-toggle">Show</button>
+          </div>
+          <div id="arena-history-list" style="display:none">
+            <p class="arena-loading">Loading history...</p>
+          </div>
+        </div>
         <div class="arena-section" id="arena-leaderboard-section">
           <div class="arena-section-header">
             <h3>🏆 Leaderboard</h3>
@@ -245,6 +337,11 @@ class ArenaUI {
       this.autoGuest();
     });
 
+    const tokenFromStorage = api.getToken();
+    if (tokenFromStorage) {
+      this.connectSocket();
+    }
+
     document.getElementById('arena-auth-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('arena-username').value;
@@ -262,6 +359,7 @@ class ArenaUI {
         }
         api.setToken(data.token);
         this.isGuest = false;
+        this.connectSocket();
         this.render();
         await this.autoLoadCloud();
       } catch (err) {
@@ -273,6 +371,11 @@ class ArenaUI {
   bindDashboardEvents() {
     document.getElementById('arena-logout')?.addEventListener('click', () => {
       this.stopAutoSave();
+      this.disconnectSocket();
+      if (this.cooldownTimer) {
+        clearInterval(this.cooldownTimer);
+        this.cooldownTimer = null;
+      }
       api.clearToken();
       this.isGuest = false;
       this.connecting = false;
@@ -309,14 +412,20 @@ class ArenaUI {
         if (result.energy != null) this.energy = result.energy;
         this.updateResourceDisplay();
         this.showBattleResult(result);
-        this.loadGuardians();
+        if (result.guardians) {
+          result.guardians.forEach(updated => {
+            const idx = this.guardians.findIndex(g => g.id === updated.id);
+            if (idx !== -1) Object.assign(this.guardians[idx], updated);
+          });
+        }
+        this.renderGuardians();
+        this.loadLeaderboard();
         this.startCooldownTimer();
       } catch (err) {
         btn.disabled = false;
         btn.classList.remove('btn-disabled');
-        const data = err.message.match(/\d+/);
-        if (data) {
-          this.pveCooldown = parseInt(data[0]);
+        if (err.data?.cooldown) {
+          this.pveCooldown = err.data.cooldown;
           this.startCooldownTimer();
         }
         this.showNotification(err.message, 'warning');
@@ -334,6 +443,19 @@ class ArenaUI {
         this.renderOpponents(opponents, selected);
       } catch (err) {
         this.showNotification(err.message, 'warning');
+      }
+    });
+
+    document.getElementById('arena-history-toggle')?.addEventListener('click', async () => {
+      const list = document.getElementById('arena-history-list');
+      const btn = document.getElementById('arena-history-toggle');
+      if (list.style.display === 'none') {
+        list.style.display = 'block';
+        btn.textContent = 'Hide';
+        await this.loadBattleHistory();
+      } else {
+        list.style.display = 'none';
+        btn.textContent = 'Show';
       }
     });
 
@@ -361,15 +483,32 @@ class ArenaUI {
   }
 
   async loadDashboard() {
+    this.connectSocket();
     this.startAutoSave();
-    const username = JSON.parse(atob(api.getToken().split('.')[1])).username;
-    document.getElementById('arena-username-display').textContent = `👤 ${username}`;
+    try {
+      const payload = JSON.parse(atob(api.getToken().split('.')[1]));
+      document.getElementById('arena-username-display').textContent = `👤 ${payload.username}`;
+    } catch {
+      this.stopAutoSave();
+      this.disconnectSocket();
+      api.clearToken();
+      this.render();
+      return;
+    }
     try {
       const user = await api.getUser();
       this.energy = user.energy || 0;
       this.gems = user.gems || 0;
       this.updateResourceDisplay();
-    } catch (e) {}
+    } catch (e) {
+      if (e.status === 401) {
+        this.stopAutoSave();
+        this.disconnectSocket();
+        api.clearToken();
+        this.render();
+        return;
+      }
+    }
     await Promise.all([this.loadGuardians(), this.loadLeaderboard()]);
   }
 
@@ -396,15 +535,28 @@ class ArenaUI {
       return;
     }
 
-    list.innerHTML = this.guardians.map(g => {
+    const prevSelected = this.selectedGuardianIds || new Set();
+    this.selectedGuardianIds = new Set();
+
+    list.innerHTML = `
+      <div class="arena-select-actions">
+        <button class="btn btn-small btn-secondary" id="arena-select-all">✅ Select All</button>
+        <button class="btn btn-small btn-secondary" id="arena-select-clear">Clear</button>
+        <span class="arena-select-count" id="arena-select-count">0 selected</span>
+      </div>
+    ` + this.guardians.map(g => {
       const cost = ArenaUI.calculateLevelUpCost(g.level);
       const canAfford = this.energy >= cost;
       const maxLevel = g.level >= 50;
+      const safeName = escapeHtml(g.name);
+      const safeRarity = escapeHtml(g.rarity);
+      const checked = prevSelected.has(g.id) ? 'checked' : '';
+      if (checked) this.selectedGuardianIds.add(g.id);
       return `
       <div class="arena-guardian-card ${g.rarity}" data-id="${g.id}">
         <div class="arena-guardian-info">
-          <span class="arena-guardian-name">${g.name}</span>
-          <span class="arena-guardian-rarity ${g.rarity}">${g.rarity}</span>
+          <span class="arena-guardian-name guardian-details-trigger" data-id="${g.id}">${safeName}</span>
+          <span class="arena-guardian-rarity ${g.rarity}">${safeRarity}</span>
         </div>
         <div class="arena-guardian-stats">
           <span>❤️ ${g.hp}/${g.max_hp}</span>
@@ -413,15 +565,36 @@ class ArenaUI {
           <span>⬆️ Lv.${g.level}</span>
         </div>
         <div class="arena-guardian-actions">
-          <input type="checkbox" class="arena-guardian-select" data-id="${g.id}">
+          <input type="checkbox" class="arena-guardian-select" data-id="${g.id}" ${checked}>
           ${maxLevel
             ? '<button class="btn btn-small btn-secondary" disabled>MAX</button>'
             : `<button class="btn btn-small btn-primary levelup-btn ${canAfford ? '' : 'btn-disabled'}" data-id="${g.id}" ${canAfford ? '' : 'disabled'}>⚡${cost.toLocaleString()}</button>`
           }
         </div>
-        <button class="btn-release-row" data-id="${g.id}">Release</button>
+        <button class="btn btn-small btn-danger btn-release-row" data-id="${g.id}">🗑️ Release</button>
       </div>
     `}).join('');
+
+    document.getElementById('arena-select-all')?.addEventListener('click', () => {
+      list.querySelectorAll('.arena-guardian-select').forEach(cb => { cb.checked = true; this.selectedGuardianIds.add(parseInt(cb.dataset.id)); });
+      this.updateSelectCount();
+    });
+
+    document.getElementById('arena-select-clear')?.addEventListener('click', () => {
+      list.querySelectorAll('.arena-guardian-select').forEach(cb => { cb.checked = false; });
+      this.selectedGuardianIds.clear();
+      this.updateSelectCount();
+    });
+
+    list.querySelectorAll('.arena-guardian-select').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const id = parseInt(cb.dataset.id);
+        if (cb.checked) this.selectedGuardianIds.add(id);
+        else this.selectedGuardianIds.delete(id);
+        this.updateSelectCount();
+      });
+    });
+    this.updateSelectCount();
 
     list.querySelectorAll('.levelup-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -438,7 +611,8 @@ class ArenaUI {
     });
 
     list.querySelectorAll('.btn-release-row').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
         try {
           await api.releaseGuardian(parseInt(btn.dataset.id));
           this.showNotification('Guardian released', 'info');
@@ -448,11 +622,76 @@ class ArenaUI {
         }
       });
     });
+
+    list.querySelectorAll('.guardian-details-trigger').forEach(el => {
+      el.addEventListener('click', () => {
+        const g = this.guardians.find(g => g.id === parseInt(el.dataset.id));
+        if (g) this.showGuardianDetails(g);
+      });
+    });
+  }
+
+  showGuardianDetails(g) {
+    const existing = document.querySelector('.guardian-details-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay guardian-details-overlay';
+    const cost = ArenaUI.calculateLevelUpCost(g.level);
+    const power = g.attack + g.defense + g.hp;
+    const maxLevel = g.level >= 50;
+    const rarityColors = { common: '#9ca3af', uncommon: '#10b981', rare: '#3b82f6', epic: '#8b5cf6', legendary: '#f59e0b' };
+    const color = rarityColors[g.rarity] || '#9ca3af';
+
+    overlay.innerHTML = `
+      <div class="modal-content guardian-details-modal" style="border-top: 4px solid ${color}">
+        <div class="guardian-details-header" style="text-align:center;margin-bottom:16px">
+          <div style="font-size:1.4rem;font-weight:800;color:${color}">${escapeHtml(g.name)}</div>
+          <div class="arena-guardian-rarity ${g.rarity}" style="display:inline-block;margin-top:4px">${escapeHtml(g.rarity)}</div>
+        </div>
+        <div class="guardian-details-grid">
+          <div class="guardian-detail-card">
+            <span class="detail-label">Level</span>
+            <span class="detail-value">${g.level}${maxLevel ? ' ⭐ MAX' : ''}</span>
+          </div>
+          <div class="guardian-detail-card">
+            <span class="detail-label">❤️ HP</span>
+            <span class="detail-value">${g.hp.toLocaleString()} / ${g.max_hp.toLocaleString()}</span>
+          </div>
+          <div class="guardian-detail-card">
+            <span class="detail-label">⚔️ Attack</span>
+            <span class="detail-value">${g.attack.toLocaleString()}</span>
+          </div>
+          <div class="guardian-detail-card">
+            <span class="detail-label">🛡️ Defense</span>
+            <span class="detail-value">${g.defense.toLocaleString()}</span>
+          </div>
+          <div class="guardian-detail-card detail-card-highlight" style="border-color:${color}">
+            <span class="detail-label">⚡ Total Power</span>
+            <span class="detail-value" style="color:${color}">${power.toLocaleString()}</span>
+          </div>
+        </div>
+        <div class="guardian-details-footer" style="margin-top:16px;text-align:center">
+          ${maxLevel
+            ? '<p style="color:var(--text-secondary)">⭐ This guardian has reached max level!</p>'
+            : `<p style="color:var(--text-secondary);font-size:0.85rem">Next level cost: ⚡${cost.toLocaleString()} | ⬆️ Lv.${g.level + 1}</p>`
+          }
+          <button class="btn btn-secondary guardian-details-close" style="margin-top:8px">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector('.guardian-details-close').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+  }
+
+  updateSelectCount() {
+    const el = document.getElementById('arena-select-count');
+    if (el) el.textContent = `${this.selectedGuardianIds?.size || 0} selected`;
   }
 
   getSelectedGuardianIds() {
-    return Array.from(this.container.querySelectorAll('.arena-guardian-select:checked'))
-      .map(cb => parseInt(cb.dataset.id));
+    return Array.from(this.selectedGuardianIds || []);
   }
 
   renderOpponents(opponents, selectedGuardianIds) {
@@ -462,20 +701,37 @@ class ArenaUI {
       return;
     }
 
+    const playerPower = selectedGuardianIds.reduce((sum, id) => {
+      const g = this.guardians.find(g => g.id === id);
+      return sum + (g ? g.attack + g.defense + g.hp : 0);
+    }, 0);
+
     list.innerHTML = `
-      <h4>Select opponent:</h4>
+      <div class="arena-opponents-header">
+        <h4>Select opponent</h4>
+        <span class="arena-player-power">Your Power: ⚡${playerPower.toLocaleString()}</span>
+      </div>
       <div class="arena-opponents-grid">
-        ${opponents.map(o => `
-          <div class="arena-opponent-card">
+        ${opponents.map(o => {
+          const oppPower = o.guardian_power || 0;
+          const diff = playerPower - oppPower;
+          let difficulty, diffLabel, diffClass;
+          if (oppPower === 0) { difficulty = '❓'; diffLabel = 'Unknown'; diffClass = 'diff-unknown'; }
+          else if (diff > 200) { difficulty = '🟢'; diffLabel = 'Easy'; diffClass = 'diff-easy'; }
+          else if (diff > -100) { difficulty = '🟡'; diffLabel = 'Fair'; diffClass = 'diff-fair'; }
+          else { difficulty = '🔴'; diffLabel = 'Hard'; diffClass = 'diff-hard'; }
+          return `
+          <div class="arena-opponent-card ${diffClass}">
             <div class="arena-opponent-info">
-              <strong>${o.username}</strong>
+              <strong>${escapeHtml(o.username)}</strong>
               <span>Rating: ${o.rating}</span>
-              <span>Power: ${o.guardian_power}</span>
+              <span>Power: ${oppPower.toLocaleString() || 'N/A'}</span>
               <span>W:${o.wins} L:${o.losses}</span>
+              <span class="arena-diff-badge ${diffClass}">${difficulty} ${diffLabel}</span>
             </div>
             <button class="btn btn-danger btn-small challenge-btn" data-defender="${o.user_id}">Challenge!</button>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
     `;
 
@@ -492,9 +748,9 @@ class ArenaUI {
           this.loadLeaderboard();
           this.startCooldownTimer();
         } catch (err) {
-          const data = err.message.match(/\d+/);
-          if (data) {
-            this.pvpCooldown = parseInt(data[0]);
+          btn.disabled = false;
+          if (err.data?.cooldown) {
+            this.pvpCooldown = err.data.cooldown;
             this.startCooldownTimer();
           }
           this.showNotification(err.message, 'warning');
@@ -525,7 +781,7 @@ class ArenaUI {
             ${leaderboard.entries.map((e, i) => `
               <tr>
                 <td>${i + 1 + leaderboard.offset}</td>
-                <td>${e.username}</td>
+                <td>${escapeHtml(e.username)}</td>
                 <td>${e.rating}</td>
                 <td>${e.wins}/${e.losses}</td>
                 <td>${e.guardian_power}</td>
@@ -539,7 +795,42 @@ class ArenaUI {
     }
   }
 
+  async loadBattleHistory() {
+    try {
+      const data = await api.getBattleHistory(20);
+      const list = document.getElementById('arena-history-list');
+      if (!data.entries || data.entries.length === 0) {
+        list.innerHTML = `<p class="arena-empty">No battles yet. Start fighting!</p>`;
+        return;
+      }
+      list.innerHTML = `
+        <table class="arena-history-table">
+          <thead>
+            <tr><th>Result</th><th>Type</th><th>Opponent</th><th>Power</th><th>Rewards</th></tr>
+          </thead>
+          <tbody>
+            ${data.entries.map(e => `
+              <tr class="history-row-${e.result}">
+                <td><span class="history-badge ${e.result}">${e.result === 'win' ? '✅' : '❌'} ${e.result.toUpperCase()}</span></td>
+                <td>${e.type === 'pvp' ? '⚔️ PvP' : '🤖 PvE'}</td>
+                <td>${escapeHtml(e.enemyName)}</td>
+                <td>${e.playerPower?.toLocaleString() || '-'}</td>
+                <td>${[
+                  e.expReward ? `⭐+${e.expReward}` : '',
+                  e.gemsReward ? `💎+${e.gemsReward}` : ''
+                ].filter(Boolean).join(' ') || '-'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch {
+      document.getElementById('arena-history-list').innerHTML = `<p class="arena-error">Failed to load history</p>`;
+    }
+  }
+
   showRegisterForm() {
+    if (document.querySelector('.modal-overlay')) return;
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     overlay.innerHTML = `
@@ -570,6 +861,7 @@ class ArenaUI {
 
       try {
         const data = await api.convertGuest(username, email, password);
+        this.disconnectSocket();
         api.setToken(data.token);
         this.isGuest = false;
         overlay.remove();

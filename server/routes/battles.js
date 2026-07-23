@@ -13,6 +13,7 @@ const PVE_COOLDOWN_MAX = 60;
 const PVP_COOLDOWN_BASE = 30;
 const PVP_COOLDOWN_PER_LEVEL = 5;
 const PVP_COOLDOWN_MAX = 180;
+const MAX_GUARDIAN_LEVEL = 50;
 
 function getAvgGuardianLevel(userId) {
   const row = db.prepare('SELECT AVG(level) as avg FROM guardians WHERE user_id = ?').get(userId);
@@ -24,6 +25,47 @@ function getCooldownRemaining(lastTime, cooldownSec) {
   const elapsed = Math.floor(Date.now() / 1000) - lastTime;
   return Math.max(0, cooldownSec - elapsed);
 }
+
+router.get('/history', authMiddleware, (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+
+    const battles = db.prepare(`
+      SELECT
+        b.id,
+        b.result,
+        b.attacker_hp_remaining,
+        b.defender_hp_remaining,
+        b.exp_reward,
+        b.gems_reward,
+        b.created_at,
+        b.defender_id,
+        u.username AS defender_name
+      FROM battles b
+      LEFT JOIN users u ON b.defender_id = u.id
+      WHERE b.attacker_id = ?
+      ORDER BY b.created_at DESC
+      LIMIT ?
+    `).all(req.user.id, limit);
+
+    const entries = battles.map(b => ({
+      id: b.id,
+      result: b.result,
+      type: b.defender_id ? 'pvp' : 'pve',
+      enemyName: b.defender_name || 'PvE Training',
+      playerPower: b.attacker_hp_remaining,
+      enemyPower: b.defender_hp_remaining,
+      expReward: b.exp_reward,
+      gemsReward: b.gems_reward,
+      date: b.created_at
+    }));
+
+    res.json({ entries });
+  } catch (err) {
+    console.error('History error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 router.post('/pve', authMiddleware, (req, res) => {
   try {
@@ -100,6 +142,7 @@ router.post('/pve', authMiddleware, (req, res) => {
 
       if (won) {
         guardians.forEach(g => {
+          if (g.level >= MAX_GUARDIAN_LEVEL) return;
           const hpGain = Math.floor(g.max_hp * 0.02);
           const atkGain = Math.random() < 0.3 ? 1 : 0;
           const defGain = Math.random() < 0.2 ? 1 : 0;
@@ -114,7 +157,7 @@ router.post('/pve', authMiddleware, (req, res) => {
 
     battleOps();
 
-    const updatedGuardians = db.prepare(`SELECT id, level, attack, defense, hp FROM guardians WHERE id IN (${placeholders})`).all(...guardianIds);
+    const updatedGuardians = db.prepare(`SELECT id, level, attack, defense, hp, max_hp FROM guardians WHERE id IN (${placeholders})`).all(...guardianIds);
     const updatedUser = db.prepare('SELECT gems, energy FROM users WHERE id = ?').get(req.user.id);
 
     res.json({
@@ -174,7 +217,10 @@ router.post('/pvp/challenge', authMiddleware, (req, res) => {
     }
 
     const attackerPower = guardians.reduce((sum, g) => sum + g.attack + g.defense + g.hp, 0);
-    const defenderPower = defender.guardian_power || 500;
+    const defenderGuardians = db.prepare('SELECT attack, defense, hp FROM guardians WHERE user_id = ?').all(defenderId);
+    const defenderPower = defenderGuardians.length > 0
+      ? defenderGuardians.reduce((sum, g) => sum + g.attack + g.defense + g.hp, 0)
+      : 500;
 
     const attackerRoll = attackerPower * (0.8 + Math.random() * 0.4);
     const defenderRoll = defenderPower * (0.8 + Math.random() * 0.4);
@@ -233,6 +279,7 @@ router.post('/pvp/challenge', authMiddleware, (req, res) => {
       defenderRating,
       gems: newAttackerGems,
       gemsWager,
+      enemyName: defender.username,
       cooldown: cooldownSec
     });
   } catch (err) {

@@ -7,11 +7,14 @@
     "serve": "serve ."
   },
   "devDependencies": {
-    "browserify": "^17.0.0",
-    "watchify": "^4.0.0",
-    "babelify": "^10.0.0",
     "@babel/core": "^7.22.0",
     "@babel/preset-env": "^7.22.4",
-    "serve": "^14.2.0"
+    "babelify": "^10.0.0",
+    "browserify": "^17.0.0",
+    "serve": "^14.2.0",
+    "watchify": "^4.0.0"
+  },
+  "dependencies": {
+    "socket.io-client": "^4.8.3"
   }
 }

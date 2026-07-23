@@ -240,6 +240,22 @@ input, textarea {
   }
 }
 
+/* ===== TAB CONTENT — padding for fixed footer ===== */
+@media (max-width: 768px) {
+  .tab-content {
+    padding-bottom: 90px;
+  }
+  
+  /* Empty state — ensure text visible */
+  .empty-state,
+  .puzzle-empty,
+  .guardian-empty,
+  #guardians-empty,
+  .daily-spin-empty {
+    margin-bottom: 40px;
+  }
+}
+
 /* ===== REDUCED MOTION — disable animations ===== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

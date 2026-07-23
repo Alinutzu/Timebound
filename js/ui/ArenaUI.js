@@ -418,8 +418,8 @@ class ArenaUI {
             ? '<button class="btn btn-small btn-secondary" disabled>MAX</button>'
             : `<button class="btn btn-small btn-primary levelup-btn ${canAfford ? '' : 'btn-disabled'}" data-id="${g.id}" ${canAfford ? '' : 'disabled'}>⚡${cost.toLocaleString()}</button>`
           }
-          <button class="btn btn-small btn-danger release-btn" data-id="${g.id}">Release</button>
         </div>
+        <button class="btn-release-row" data-id="${g.id}">Release</button>
       </div>
     `}).join('');
 
@@ -437,7 +437,7 @@ class ArenaUI {
       });
     });
 
-    list.querySelectorAll('.release-btn').forEach(btn => {
+    list.querySelectorAll('.btn-release-row').forEach(btn => {
       btn.addEventListener('click', async () => {
         try {
           await api.releaseGuardian(parseInt(btn.dataset.id));

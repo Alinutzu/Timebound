@@ -304,6 +304,26 @@
         gap: var(--spacing-md);
     }
     
+    /* Guardians stats — compact grid */
+    .guardian-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        margin-bottom: var(--spacing-md);
+    }
+    
+    .guardian-stats .summary-card {
+        padding: 8px;
+    }
+    
+    .guardian-stats .summary-card h4 {
+        font-size: 0.688rem;
+        margin-bottom: 2px;
+    }
+    
+    .guardian-stats .summary-value {
+        font-size: 1rem;
+    }
+    
     /* Guardians grid */
     .guardians-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

@@ -151,13 +151,16 @@
     color: var(--text-secondary);
     cursor: pointer;
     font-size: 1.25rem;
-    width: 24px;
-    height: 24px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
 }
 
 .notification-close:hover {

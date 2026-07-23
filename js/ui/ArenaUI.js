@@ -155,9 +155,9 @@ class ArenaUI {
           <button class="arena-auth-btn" data-auth="register">Register</button>
         </div>
         <form id="arena-auth-form">
-          <input type="text" id="arena-username" placeholder="Username" required>
-          <input type="email" id="arena-email" placeholder="Email (only for register)" style="display:none">
-          <input type="password" id="arena-password" placeholder="Password" required>
+          <input type="text" id="arena-username" placeholder="Username" required autocomplete="username">
+          <input type="email" id="arena-email" placeholder="Email (only for register)" style="display:none" autocomplete="email">
+          <input type="password" id="arena-password" placeholder="Password" required autocomplete="current-password">
           <button type="submit" class="btn btn-primary btn-large">Connect</button>
         </form>
         <p class="arena-error" id="arena-error"></p>

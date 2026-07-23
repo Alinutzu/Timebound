@@ -60,7 +60,8 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 16px;
+  min-height: 44px;
 }
 
 .arena-error {
@@ -456,11 +457,110 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 16px;
+  min-height: 44px;
 }
 
 .arena-convert-actions {
   display: flex;
   gap: var(--spacing-md);
   margin-top: var(--spacing-sm);
+}
+
+/* ===== MOBILE — Arena layout ===== */
+@media (max-width: 768px) {
+  .arena-container {
+    padding: var(--spacing-md);
+  }
+  
+  /* Header: stack title + actions vertically */
+  .arena-header {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    text-align: center;
+  }
+  
+  .arena-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .arena-header p {
+    font-size: 0.813rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+  
+  .arena-header-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+  
+  .arena-header-actions .btn {
+    font-size: 11px;
+    padding: 4px 8px;
+    min-height: 28px;
+  }
+  
+  .arena-energy,
+  .arena-gems {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+  
+  /* Guest banner compact */
+  .arena-guest-banner {
+    font-size: 0.813rem;
+    padding: 6px 10px;
+  }
+  
+  /* Battle buttons stack */
+  .arena-battle-actions {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .arena-battle-actions .btn {
+    width: 100%;
+    font-size: 0.875rem;
+  }
+  
+  /* Login form */
+  .arena-login {
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) auto;
+  }
+  
+  .arena-auth-btn {
+    padding: 10px;
+    font-size: 0.875rem;
+  }
+  
+  /* Opponents grid */
+  .arena-opponents-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Battle result */
+  .arena-battle-result {
+    padding: var(--spacing-lg);
+  }
+  
+  .battle-title {
+    font-size: 1.4rem;
+  }
+  
+  .battle-emblem {
+    font-size: 3rem;
+  }
+  
+  .battle-stats-grid {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .battle-stat-card {
+    min-width: auto;
+    width: 100%;
+  }
 }

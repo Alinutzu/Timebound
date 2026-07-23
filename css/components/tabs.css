@@ -251,3 +251,93 @@
     font-weight: 700;
     color: var(--accent);
 }
+
+/* ===== MOBILE — Realm selector scrollable ===== */
+@media (max-width: 768px) {
+    .realm-selector {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        padding: 4px 0;
+        scroll-snap-type: x proximity;
+        
+        /* Fade edges */
+        mask-image: linear-gradient(
+            to right,
+            transparent 0%,
+            black 4%,
+            black 90%,
+            transparent 100%
+        );
+        -webkit-mask-image: linear-gradient(
+            to right,
+            transparent 0%,
+            black 4%,
+            black 90%,
+            transparent 100%
+        );
+    }
+    
+    .realm-selector::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .realm-btn {
+        flex: 0 0 auto;
+        min-width: 110px;
+        padding: 10px 12px;
+        font-size: 0.813rem;
+        text-align: center;
+        scroll-snap-align: start;
+    }
+    
+    .realm-btn .unlock-cost {
+        font-size: 0.688rem;
+    }
+    
+    /* Structures grid single column on mobile */
+    .structures-grid,
+    .tier-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    /* Guardians grid */
+    .guardians-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: var(--spacing-md);
+    }
+    
+    /* Quests header stack */
+    .quests-header {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        text-align: center;
+    }
+    
+    /* Statistics grid */
+    .statistics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Bosses grid */
+    #bosses-container {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Arena guardians grid */
+    .arena-guardians-list {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Arena leaderboard scroll */
+    .arena-leaderboard-list {
+        overflow-x: auto;
+    }
+    
+    .arena-leaderboard-table {
+        min-width: 400px;
+    }
+}

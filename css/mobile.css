@@ -7,29 +7,6 @@
     font-size: 16px;
   }
   
-  .tab-btn {
-    min-height: 48px;
-    font-size: 14px;
-    padding: 8px 12px;
-  }
-  
-  /* Reduce header size */
-  .game-header {
-    padding: 8px 12px;
-    flex-wrap: wrap;
-  }
-  
-  .game-title {
-    font-size: 18px;
-  }
-  
-  /* Stack resources vertically on small screens */
-  .header-resources {
-    flex-direction: column;
-    gap: 4px;
-    font-size: 12px;
-  }
-  
   /* Card spacing */
   .structure-card,
   .upgrade-card,
@@ -44,29 +21,37 @@
     overflow-y: auto;
   }
   
-  /* Tab navigation scrollable */
-  .game-tabs {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  
-  .game-tabs::-webkit-scrollbar {
-    display: none;
-  }
-  
-  /* Footer buttons stack on mobile */
+  /* Compact footer on mobile */
   .game-footer {
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 8px;
+    align-items: center;
+    justify-content: center;
   }
   
-  .footer-left,
-  .footer-center,
-  .footer-right {
+  .footer-left {
+    display: flex;
+    gap: 4px;
+  }
+  
+  .footer-center {
+    font-size: 11px;
+    color: var(--text-tertiary);
     width: 100%;
-    justify-content: center;
+    text-align: center;
+  }
+  
+  .footer-right {
+    display: flex;
+    gap: 4px;
+  }
+  
+  .game-footer .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    min-height: 32px;
   }
 }
 
@@ -85,66 +70,165 @@ input, textarea {
 /* Safe area for notched devices (iPhone X+) */
 @supports (padding: env(safe-area-inset-top)) {
   .game-header {
-    padding-top: calc(8px + env(safe-area-inset-top));
+    padding-top: calc(6px + env(safe-area-inset-top));
   }
   
   .game-footer {
-    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
   }
 }
 
-/* Tab navigation - mobile improvements */
+/* ===== COMPACT HEADER — horizontal, single line per resource ===== */
+@media (max-width: 768px) {
+  .game-header {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    position: relative;
+  }
+  
+  .header-left {
+    flex-shrink: 0;
+    gap: 4px;
+  }
+  
+  .game-title {
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  .version-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+  
+  /* Resources: horizontal row, compact inline */
+  .header-resources {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    justify-content: flex-end;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 0;
+  }
+  
+  .header-resources::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .resource-item {
+    flex-shrink: 0;
+    min-width: auto;
+    padding: 4px 8px;
+    gap: 4px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    font-size: 12px;
+  }
+  
+  .resource-icon {
+    font-size: 14px;
+  }
+  
+  .resource-info {
+    min-width: auto;
+    flex-direction: row;
+    gap: 4px;
+    align-items: baseline;
+  }
+  
+  .resource-amount {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  
+  .resource-rate {
+    font-size: 10px;
+  }
+  
+  /* Hide resource bars on mobile */
+  .resource-bar {
+    display: none;
+  }
+  
+  /* Settings and save buttons */
+  .header-right {
+    position: static;
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+}
+
+/* ===== TAB NAVIGATION — compact with scroll fade ===== */
 @media (max-width: 768px) {
   .game-tabs {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Firefox */
-    padding: 8px 4px;
+    scrollbar-width: none;
+    padding: 6px 8px;
     gap: 4px;
+    position: relative;
     
-    /* Indicator că poți face scroll */
-    background: linear-gradient(
-      90deg,
-      var(--bg-primary) 0%,
-      transparent 5%,
-      transparent 95%,
-      var(--bg-primary) 100%
+    /* Scroll fade indicators */
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 3%,
+      black 92%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 3%,
+      black 92%,
+      transparent 100%
     );
   }
   
   .game-tabs::-webkit-scrollbar {
-    display: none; /* Chrome, Safari */
+    display: none;
   }
   
-  /* Tab buttons mai mici pe mobile */
   .tab-btn {
     min-width: auto;
-    padding: 8px 12px;
-    font-size: 13px;
+    padding: 6px 10px;
+    font-size: 12px;
     white-space: nowrap;
-    flex-shrink: 0; /* Nu se comprimă */
+    flex-shrink: 0;
+    min-height: 36px;
+    border-radius: var(--radius-md);
+    scroll-snap-align: start;
   }
   
-  /* Badge positioning adjustment */
   .tab-btn .tab-badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
+    font-size: 8px;
   }
   
-  /* Scroll snap pentru feeling mai bun */
   .game-tabs {
     scroll-snap-type: x proximity;
     scroll-padding: 8px;
   }
-  
-  .tab-btn {
-    scroll-snap-align: start;
-  }
 }
 
-/* Landscape mode - tabs inline */
+/* ===== LANDSCAPE — tabs inline ===== */
 @media (max-width: 768px) and (orientation: landscape) {
   .tab-btn {
     font-size: 11px;
@@ -152,51 +236,15 @@ input, textarea {
   }
   
   .tab-btn span:not(.tab-badge) {
-    display: none; /* Ascunde emoji-urile în landscape */
+    display: none;
   }
 }
 
-/* Header improvements for mobile */
-@media (max-width: 768px) {
-  .game-header {
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 8px;
-  }
-  
-  .header-left {
-    width: 100%;
-    display: flex;
-    justify-content: center; /* Centrează pe mobile */
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .game-title {
-    font-size: 18px;
-    text-align: center;
-    margin: 0;
-  }
-  
-  .version-badge {
-    font-size: 10px;
-    padding: 2px 6px;
-  }
-  
-  .header-resources {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
-  .header-right {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    display: flex;
-    gap: 4px;
+/* ===== REDUCED MOTION — disable animations ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

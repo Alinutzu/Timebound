@@ -20432,6 +20432,12 @@ var UpgradesUI = /*#__PURE__*/function () {
       _EventBus["default"].on('upgrade:completed', function () {
         return _this.update();
       });
+      _EventBus["default"].on('upgrade:queued', function () {
+        return _this.update();
+      });
+      _EventBus["default"].on('upgrade:started', function () {
+        return _this.update();
+      });
       _EventBus["default"].on('state:ADD_RESOURCE', function () {
         return _this.update();
       });

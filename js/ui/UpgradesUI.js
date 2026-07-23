@@ -27,6 +27,8 @@ class UpgradesUI {
   subscribe() {
     eventBus.on('upgrade:purchased', () => this.update());
     eventBus.on('upgrade:completed', () => this.update());
+    eventBus.on('upgrade:queued', () => this.update());
+    eventBus.on('upgrade:started', () => this.update());
     eventBus.on('state:ADD_RESOURCE', () => this.update());
     eventBus.on('state:REMOVE_RESOURCE', () => this.update());
   }

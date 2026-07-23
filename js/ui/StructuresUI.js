@@ -73,6 +73,23 @@ class StructuresUI {
   }
   
   /**
+   * Apply realm visual theme
+   */
+  applyRealmTheme(realmId) {
+    const realm = realmSystem.getRealm(realmId);
+    if (!realm) return;
+    
+    const container = this.container.closest('.tab-content') || this.container;
+    container.dataset.realmTheme = realm.theme || 'green';
+    
+    if (realm.id === 'forest') {
+      container.style.background = 'var(--bg-primary)';
+    } else {
+      container.style.background = realm.background || 'var(--bg-primary)';
+    }
+  }
+
+  /**
    * Render structures tab
    */
   render() {
@@ -83,19 +100,23 @@ class StructuresUI {
     const state = stateManager.getState();
     const currentRealm = state.realms.current;
     
+    // Apply realm theme
+    this.applyRealmTheme(currentRealm);
+    
     // Realm selector
     const selector = this.renderRealmSelector(state, currentRealm);
     this.container.appendChild(selector);
     
     // Get structures for current realm
     const structures = structureSystem.getStructuresForRealm(currentRealm);
+    const realm = realmSystem.getRealm(currentRealm);
     
     // Create header
     const header = document.createElement('div');
     header.className = 'structures-header';
     header.innerHTML = `
-      <h2>🏗️ Structures - ${this.getRealmName(currentRealm)}</h2>
-      <p class="structures-subtitle">Build and upgrade structures to increase production</p>
+      <h2>${realm?.emoji || '🏗️'} ${this.getRealmName(currentRealm)}</h2>
+      <p class="structures-subtitle">${realm?.lore || 'Build and upgrade structures to increase production'}</p>
     `;
     this.container.appendChild(header);
     
@@ -153,26 +174,121 @@ class StructuresUI {
       if (currentRealm === id) btn.classList.add('active');
       if (!state.realms.unlocked.includes(id)) btn.classList.add('locked');
       btn.dataset.realm = id;
+      btn.title = state.realms.unlocked.includes(id)
+        ? realm.lore
+        : this.getUnlockRequirementsText(realm, state);
       
       if (state.realms.unlocked.includes(id)) {
-        btn.textContent = `${realm.emoji || ''} ${realm.name}`;
-      } else {
         btn.innerHTML = `${realm.emoji || ''} ${realm.name}`;
+      } else {
+        btn.innerHTML = `<span class="realm-btn-name">${realm.emoji || ''} ${realm.name}</span>`;
+        
+        // Requirements summary
+        const reqSummary = document.createElement('div');
+        reqSummary.className = 'realm-requirements-summary';
+        
+        const condition = realm.unlockCondition;
+        if (condition) {
+          const reqs = this.getUnlockRequirements(realm, state);
+          for (const r of reqs) {
+            const reqEl = document.createElement('span');
+            reqEl.className = `requirement-line ${r.met ? 'met' : 'unmet'}`;
+            reqEl.textContent = `${r.met ? '✅' : '🔒'} ${r.label}`;
+            reqSummary.appendChild(reqEl);
+          }
+        }
+        
         if (realm.unlockCost) {
           const costEntry = Object.entries(realm.unlockCost)[0];
           if (costEntry) {
-            const span = document.createElement('span');
-            span.className = 'unlock-cost';
-            span.textContent = `${costEntry[1]} 💠`;
-            btn.appendChild(span);
+            const costEl = document.createElement('span');
+            costEl.className = 'requirement-line unlock-cost-line';
+            const canAfford = state.resources[costEntry[0]] >= costEntry[1];
+            costEl.textContent = `${canAfford ? '✅' : '💠'} ${costEntry[1]} ${costEntry[0]}`;
+            reqSummary.appendChild(costEl);
           }
         }
+        
+        btn.appendChild(reqSummary);
       }
       
       container.appendChild(btn);
     }
     
     return container;
+  }
+  
+  getUnlockRequirements(realm, state) {
+    const condition = realm.unlockCondition;
+    if (!condition) return [];
+    
+    const requirements = [];
+    const bossNames = {
+      corruptedTreeant: 'Corrupted Treant',
+      infernoTitan: 'Inferno Titan',
+      oceanLeviathan: 'Ocean Leviathan',
+      voidLeviathan: 'Void Leviathan',
+      cosmicHarbinger: 'Cosmic Harbinger'
+    };
+    
+    if (condition.ascension) {
+      const met = state.ascension.level >= condition.ascension.level;
+      requirements.push({
+        label: `Ascension Lv.${condition.ascension.level}`,
+        met
+      });
+    }
+    
+    if (condition.bosses) {
+      for (const [bossId, status] of Object.entries(condition.bosses)) {
+        if (status === 'defeated') {
+          const met = state.bosses[bossId]?.defeated;
+          requirements.push({
+            label: `Defeat ${bossNames[bossId] || bossId}`,
+            met: !!met
+          });
+        }
+      }
+    }
+    
+    if (condition.realms) {
+      for (const [realmId, status] of Object.entries(condition.realms)) {
+        if (status === 'unlocked') {
+          const realmData = realmSystem.getRealm(realmId);
+          const met = state.realms.unlocked.includes(realmId);
+          requirements.push({
+            label: `Unlock ${realmData?.name || realmId}`,
+            met
+          });
+        }
+      }
+    }
+    
+    if (condition.production) {
+      for (const [resource, amount] of Object.entries(condition.production)) {
+        const met = state.production[resource] >= amount;
+        requirements.push({
+          label: `${resource} ${Formatters.formatNumber(amount)}/s`,
+          met
+        });
+      }
+    }
+    
+    return requirements;
+  }
+  
+  getUnlockRequirementsText(realm, state) {
+    if (state.realms.unlocked.includes(realm.id)) return realm.lore;
+    const reqs = this.getUnlockRequirements(realm, state);
+    const lines = reqs.map(r => `${r.met ? '✅' : '❌'} ${r.label}`);
+    if (realm.unlockCost) {
+      const costEntry = Object.entries(realm.unlockCost)[0];
+      if (costEntry) {
+        const canAfford = state.resources[costEntry[0]] >= costEntry[1];
+        lines.push(`${canAfford ? '✅' : '❌'} ${costEntry[1]} ${costEntry[0]}`);
+      }
+    }
+    return lines.join('\n');
   }
   
   /**

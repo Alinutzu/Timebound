@@ -19811,6 +19811,23 @@ var StructuresUI = /*#__PURE__*/function () {
     }
 
     /**
+     * Apply realm visual theme
+     */
+  }, {
+    key: "applyRealmTheme",
+    value: function applyRealmTheme(realmId) {
+      var realm = _RealmSystem["default"].getRealm(realmId);
+      if (!realm) return;
+      var container = this.container.closest('.tab-content') || this.container;
+      container.dataset.realmTheme = realm.theme || 'green';
+      if (realm.id === 'forest') {
+        container.style.background = 'var(--bg-primary)';
+      } else {
+        container.style.background = realm.background || 'var(--bg-primary)';
+      }
+    }
+
+    /**
      * Render structures tab
      */
   }, {
@@ -19822,17 +19839,21 @@ var StructuresUI = /*#__PURE__*/function () {
       var state = _StateManager["default"].getState();
       var currentRealm = state.realms.current;
 
+      // Apply realm theme
+      this.applyRealmTheme(currentRealm);
+
       // Realm selector
       var selector = this.renderRealmSelector(state, currentRealm);
       this.container.appendChild(selector);
 
       // Get structures for current realm
       var structures = _StructureSystem["default"].getStructuresForRealm(currentRealm);
+      var realm = _RealmSystem["default"].getRealm(currentRealm);
 
       // Create header
       var header = document.createElement('div');
       header.className = 'structures-header';
-      header.innerHTML = "\n      <h2>\uD83C\uDFD7\uFE0F Structures - ".concat(this.getRealmName(currentRealm), "</h2>\n      <p class=\"structures-subtitle\">Build and upgrade structures to increase production</p>\n    ");
+      header.innerHTML = "\n      <h2>".concat((realm === null || realm === void 0 ? void 0 : realm.emoji) || '🏗️', " ").concat(this.getRealmName(currentRealm), "</h2>\n      <p class=\"structures-subtitle\">").concat((realm === null || realm === void 0 ? void 0 : realm.lore) || 'Build and upgrade structures to increase production', "</p>\n    ");
       this.container.appendChild(header);
 
       // Create grid
@@ -19901,23 +19922,130 @@ var StructuresUI = /*#__PURE__*/function () {
         if (currentRealm === id) btn.classList.add('active');
         if (!state.realms.unlocked.includes(id)) btn.classList.add('locked');
         btn.dataset.realm = id;
+        btn.title = state.realms.unlocked.includes(id) ? realm.lore : this.getUnlockRequirementsText(realm, state);
         if (state.realms.unlocked.includes(id)) {
-          btn.textContent = "".concat(realm.emoji || '', " ").concat(realm.name);
-        } else {
           btn.innerHTML = "".concat(realm.emoji || '', " ").concat(realm.name);
+        } else {
+          btn.innerHTML = "<span class=\"realm-btn-name\">".concat(realm.emoji || '', " ").concat(realm.name, "</span>");
+
+          // Requirements summary
+          var reqSummary = document.createElement('div');
+          reqSummary.className = 'realm-requirements-summary';
+          var condition = realm.unlockCondition;
+          if (condition) {
+            var reqs = this.getUnlockRequirements(realm, state);
+            var _iterator2 = _createForOfIteratorHelper(reqs),
+              _step2;
+            try {
+              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+                var r = _step2.value;
+                var reqEl = document.createElement('span');
+                reqEl.className = "requirement-line ".concat(r.met ? 'met' : 'unmet');
+                reqEl.textContent = "".concat(r.met ? '✅' : '🔒', " ").concat(r.label);
+                reqSummary.appendChild(reqEl);
+              }
+            } catch (err) {
+              _iterator2.e(err);
+            } finally {
+              _iterator2.f();
+            }
+          }
           if (realm.unlockCost) {
             var costEntry = Object.entries(realm.unlockCost)[0];
             if (costEntry) {
-              var span = document.createElement('span');
-              span.className = 'unlock-cost';
-              span.textContent = "".concat(costEntry[1], " \uD83D\uDCA0");
-              btn.appendChild(span);
+              var costEl = document.createElement('span');
+              costEl.className = 'requirement-line unlock-cost-line';
+              var canAfford = state.resources[costEntry[0]] >= costEntry[1];
+              costEl.textContent = "".concat(canAfford ? '✅' : '💠', " ").concat(costEntry[1], " ").concat(costEntry[0]);
+              reqSummary.appendChild(costEl);
             }
           }
+          btn.appendChild(reqSummary);
         }
         container.appendChild(btn);
       }
       return container;
+    }
+  }, {
+    key: "getUnlockRequirements",
+    value: function getUnlockRequirements(realm, state) {
+      var condition = realm.unlockCondition;
+      if (!condition) return [];
+      var requirements = [];
+      var bossNames = {
+        corruptedTreeant: 'Corrupted Treant',
+        infernoTitan: 'Inferno Titan',
+        oceanLeviathan: 'Ocean Leviathan',
+        voidLeviathan: 'Void Leviathan',
+        cosmicHarbinger: 'Cosmic Harbinger'
+      };
+      if (condition.ascension) {
+        var met = state.ascension.level >= condition.ascension.level;
+        requirements.push({
+          label: "Ascension Lv.".concat(condition.ascension.level),
+          met: met
+        });
+      }
+      if (condition.bosses) {
+        for (var _i4 = 0, _Object$entries2 = Object.entries(condition.bosses); _i4 < _Object$entries2.length; _i4++) {
+          var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i4], 2),
+            bossId = _Object$entries2$_i[0],
+            status = _Object$entries2$_i[1];
+          if (status === 'defeated') {
+            var _state$bosses$bossId;
+            var _met = (_state$bosses$bossId = state.bosses[bossId]) === null || _state$bosses$bossId === void 0 ? void 0 : _state$bosses$bossId.defeated;
+            requirements.push({
+              label: "Defeat ".concat(bossNames[bossId] || bossId),
+              met: !!_met
+            });
+          }
+        }
+      }
+      if (condition.realms) {
+        for (var _i5 = 0, _Object$entries3 = Object.entries(condition.realms); _i5 < _Object$entries3.length; _i5++) {
+          var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i5], 2),
+            realmId = _Object$entries3$_i[0],
+            _status = _Object$entries3$_i[1];
+          if (_status === 'unlocked') {
+            var realmData = _RealmSystem["default"].getRealm(realmId);
+            var _met2 = state.realms.unlocked.includes(realmId);
+            requirements.push({
+              label: "Unlock ".concat((realmData === null || realmData === void 0 ? void 0 : realmData.name) || realmId),
+              met: _met2
+            });
+          }
+        }
+      }
+      if (condition.production) {
+        for (var _i6 = 0, _Object$entries4 = Object.entries(condition.production); _i6 < _Object$entries4.length; _i6++) {
+          var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i6], 2),
+            resource = _Object$entries4$_i[0],
+            amount = _Object$entries4$_i[1];
+          var _met3 = state.production[resource] >= amount;
+          requirements.push({
+            label: "".concat(resource, " ").concat(_Formatters["default"].formatNumber(amount), "/s"),
+            met: _met3
+          });
+        }
+      }
+      return requirements;
+    }
+  }, {
+    key: "getUnlockRequirementsText",
+    value: function getUnlockRequirementsText(realm, state) {
+      if (state.realms.unlocked.includes(realm.id)) return realm.lore;
+      var reqs = this.getUnlockRequirements(realm, state);
+      var lines = reqs.map(function (r) {
+        return "".concat(r.met ? '✅' : '❌', " ").concat(r.label);
+      });
+      if (realm.unlockCost) {
+        var costEntry = Object.entries(realm.unlockCost)[0];
+        if (costEntry) {
+          var canAfford = state.resources[costEntry[0]] >= costEntry[1];
+          lines.push("".concat(canAfford ? '✅' : '❌', " ").concat(costEntry[1], " ").concat(costEntry[0]));
+        }
+      }
+      return lines.join('\n');
     }
 
     /**
@@ -19964,8 +20092,8 @@ var StructuresUI = /*#__PURE__*/function () {
         production: state.production.cosmicEnergy,
         realm: 'cosmos'
       }];
-      for (var _i4 = 0, _resourceCards = resourceCards; _i4 < _resourceCards.length; _i4++) {
-        var rc = _resourceCards[_i4];
+      for (var _i7 = 0, _resourceCards = resourceCards; _i7 < _resourceCards.length; _i7++) {
+        var rc = _resourceCards[_i7];
         if (rc.realm && !state.realms.unlocked.includes(rc.realm)) continue;
         var card = document.createElement('div');
         card.className = 'summary-card';
@@ -19986,19 +20114,19 @@ var StructuresUI = /*#__PURE__*/function () {
     key: "checkNewUnlocks",
     value: function checkNewUnlocks() {
       // Re-render cards that might have unlocked
-      var _iterator2 = _createForOfIteratorHelper(this.cards.entries()),
-        _step2;
+      var _iterator3 = _createForOfIteratorHelper(this.cards.entries()),
+        _step3;
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var _step2$value = _slicedToArray(_step2.value, 2),
-            key = _step2$value[0],
-            card = _step2$value[1];
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var _step3$value = _slicedToArray(_step3.value, 2),
+            key = _step3$value[0],
+            card = _step3$value[1];
           card.update();
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator3.e(err);
       } finally {
-        _iterator2.f();
+        _iterator3.f();
       }
     }
   }, {
@@ -20014,17 +20142,17 @@ var StructuresUI = /*#__PURE__*/function () {
   }, {
     key: "destroy",
     value: function destroy() {
-      var _iterator3 = _createForOfIteratorHelper(this.cards.values()),
-        _step3;
+      var _iterator4 = _createForOfIteratorHelper(this.cards.values()),
+        _step4;
       try {
-        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-          var card = _step3.value;
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var card = _step4.value;
           card.destroy();
         }
       } catch (err) {
-        _iterator3.e(err);
+        _iterator4.e(err);
       } finally {
-        _iterator3.f();
+        _iterator4.f();
       }
       this.cards.clear();
     }

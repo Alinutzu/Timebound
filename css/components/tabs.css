@@ -3,6 +3,34 @@
  */
 
 /* Structures Tab */
+
+/* ===== REALM THEMING ===== */
+.tab-content[data-realm-theme="green"] {
+    --realm-accent: #10b981;
+    --realm-accent-dim: rgba(16, 185, 129, 0.15);
+}
+.tab-content[data-realm-theme="red"] {
+    --realm-accent: #ef4444;
+    --realm-accent-dim: rgba(239, 68, 68, 0.15);
+}
+.tab-content[data-realm-theme="blue"] {
+    --realm-accent: #3b82f6;
+    --realm-accent-dim: rgba(59, 130, 246, 0.15);
+}
+.tab-content[data-realm-theme="yellow"] {
+    --realm-accent: #f59e0b;
+    --realm-accent-dim: rgba(245, 158, 11, 0.15);
+}
+.tab-content[data-realm-theme="cyan"] {
+    --realm-accent: #06b6d4;
+    --realm-accent-dim: rgba(6, 182, 212, 0.15);
+}
+.tab-content[data-realm-theme="dark"] {
+    --realm-accent: #a855f7;
+    --realm-accent-dim: rgba(168, 85, 247, 0.15);
+}
+
+/* ===== REALM SELECTOR ===== */
 .realm-selector {
     display: flex;
     gap: var(--spacing-md);
@@ -23,25 +51,49 @@
 }
 
 .realm-btn:hover:not(.locked) {
-    border-color: var(--accent);
+    border-color: var(--realm-accent, var(--accent));
     transform: translateY(-2px);
 }
 
 .realm-btn.active {
-    border-color: var(--success);
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border-color: var(--realm-accent, var(--success));
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--realm-accent-dim, rgba(16, 185, 129, 0.1)) 100%);
 }
 
 .realm-btn.locked {
-    opacity: 0.6;
-    cursor: not-allowed;
+    cursor: pointer;
 }
 
-.unlock-cost {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+.realm-btn.locked .realm-btn-name {
+    opacity: 0.5;
+}
+
+.realm-btn.locked:hover {
+    border-color: var(--warning);
+    background: var(--realm-accent-dim);
+    transform: translateY(-2px);
+}
+
+/* Inline requirements per realm button */
+.realm-requirements-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     margin-top: var(--spacing-xs);
+}
+
+.requirement-line {
+    font-size: 0.65rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.requirement-line.met {
+    color: var(--success);
+}
+
+.requirement-line.unmet {
+    color: var(--text-tertiary);
 }
 
 .structures-grid,
@@ -59,7 +111,7 @@
     font-size: 1.25rem;
     font-weight: 700;
     margin-bottom: var(--spacing-md);
-    color: var(--text-secondary);
+    color: var(--realm-accent, var(--text-secondary));
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -70,7 +122,7 @@
     gap: var(--spacing-md);
     margin-top: var(--spacing-xl);
     padding-top: var(--spacing-xl);
-    border-top: 2px solid var(--bg-tertiary);
+    border-top: 2px solid var(--realm-accent-dim, var(--bg-tertiary));
 }
 
 .summary-card {
@@ -78,18 +130,19 @@
     padding: var(--spacing-md);
     border-radius: var(--radius-lg);
     text-align: center;
+    border: 1px solid var(--realm-accent-dim, transparent);
 }
 
 .summary-card h4 {
     margin: 0 0 var(--spacing-sm);
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    color: var(--realm-accent, var(--text-secondary));
 }
 
 .summary-value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--success);
+    color: var(--realm-accent, var(--success));
 }
 
 /* Guardians Tab */

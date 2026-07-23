@@ -13,7 +13,7 @@ exports["default"] = void 0;
 var CONFIG = {
   // Game identity
   GAME_NAME: 'Idle Energy Empire',
-  VERSION: '2.0.0',
+  VERSION: '2.1.0',
   // Save system
   SAVE_KEY: 'idle_energy_empire_save_v2',
   AUTO_SAVE_INTERVAL: 30000,
@@ -7934,10 +7934,12 @@ function bindGlobalEvents() {
       modalId: 'daily-reward-modal'
     });
   });
-  document.querySelectorAll('.tab-btn').forEach(function (btn) {
+  document.querySelectorAll('.tab-btn, .bottom-nav-btn, .more-menu-item').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var tabName = btn.dataset.tab;
-      _BadgeManager["default"].clearBadgeOnTabClick(tabName);
+      if (tabName && tabName !== 'more') {
+        _BadgeManager["default"].clearBadgeOnTabClick(tabName);
+      }
     });
   });
 
@@ -8265,11 +8267,15 @@ document.addEventListener('touchend', function (e) {
   handleSwipe();
 });
 function handleSwipe() {
+  // Disable swipe on mobile — bottom nav is the primary navigation
+  var bottomNav = document.getElementById('bottom-nav');
+  if (bottomNav && getComputedStyle(bottomNav).display !== 'none') return;
   var diff = touchEndX - touchStartX;
   if (Math.abs(diff) < 50) return; // Minimum swipe distance
 
-  var activeTab = document.querySelector('.tab-btn.active');
-  var allTabs = Array.from(document.querySelectorAll('.tab-btn'));
+  // Use desktop tabs for swipe order (source of truth)
+  var activeTab = document.querySelector('.desktop-tabs .tab-btn.active');
+  var allTabs = Array.from(document.querySelectorAll('.desktop-tabs .tab-btn'));
   var currentIndex = allTabs.indexOf(activeTab);
   if (diff < 0 && currentIndex < allTabs.length - 1) {
     // Swipe left - next tab
@@ -17153,7 +17159,7 @@ var ArenaUI = /*#__PURE__*/function () {
         var cost = ArenaUI.calculateLevelUpCost(g.level);
         var canAfford = _this5.energy >= cost;
         var maxLevel = g.level >= 50;
-        return "\n      <div class=\"arena-guardian-card ".concat(g.rarity, "\" data-id=\"").concat(g.id, "\">\n        <div class=\"arena-guardian-info\">\n          <span class=\"arena-guardian-name\">").concat(g.name, "</span>\n          <span class=\"arena-guardian-rarity ").concat(g.rarity, "\">").concat(g.rarity, "</span>\n        </div>\n        <div class=\"arena-guardian-stats\">\n          <span>\u2764\uFE0F ").concat(g.hp, "/").concat(g.max_hp, "</span>\n          <span>\u2694\uFE0F ").concat(g.attack, "</span>\n          <span>\uD83D\uDEE1\uFE0F ").concat(g.defense, "</span>\n          <span>\u2B06\uFE0F Lv.").concat(g.level, "</span>\n        </div>\n        <div class=\"arena-guardian-actions\">\n          <input type=\"checkbox\" class=\"arena-guardian-select\" data-id=\"").concat(g.id, "\">\n          ").concat(maxLevel ? '<button class="btn btn-small btn-secondary" disabled>MAX</button>' : "<button class=\"btn btn-small btn-primary levelup-btn ".concat(canAfford ? '' : 'btn-disabled', "\" data-id=\"").concat(g.id, "\" ").concat(canAfford ? '' : 'disabled', ">\u26A1").concat(cost.toLocaleString(), "</button>"), "\n          <button class=\"btn btn-small btn-danger release-btn\" data-id=\"").concat(g.id, "\">Release</button>\n        </div>\n      </div>\n    ");
+        return "\n      <div class=\"arena-guardian-card ".concat(g.rarity, "\" data-id=\"").concat(g.id, "\">\n        <div class=\"arena-guardian-info\">\n          <span class=\"arena-guardian-name\">").concat(g.name, "</span>\n          <span class=\"arena-guardian-rarity ").concat(g.rarity, "\">").concat(g.rarity, "</span>\n        </div>\n        <div class=\"arena-guardian-stats\">\n          <span>\u2764\uFE0F ").concat(g.hp, "/").concat(g.max_hp, "</span>\n          <span>\u2694\uFE0F ").concat(g.attack, "</span>\n          <span>\uD83D\uDEE1\uFE0F ").concat(g.defense, "</span>\n          <span>\u2B06\uFE0F Lv.").concat(g.level, "</span>\n        </div>\n        <div class=\"arena-guardian-actions\">\n          <input type=\"checkbox\" class=\"arena-guardian-select\" data-id=\"").concat(g.id, "\">\n          ").concat(maxLevel ? '<button class="btn btn-small btn-secondary" disabled>MAX</button>' : "<button class=\"btn btn-small btn-primary levelup-btn ".concat(canAfford ? '' : 'btn-disabled', "\" data-id=\"").concat(g.id, "\" ").concat(canAfford ? '' : 'disabled', ">\u26A1").concat(cost.toLocaleString(), "</button>"), "\n        </div>\n        <button class=\"btn-release-row\" data-id=\"").concat(g.id, "\">Release</button>\n      </div>\n    ");
       }).join('');
       list.querySelectorAll('.levelup-btn').forEach(function (btn) {
         btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10() {
@@ -17182,7 +17188,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }, _callee10, null, [[0, 2]]);
         })));
       });
-      list.querySelectorAll('.release-btn').forEach(function (btn) {
+      list.querySelectorAll('.btn-release-row').forEach(function (btn) {
         btn.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11() {
           var _t11;
           return _regenerator().w(function (_context11) {
@@ -17510,7 +17516,7 @@ function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = 
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
- * BadgeManager - Manages notification badges across tabs
+ * BadgeManager - Manages notification badges across tabs (desktop + mobile)
  */
 var BadgeManager = /*#__PURE__*/function () {
   function BadgeManager() {
@@ -17566,38 +17572,37 @@ var BadgeManager = /*#__PURE__*/function () {
         return q.completed;
       }).length;
       this.setBadge('quests', completedQuests);
+
+      // Update more menu badge if exists
+      this.updateMoreBadgeForTab('quests', completedQuests);
     }
   }, {
     key: "updateAchievementsBadge",
     value: function updateAchievementsBadge() {
       var _state$achievements;
       var state = _StateManager["default"].getState();
+      var unclaimedCount = 0;
 
-      // ===== FIX: Adaptare pentru structura de array =====
-      // Verifică dacă achievements sunt în formatul vechi (array-based)
+      // Adaptare pentru structura de array
       if (Array.isArray((_state$achievements = state.achievements) === null || _state$achievements === void 0 ? void 0 : _state$achievements.unlocked)) {
-        // Formatul: { unlocked: [], claimed: [] }
         var unlockedAchievements = state.achievements.unlocked || [];
         var claimedAchievements = state.achievements.claimed || [];
-
-        // Achievements unlocked dar NU claimed
-        var _unclaimedCount = unlockedAchievements.filter(function (key) {
+        unclaimedCount = unlockedAchievements.filter(function (key) {
           return !claimedAchievements.includes(key);
         }).length;
-        this.setBadge('achievements', _unclaimedCount);
-        return;
-      }
-
-      // Fallback: format nou (object-based)
-      var unclaimedCount = 0;
-      for (var _i = 0, _Object$values = Object.values(state.achievements); _i < _Object$values.length; _i++) {
-        var achievement = _Object$values[_i];
-        if (achievement.unlocked && !achievement.claimed) {
-          unclaimedCount++;
+      } else {
+        // Fallback: format nou (object-based)
+        for (var _i = 0, _Object$values = Object.values(state.achievements); _i < _Object$values.length; _i++) {
+          var achievement = _Object$values[_i];
+          if (achievement.unlocked && !achievement.claimed) {
+            unclaimedCount++;
+          }
         }
       }
       this.setBadge('achievements', unclaimedCount);
-      // ===== SFÂRȘIT FIX =====
+
+      // Update more menu badge
+      this.updateMoreBadgeForTab('achievements', unclaimedCount);
     }
   }, {
     key: "updateGuardiansBadge",
@@ -17636,6 +17641,57 @@ var BadgeManager = /*#__PURE__*/function () {
       var badge = this.badges[badgeKey];
       if (badge) {
         badge.style.display = 'none';
+      }
+    }
+
+    // Update badge in more menu (for tabs hidden in More)
+  }, {
+    key: "updateMoreBadgeForTab",
+    value: function updateMoreBadgeForTab(tabName, count) {
+      var moreBadge = document.getElementById("more-".concat(tabName, "-badge"));
+      if (!moreBadge) return;
+      if (count > 0) {
+        moreBadge.textContent = count;
+        moreBadge.style.display = 'flex';
+      } else {
+        moreBadge.style.display = 'none';
+      }
+
+      // Also update bottom nav badge for main tabs
+      var bottomBadge = document.getElementById("bottom-".concat(tabName, "-badge"));
+      if (bottomBadge) {
+        if (count > 0) {
+          bottomBadge.textContent = count;
+          bottomBadge.style.display = 'flex';
+        } else {
+          bottomBadge.style.display = 'none';
+        }
+      }
+
+      // Update "More" button badge
+      this.updateMoreButtonBadge();
+    }
+
+    // Update the "More" button badge with total count
+  }, {
+    key: "updateMoreButtonBadge",
+    value: function updateMoreButtonBadge() {
+      var moreBadge = document.getElementById('bottom-more-badge');
+      if (!moreBadge) return;
+      var totalCount = 0;
+
+      // Check all badges in more menu
+      var moreBadges = document.querySelectorAll('.more-badge');
+      moreBadges.forEach(function (badge) {
+        if (badge.style.display !== 'none') {
+          totalCount += parseInt(badge.textContent) || 0;
+        }
+      });
+      if (totalCount > 0) {
+        moreBadge.textContent = totalCount;
+        moreBadge.style.display = 'flex';
+      } else {
+        moreBadge.style.display = 'none';
       }
     }
 
@@ -19866,14 +19922,19 @@ function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = 
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
- * TabManager - Handles tab switching
+ * TabManager - Handles tab switching (desktop + mobile bottom nav + more menu)
  */
 var TabManager = /*#__PURE__*/function () {
   function TabManager() {
     _classCallCheck(this, TabManager);
     this.currentTab = 'structures';
-    this.tabs = document.querySelectorAll('.tab-btn');
+    this.desktopTabs = document.querySelectorAll('.desktop-tabs .tab-btn');
+    this.bottomNavBtns = document.querySelectorAll('.bottom-nav-btn');
+    this.moreMenuItems = document.querySelectorAll('.more-menu-item');
     this.panels = document.querySelectorAll('.tab-panel');
+    this.moreMenuOverlay = document.getElementById('more-menu-overlay');
+    this.moreMenuBtn = document.getElementById('more-menu-btn');
+    this.moreMenuClose = document.getElementById('more-menu-close');
     this.init();
     _Logger["default"].info('TabManager', 'Initialized');
   }
@@ -19881,13 +19942,48 @@ var TabManager = /*#__PURE__*/function () {
     key: "init",
     value: function init() {
       var _this = this;
-      // Bind click events
-      this.tabs.forEach(function (tab) {
+      // Desktop tabs
+      this.desktopTabs.forEach(function (tab) {
         tab.addEventListener('click', function () {
-          var tabName = tab.dataset.tab;
-          _this.switchTab(tabName);
+          _this.switchTab(tab.dataset.tab);
         });
       });
+
+      // Bottom nav buttons
+      this.bottomNavBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var tabName = btn.dataset.tab;
+          if (tabName === 'more') {
+            _this.openMoreMenu();
+          } else {
+            _this.switchTab(tabName);
+          }
+        });
+      });
+
+      // More menu items
+      this.moreMenuItems.forEach(function (item) {
+        item.addEventListener('click', function () {
+          _this.switchTab(item.dataset.tab);
+          _this.closeMoreMenu();
+        });
+      });
+
+      // More menu close
+      if (this.moreMenuClose) {
+        this.moreMenuClose.addEventListener('click', function () {
+          return _this.closeMoreMenu();
+        });
+      }
+
+      // Close more menu on overlay click
+      if (this.moreMenuOverlay) {
+        this.moreMenuOverlay.addEventListener('click', function (e) {
+          if (e.target === _this.moreMenuOverlay) {
+            _this.closeMoreMenu();
+          }
+        });
+      }
 
       // Listen for programmatic tab switches
       _EventBus["default"].on('tab:switch', function (data) {
@@ -19899,22 +19995,19 @@ var TabManager = /*#__PURE__*/function () {
     value: function switchTab(tabName) {
       if (this.currentTab === tabName) return;
 
-      // Update buttons
-      this.tabs.forEach(function (tab) {
-        if (tab.dataset.tab === tabName) {
-          tab.classList.add('active');
-        } else {
-          tab.classList.remove('active');
-        }
+      // Update desktop tabs
+      this.desktopTabs.forEach(function (tab) {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
+      });
+
+      // Update bottom nav buttons
+      this.bottomNavBtns.forEach(function (btn) {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
       });
 
       // Update panels
       this.panels.forEach(function (panel) {
-        if (panel.id === "tab-".concat(tabName)) {
-          panel.classList.add('active');
-        } else {
-          panel.classList.remove('active');
-        }
+        panel.classList.toggle('active', panel.id === "tab-".concat(tabName));
       });
       this.currentTab = tabName;
       _Logger["default"].debug('TabManager', "Switched to tab: ".concat(tabName));
@@ -19923,14 +20016,74 @@ var TabManager = /*#__PURE__*/function () {
       });
     }
   }, {
+    key: "openMoreMenu",
+    value: function openMoreMenu() {
+      if (this.moreMenuOverlay) {
+        this.moreMenuOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+  }, {
+    key: "closeMoreMenu",
+    value: function closeMoreMenu() {
+      if (this.moreMenuOverlay) {
+        this.moreMenuOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+  }, {
     key: "getCurrentTab",
     value: function getCurrentTab() {
       return this.currentTab;
     }
+
+    // Update badge on bottom nav
+  }, {
+    key: "updateBottomBadge",
+    value: function updateBottomBadge(tabName, count) {
+      var badge = document.getElementById("bottom-".concat(tabName, "-badge"));
+      if (!badge) return;
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+
+      // Update "More" badge count
+      this.updateMoreBadge();
+    }
+
+    // Update the "More" button badge with total count of all badges in More menu
+  }, {
+    key: "updateMoreBadge",
+    value: function updateMoreBadge() {
+      var moreBadge = document.getElementById('bottom-more-badge');
+      if (!moreBadge) return;
+      var totalCount = 0;
+
+      // Check achievements badge in more menu
+      var achBadge = document.getElementById('more-achievements-badge');
+      if (achBadge && achBadge.style.display !== 'none') {
+        totalCount += parseInt(achBadge.textContent) || 0;
+      }
+
+      // Add other badges from more menu if they exist
+      // (bosses, puzzle, shop, statistics don't have badges currently)
+
+      if (totalCount > 0) {
+        moreBadge.textContent = totalCount;
+        moreBadge.style.display = 'flex';
+      } else {
+        moreBadge.style.display = 'none';
+      }
+    }
+
+    // Legacy method - update badge on desktop tab
   }, {
     key: "updateBadge",
     value: function updateBadge(tabName, count) {
-      var tab = Array.from(this.tabs).find(function (t) {
+      var tab = Array.from(this.desktopTabs).find(function (t) {
         return t.dataset.tab === tabName;
       });
       if (!tab) return;
@@ -19942,6 +20095,9 @@ var TabManager = /*#__PURE__*/function () {
       } else {
         badge.style.display = 'none';
       }
+
+      // Also update bottom nav badge
+      this.updateBottomBadge(tabName, count);
     }
   }]);
 }();

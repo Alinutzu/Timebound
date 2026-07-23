@@ -224,7 +224,7 @@ class PuzzleUI {
             <button class="btn btn-secondary" id="game2048-exit">Exit</button>
           </div>
           <div class="game-2048-grid" id="game2048-grid">${this.render2048Grid(gameState.grid)}</div>
-          <div class="game-2048-controls"><p class="swipe-hint">Use arrow keys</p></div>
+          <div class="game-2048-controls"><p class="swipe-hint" id="swipe-hint">Swipe or use arrow keys</p></div>
         </div>`;
       this.bind2048Controls(container);
   }
@@ -238,7 +238,8 @@ class PuzzleUI {
       return html;
   }
   
-  bind2048Controls(container) { /* ...Logica de controale 2048... */ 
+  bind2048Controls(container) {
+      // Keyboard controls
       const handleKeyPress = (e) => {
           const keyMap = { 'ArrowUp':'up', 'ArrowDown':'down', 'ArrowLeft':'left', 'ArrowRight':'right', 'w':'up', 's':'down', 'a':'left', 'd':'right' };
           if (keyMap[e.key]) { e.preventDefault(); this.move2048(keyMap[e.key]); }
@@ -246,7 +247,51 @@ class PuzzleUI {
       if (container._keyHandler) document.removeEventListener('keydown', container._keyHandler);
       document.addEventListener('keydown', handleKeyPress);
       container._keyHandler = handleKeyPress;
-      
+
+      // Touch/swipe controls
+      const gridEl = document.getElementById('game2048-grid');
+      if (gridEl) {
+          let touchStartX = 0;
+          let touchStartY = 0;
+          let touchStartTime = 0;
+          const MIN_SWIPE_DISTANCE = 30;
+          const MAX_SWIPE_TIME = 500;
+
+          const handleTouchStart = (e) => {
+              const touch = e.touches[0];
+              touchStartX = touch.clientX;
+              touchStartY = touch.clientY;
+              touchStartTime = Date.now();
+          };
+
+          const handleTouchEnd = (e) => {
+              const touch = e.changedTouches[0];
+              const deltaX = touch.clientX - touchStartX;
+              const deltaY = touch.clientY - touchStartY;
+              const elapsed = Date.now() - touchStartTime;
+
+              if (elapsed > MAX_SWIPE_TIME) return;
+
+              const absX = Math.abs(deltaX);
+              const absY = Math.abs(deltaY);
+
+              if (Math.max(absX, absY) < MIN_SWIPE_DISTANCE) return;
+
+              e.preventDefault();
+
+              if (absX > absY) {
+                  this.move2048(deltaX > 0 ? 'right' : 'left');
+              } else {
+                  this.move2048(deltaY > 0 ? 'down' : 'up');
+              }
+          };
+
+          gridEl.addEventListener('touchstart', handleTouchStart, { passive: true });
+          gridEl.addEventListener('touchend', handleTouchEnd, { passive: false });
+          container._touchStart = handleTouchStart;
+          container._touchEnd = handleTouchEnd;
+      }
+
       document.getElementById('game2048-new-game')?.addEventListener('click', () => {
           const newState = this.game2048.newGame();
           this.render2048UI(container, newState);
@@ -280,6 +325,11 @@ class PuzzleUI {
   
   exit2048Game(container) {
       if (container._keyHandler) document.removeEventListener('keydown', container._keyHandler);
+      const gridEl = document.getElementById('game2048-grid');
+      if (gridEl && container._touchStart) {
+          gridEl.removeEventListener('touchstart', container._touchStart);
+          gridEl.removeEventListener('touchend', container._touchEnd);
+      }
       this.exitPuzzle();
   }
 

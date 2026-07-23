@@ -18767,7 +18767,7 @@ var PuzzleUI = /*#__PURE__*/function () {
   }, {
     key: "render2048UI",
     value: function render2048UI(container, gameState) {
-      container.innerHTML = "\n        <div class=\"game-2048-container\">\n          <div class=\"game-2048-header\">\n            <div class=\"game-2048-score\">\n              <div class=\"score-label\">Score</div>\n              <div class=\"score-value\" id=\"game2048-score\">".concat(gameState.score, "</div>\n            </div>\n            <button class=\"btn btn-secondary\" id=\"game2048-new-game\">New Game</button>\n            <button class=\"btn btn-secondary\" id=\"game2048-exit\">Exit</button>\n          </div>\n          <div class=\"game-2048-grid\" id=\"game2048-grid\">").concat(this.render2048Grid(gameState.grid), "</div>\n          <div class=\"game-2048-controls\"><p class=\"swipe-hint\">Use arrow keys</p></div>\n        </div>");
+      container.innerHTML = "\n        <div class=\"game-2048-container\">\n          <div class=\"game-2048-header\">\n            <div class=\"game-2048-score\">\n              <div class=\"score-label\">Score</div>\n              <div class=\"score-value\" id=\"game2048-score\">".concat(gameState.score, "</div>\n            </div>\n            <button class=\"btn btn-secondary\" id=\"game2048-new-game\">New Game</button>\n            <button class=\"btn btn-secondary\" id=\"game2048-exit\">Exit</button>\n          </div>\n          <div class=\"game-2048-grid\" id=\"game2048-grid\">").concat(this.render2048Grid(gameState.grid), "</div>\n          <div class=\"game-2048-controls\"><p class=\"swipe-hint\" id=\"swipe-hint\">Swipe or use arrow keys</p></div>\n        </div>");
       this.bind2048Controls(container);
     }
   }, {
@@ -18806,7 +18806,7 @@ var PuzzleUI = /*#__PURE__*/function () {
       var _this6 = this,
         _document$getElementB4,
         _document$getElementB5;
-      /* ...Logica de controale 2048... */
+      // Keyboard controls
       var handleKeyPress = function handleKeyPress(e) {
         var keyMap = {
           'ArrowUp': 'up',
@@ -18826,6 +18826,46 @@ var PuzzleUI = /*#__PURE__*/function () {
       if (container._keyHandler) document.removeEventListener('keydown', container._keyHandler);
       document.addEventListener('keydown', handleKeyPress);
       container._keyHandler = handleKeyPress;
+
+      // Touch/swipe controls
+      var gridEl = document.getElementById('game2048-grid');
+      if (gridEl) {
+        var touchStartX = 0;
+        var touchStartY = 0;
+        var touchStartTime = 0;
+        var MIN_SWIPE_DISTANCE = 30;
+        var MAX_SWIPE_TIME = 500;
+        var handleTouchStart = function handleTouchStart(e) {
+          var touch = e.touches[0];
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+          touchStartTime = Date.now();
+        };
+        var handleTouchEnd = function handleTouchEnd(e) {
+          var touch = e.changedTouches[0];
+          var deltaX = touch.clientX - touchStartX;
+          var deltaY = touch.clientY - touchStartY;
+          var elapsed = Date.now() - touchStartTime;
+          if (elapsed > MAX_SWIPE_TIME) return;
+          var absX = Math.abs(deltaX);
+          var absY = Math.abs(deltaY);
+          if (Math.max(absX, absY) < MIN_SWIPE_DISTANCE) return;
+          e.preventDefault();
+          if (absX > absY) {
+            _this6.move2048(deltaX > 0 ? 'right' : 'left');
+          } else {
+            _this6.move2048(deltaY > 0 ? 'down' : 'up');
+          }
+        };
+        gridEl.addEventListener('touchstart', handleTouchStart, {
+          passive: true
+        });
+        gridEl.addEventListener('touchend', handleTouchEnd, {
+          passive: false
+        });
+        container._touchStart = handleTouchStart;
+        container._touchEnd = handleTouchEnd;
+      }
       (_document$getElementB4 = document.getElementById('game2048-new-game')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', function () {
         var newState = _this6.game2048.newGame();
         _this6.render2048UI(container, newState);
@@ -18865,6 +18905,11 @@ var PuzzleUI = /*#__PURE__*/function () {
     key: "exit2048Game",
     value: function exit2048Game(container) {
       if (container._keyHandler) document.removeEventListener('keydown', container._keyHandler);
+      var gridEl = document.getElementById('game2048-grid');
+      if (gridEl && container._touchStart) {
+        gridEl.removeEventListener('touchstart', container._touchStart);
+        gridEl.removeEventListener('touchend', container._touchEnd);
+      }
       this.exitPuzzle();
     }
 

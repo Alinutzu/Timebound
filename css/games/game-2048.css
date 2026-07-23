@@ -271,12 +271,19 @@
   
   .game-2048-grid {
     max-width: 90vw;
-    gap: 8px;
-    padding: 8px;
+    gap: 6px;
+    padding: 6px;
+    touch-action: none;
   }
   
   .grid-cell {
     font-size: 1.5rem;
+    border-radius: var(--radius-sm);
+  }
+  
+  .grid-cell:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
   }
   
   .grid-cell[data-value="128"],
@@ -306,6 +313,11 @@
   .game-2048-header .btn {
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: 0.875rem;
+  }
+  
+  .swipe-hint {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
   }
 }
 

@@ -680,18 +680,21 @@ class StateManager {
         };
       
       // ===== REALMS =====
-      case 'UNLOCK_REALM':
+      case 'UNLOCK_REALM': {
+        const costs = action.payload.costs || {};
+        const newResources = { ...state.resources };
+        for (const [resource, amount] of Object.entries(costs)) {
+          newResources[resource] = (newResources[resource] || 0) - amount;
+        }
         return {
           ...state,
           realms: {
             ...state.realms,
             unlocked: [...state.realms.unlocked, action.payload.realmId]
           },
-          resources: {
-            ...state.resources,
-            crystals: state.resources.crystals - (action.payload.cost || 0)
-          }
+          resources: newResources
         };
+      }
       
       case 'SWITCH_REALM':
         return {

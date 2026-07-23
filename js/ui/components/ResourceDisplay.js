@@ -56,6 +56,7 @@ class ResourceDisplay {
       { key: 'crystals', icon: '💠', label: 'Crystals', show: state.resources.crystals > 0 || state.ascension.level > 0, noBar: true, noRate: true },
       { key: 'volcanicEnergy', icon: '🌋', label: 'Volcanic', show: state.realms.unlocked.includes('volcano') },
       { key: 'tidalEnergy', icon: '🌊', label: 'Tidal', show: state.realms.unlocked.includes('ocean') },
+      { key: 'pearls', icon: '🦪', label: 'Pearls', show: state.realms.unlocked.includes('ocean'), noBar: true, noRate: true },
       { key: 'solarEssence', icon: '☀️', label: 'Solar', show: state.realms.unlocked.includes('desert') },
       { key: 'cryoEnergy', icon: '❄️', label: 'Cryo', show: state.realms.unlocked.includes('tundra') },
       { key: 'cosmicEnergy', icon: '🌌', label: 'Cosmic', show: state.realms.unlocked.includes('cosmos') }

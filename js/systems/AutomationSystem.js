@@ -247,7 +247,8 @@ class AutomationSystem {
       if (!structureSystem.isUnlocked(key)) continue;
       
       const cost = structureSystem.getCost(key);
-      const canAfford = state.resources.energy >= cost * threshold;
+      const costResource = structureData.costResource || 'energy';
+      const canAfford = (state.resources[costResource] || 0) >= cost * threshold;
       
       if (canAfford) {
         const success = structureSystem.buy(key);

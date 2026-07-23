@@ -193,7 +193,11 @@ class StructureCard {
       mana: '✨',
       gems: '💎',
       crystals: '💠',
-      volcanicEnergy: '🌋'
+      volcanicEnergy: '🌋',
+      tidalEnergy: '🌊',
+      solarEssence: '☀️',
+      cryoEnergy: '❄️',
+      cosmicEnergy: '🌌'
     };
     return icons[this.structure.costResource] || '';
   }

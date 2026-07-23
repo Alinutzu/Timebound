@@ -69,7 +69,7 @@ const CONFIG = {
     
     // Volcano unlock
     VOLCANO_UNLOCK_COST: 500, // crystals
-    VOLCANO_MIN_ASCENSION: 2
+    VOLCANO_MIN_ASCENSION: 1
   },
   
   // Features flags

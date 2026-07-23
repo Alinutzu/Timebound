@@ -119,6 +119,21 @@ class RealmSystem {
       }
     }
     
+    // Check production requirements
+    if (condition.production) {
+      for (let [resource, amount] of Object.entries(condition.production)) {
+        if (state.production[resource] < amount) {
+          return {
+            can: false,
+            reason: 'production-required',
+            resource,
+            required: amount,
+            current: state.production[resource]
+          };
+        }
+      }
+    }
+    
     // Check cost
     if (realm.unlockCost) {
       for (let [resource, amount] of Object.entries(realm.unlockCost)) {
@@ -150,18 +165,12 @@ class RealmSystem {
     }
     
     const realm = this.realms[realmId];
-    let cost = 0;
-    
-    if (realm.unlockCost) {
-      for (let [resource, amount] of Object.entries(realm.unlockCost)) {
-        cost = amount; // Assuming single resource cost
-      }
-    }
+    const costs = realm.unlockCost || {};
     
     // Unlock realm
     stateManager.dispatch({
       type: 'UNLOCK_REALM',
-      payload: { realmId, cost }
+      payload: { realmId, costs }
     });
     
     logger.info('RealmSystem', `Unlocked realm: ${realm.name}`);

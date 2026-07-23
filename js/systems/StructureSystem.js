@@ -6,6 +6,7 @@ import STRUCTURES from '../data/structures.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import realmSystem from '../systems/RealmSystem.js';
 
 class StructureSystem {
   constructor() {
@@ -50,6 +51,15 @@ class StructureSystem {
     
     // Recalculate when guardians change
     eventBus.on('state:ADD_GUARDIAN', () => {
+      this.recalculateProduction();
+    });
+    
+    // Recalculate when realm changes (bonuses may apply)
+    eventBus.on('state:UNLOCK_REALM', () => {
+      this.recalculateProduction();
+    });
+    
+    eventBus.on('state:SWITCH_REALM', () => {
       this.recalculateProduction();
     });
     
@@ -201,6 +211,7 @@ class StructureSystem {
     ascension: 1,
     upgrades: 1,
     guardians: 1,
+    realm: 1,
     total: 1
   };
   
@@ -208,6 +219,33 @@ class StructureSystem {
   if (state.ascension.level > 0) {
     multipliers.ascension = 1 + (state.ascension.level * 0.1);
   }
+  
+  // Realm bonuses
+  const cosmicBonus = state.realms.unlocked.includes('cosmos')
+    ? (realmSystem.getRealm('cosmos')?.bonuses?.allProduction || 1.0)
+    : 1.0;
+  
+  let resourceBonus = 1.0;
+  switch (resource) {
+    case 'volcanicEnergy':
+      if (state.realms.unlocked.includes('volcano'))
+        resourceBonus = realmSystem.getRealm('volcano')?.bonuses?.volcanicProduction || 1.0;
+      break;
+    case 'tidalEnergy':
+      if (state.realms.unlocked.includes('ocean'))
+        resourceBonus = realmSystem.getRealm('ocean')?.bonuses?.tidalProduction || 1.0;
+      break;
+    case 'solarEssence':
+      if (state.realms.unlocked.includes('desert'))
+        resourceBonus = realmSystem.getRealm('desert')?.bonuses?.solarProduction || 1.0;
+      break;
+    case 'cryoEnergy':
+      if (state.realms.unlocked.includes('tundra'))
+        resourceBonus = realmSystem.getRealm('tundra')?.bonuses?.cryoProduction || 1.0;
+      break;
+  }
+  
+  multipliers.realm = resourceBonus * cosmicBonus;
   
   // ===== FIX: Use UpgradeSystem instead of duplicate logic =====
   const upgradeSystem = require('./UpgradeSystem.js').default;
@@ -219,7 +257,7 @@ class StructureSystem {
   multipliers.guardians = guardianSystem.getProductionMultiplier(resource);
   
   // Calculate total
-  multipliers.total = multipliers.ascension * multipliers.upgrades * multipliers.guardians;
+  multipliers.total = multipliers.ascension * multipliers.upgrades * multipliers.guardians * multipliers.realm;
   
   return multipliers;
 }
@@ -346,6 +384,7 @@ class StructureSystem {
     let solarEssenceProduction = 0;
     let cryoEnergyProduction = 0;
     let cosmicEnergyProduction = 0;
+    let gemsProduction = 0;
     
     // Sum production from all structures
     for (let [key, structure] of Object.entries(this.structures)) {
@@ -377,7 +416,7 @@ class StructureSystem {
           cosmicEnergyProduction += production;
           break;
         case 'gems':
-          // Gems production is handled separately (very slow)
+          gemsProduction += production;
           break;
       }
     }
@@ -417,12 +456,18 @@ class StructureSystem {
       type: 'SET_PRODUCTION',
       payload: { resource: 'cosmicEnergy', amount: cosmicEnergyProduction }
     });
+
+    stateManager.dispatch({
+      type: 'SET_PRODUCTION',
+      payload: { resource: 'gems', amount: gemsProduction }
+    });
     
     logger.debug('StructureSystem', 'Production recalculated', {
       energy: energyProduction,
       mana: manaProduction,
       volcanic: volcanicProduction,
-      tidal: tidalProduction
+      tidal: tidalProduction,
+      gems: gemsProduction
     });
     
     eventBus.emit('production:updated', {
@@ -432,7 +477,8 @@ class StructureSystem {
       tidalEnergy: tidalProduction,
       solarEssence: solarEssenceProduction,
       cryoEnergy: cryoEnergyProduction,
-      cosmicEnergy: cosmicEnergyProduction
+      cosmicEnergy: cosmicEnergyProduction,
+      gems: gemsProduction
     });
   }
   

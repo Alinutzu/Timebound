@@ -101,7 +101,7 @@ var CONFIG = {
     // Volcano unlock
     VOLCANO_UNLOCK_COST: 500,
     // crystals
-    VOLCANO_MIN_ASCENSION: 2
+    VOLCANO_MIN_ASCENSION: 1
   },
   // Features flags
   FEATURES: {
@@ -1236,6 +1236,10 @@ var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -1788,14 +1792,22 @@ var StateManager = /*#__PURE__*/function () {
 
         // ===== REALMS =====
         case 'UNLOCK_REALM':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            realms: _objectSpread(_objectSpread({}, state.realms), {}, {
-              unlocked: [].concat(_toConsumableArray(state.realms.unlocked), [action.payload.realmId])
-            }),
-            resources: _objectSpread(_objectSpread({}, state.resources), {}, {
-              crystals: state.resources.crystals - (action.payload.cost || 0)
-            })
-          });
+          {
+            var costs = action.payload.costs || {};
+            var _newResources = _objectSpread({}, state.resources);
+            for (var _i = 0, _Object$entries = Object.entries(costs); _i < _Object$entries.length; _i++) {
+              var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+                resource = _Object$entries$_i[0],
+                amount = _Object$entries$_i[1];
+              _newResources[resource] = (_newResources[resource] || 0) - amount;
+            }
+            return _objectSpread(_objectSpread({}, state), {}, {
+              realms: _objectSpread(_objectSpread({}, state.realms), {}, {
+                unlocked: [].concat(_toConsumableArray(state.realms.unlocked), [action.payload.realmId])
+              }),
+              resources: _newResources
+            });
+          }
         case 'SWITCH_REALM':
           return _objectSpread(_objectSpread({}, state), {}, {
             realms: _objectSpread(_objectSpread({}, state.realms), {}, {
@@ -2223,6 +2235,7 @@ var _StateManager = _interopRequireDefault(require("./StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _ResourceManager = _interopRequireDefault(require("./ResourceManager.js"));
+var _RealmSystem = _interopRequireDefault(require("../systems/RealmSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -2340,6 +2353,7 @@ var TickManager = /*#__PURE__*/function () {
   }, {
     key: "productionTick",
     value: function productionTick() {
+      var _realmSystem$getRealm;
       var state = _StateManager["default"].getState();
 
       // ===== FIX: Apply critical energy chance =====
@@ -2349,8 +2363,11 @@ var TickManager = /*#__PURE__*/function () {
       var criticalMultiplier = isCritical ? 2 : 1;
       // ===== END FIX =====
 
+      // Get cosmic allProduction bonus (affects ALL resource types)
+      var cosmicBonus = state.realms.unlocked.includes('cosmos') ? ((_realmSystem$getRealm = _RealmSystem["default"].getRealm('cosmos')) === null || _realmSystem$getRealm === void 0 || (_realmSystem$getRealm = _realmSystem$getRealm.bonuses) === null || _realmSystem$getRealm === void 0 ? void 0 : _realmSystem$getRealm.allProduction) || 1.0 : 1.0;
+
       // Energy production
-      var energyPerTick = state.production.energy * this.deltaTime;
+      var energyPerTick = state.production.energy * this.deltaTime * cosmicBonus;
 
       // ✅ Apply critical multiplier
       if (isCritical && energyPerTick > 0) {
@@ -2379,8 +2396,8 @@ var TickManager = /*#__PURE__*/function () {
         });
       }
 
-      // Mana production (same as before)
-      var manaPerTick = state.production.mana * this.deltaTime;
+      // Mana production
+      var manaPerTick = state.production.mana * this.deltaTime * cosmicBonus;
       if (manaPerTick > 0) {
         _StateManager["default"].dispatch({
           type: 'ADD_RESOURCE',
@@ -2391,7 +2408,7 @@ var TickManager = /*#__PURE__*/function () {
         });
       }
 
-      // Volcanic energy production (same as before)
+      // Volcanic energy production
       if (state.realms.unlocked.includes('volcano')) {
         var volcanicPerTick = state.production.volcanicEnergy * this.deltaTime;
         if (volcanicPerTick > 0) {
@@ -2456,6 +2473,35 @@ var TickManager = /*#__PURE__*/function () {
             payload: {
               resource: 'cosmicEnergy',
               amount: cosmicPerTick
+            }
+          });
+        }
+      }
+
+      // Gems production
+      if (state.production.gems && state.production.gems > 0) {
+        var gemsPerTick = state.production.gems * this.deltaTime;
+        if (gemsPerTick > 0) {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: 'gems',
+              amount: gemsPerTick
+            }
+          });
+        }
+      }
+
+      // Pearl generation (Ocean realm passive chance)
+      if (state.realms.unlocked.includes('ocean')) {
+        var _realmSystem$getRealm2;
+        var pearlChance = ((_realmSystem$getRealm2 = _RealmSystem["default"].getRealm('ocean')) === null || _realmSystem$getRealm2 === void 0 || (_realmSystem$getRealm2 = _realmSystem$getRealm2.bonuses) === null || _realmSystem$getRealm2 === void 0 ? void 0 : _realmSystem$getRealm2.pearlDropChance) || 0.06;
+        if (Math.random() < pearlChance * this.deltaTime) {
+          _StateManager["default"].dispatch({
+            type: 'ADD_RESOURCE',
+            payload: {
+              resource: 'pearls',
+              amount: 1
             }
           });
         }
@@ -2557,6 +2603,7 @@ var TickManager = /*#__PURE__*/function () {
       var solarEssenceEarned = state.realms.unlocked.includes('desert') ? Math.floor(state.production.solarEssence * secondsOffline * offlineMultiplier) : 0;
       var cryoEnergyEarned = state.realms.unlocked.includes('tundra') ? Math.floor(state.production.cryoEnergy * secondsOffline * offlineMultiplier) : 0;
       var cosmicEnergyEarned = state.realms.unlocked.includes('cosmos') ? Math.floor(state.production.cosmicEnergy * secondsOffline * offlineMultiplier) : 0;
+      var gemsEarned = state.production.gems > 0 ? Math.floor(state.production.gems * secondsOffline * offlineMultiplier) : 0;
       _Logger["default"].info('TickManager', 'Offline progress calculated', {
         timeOffline: cappedTimeDiff,
         offlinePercent: offlinePercent,
@@ -2566,7 +2613,8 @@ var TickManager = /*#__PURE__*/function () {
         tidalEarned: tidalEarned,
         solarEssenceEarned: solarEssenceEarned,
         cryoEnergyEarned: cryoEnergyEarned,
-        cosmicEnergyEarned: cosmicEnergyEarned
+        cosmicEnergyEarned: cosmicEnergyEarned,
+        gemsEarned: gemsEarned
       });
       return {
         timeOffline: cappedTimeDiff,
@@ -2577,7 +2625,8 @@ var TickManager = /*#__PURE__*/function () {
           tidalEnergy: tidalEarned,
           solarEssence: solarEssenceEarned,
           cryoEnergy: cryoEnergyEarned,
-          cosmicEnergy: cosmicEnergyEarned
+          cosmicEnergy: cosmicEnergyEarned,
+          gems: gemsEarned
         },
         wasCapped: timeDiff > _config["default"].BALANCING.OFFLINE_TIME_CAP
       };
@@ -2660,6 +2709,15 @@ var TickManager = /*#__PURE__*/function () {
           }
         });
       }
+      if (resources.gems > 0) {
+        _StateManager["default"].dispatch({
+          type: 'ADD_RESOURCE',
+          payload: {
+            resource: 'gems',
+            amount: resources.gems
+          }
+        });
+      }
       _EventBus["default"].emit('game:offline-progress', offlineData);
     }
 
@@ -2693,7 +2751,7 @@ var TickManager = /*#__PURE__*/function () {
 var tickManager = new TickManager();
 var _default = exports["default"] = tickManager;
 
-},{"../config.js":1,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./ResourceManager.js":4,"./StateManager.js":6}],8:[function(require,module,exports){
+},{"../config.js":1,"../systems/RealmSystem.js":28,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./ResourceManager.js":4,"./StateManager.js":6}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5221,12 +5279,12 @@ var QUEST_TEMPLATES = {
   },
   pearl_diver: {
     id: 'pearl_diver',
-    type: 'collect',
+    type: 'milestone',
     name: 'Pearl Diver',
-    description: 'Collect 30 pearls using Coral Battery.',
+    description: 'Collect 30 pearls in Ocean Realm.',
     emoji: '🏝️',
     realm: 'ocean',
-    resource: 'pearls',
+    metric: 'pearls',
     amounts: [30],
     rewards: function rewards(amount) {
       return {
@@ -5417,8 +5475,7 @@ var REALMS = {
       guardianAffinity: 1.12 // +12% water guardian bonus (redus de la 1.20)
     },
     bossId: 'oceanLeviathan',
-    questIds: ['ocean_intro', 'tide_master', 'kelp_tycoon', 'pearl_diver'],
-    locked: false // ✅ Acum e disponibil! 
+    questIds: ['ocean_intro', 'tide_master', 'kelp_tycoon', 'pearl_diver']
   },
   // === FUTURE REALMS ===
 
@@ -9300,11 +9357,17 @@ var AscensionSystem = /*#__PURE__*/function () {
         level: 1,
         reward: 'Unlock Volcano Realm'
       }, {
+        level: 2,
+        reward: 'Unlock Ocean Depths'
+      }, {
         level: 3,
-        reward: 'Unlock Ocean Realm'
+        reward: 'Unlock Desert Expanse'
+      }, {
+        level: 4,
+        reward: 'Unlock Frozen Tundra'
       }, {
         level: 5,
-        reward: 'Unlock Cosmic Realm, Boss 3'
+        reward: 'Unlock Cosmic Expanse, Defeat Cosmic Harbinger'
       }, {
         level: 10,
         reward: 'Special Achievement'
@@ -9612,7 +9675,8 @@ var AutomationSystem = /*#__PURE__*/function () {
           structureData = _Object$entries2$_i[1];
         if (!structureSystem.isUnlocked(key)) continue;
         var cost = structureSystem.getCost(key);
-        var canAfford = state.resources.energy >= cost * threshold;
+        var costResource = structureData.costResource || 'energy';
+        var canAfford = (state.resources[costResource] || 0) >= cost * threshold;
         if (canAfford) {
           var success = structureSystem.buy(key);
           if (success) {
@@ -10036,21 +10100,28 @@ var BossSystem = /*#__PURE__*/function () {
 
       // Check structure requirement
       if (condition.structures) {
-        if (condition.structures.total) {
-          var structureSystem = require('./StructureSystem.js')["default"];
-          var totalLevels = structureSystem.getStats().totalLevels;
-          if (totalLevels < condition.structures.total) {
-            return false;
+        var structureSystem = require('./StructureSystem.js')["default"];
+        for (var _i4 = 0, _Object$entries4 = Object.entries(condition.structures); _i4 < _Object$entries4.length; _i4++) {
+          var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
+            key = _Object$entries4$_i[0],
+            value = _Object$entries4$_i[1];
+          if (key === 'total') {
+            var totalLevels = structureSystem.getStats().totalLevels;
+            if (totalLevels < value) return false;
+          } else {
+            var _state$structures$key;
+            var currentLevel = ((_state$structures$key = state.structures[key]) === null || _state$structures$key === void 0 ? void 0 : _state$structures$key.level) || 0;
+            if (currentLevel < value) return false;
           }
         }
       }
 
       // Check realm requirement
       if (condition.realms) {
-        for (var _i4 = 0, _Object$entries4 = Object.entries(condition.realms); _i4 < _Object$entries4.length; _i4++) {
-          var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
-            realm = _Object$entries4$_i[0],
-            requirement = _Object$entries4$_i[1];
+        for (var _i5 = 0, _Object$entries5 = Object.entries(condition.realms); _i5 < _Object$entries5.length; _i5++) {
+          var _Object$entries5$_i = _slicedToArray(_Object$entries5[_i5], 2),
+            realm = _Object$entries5$_i[0],
+            requirement = _Object$entries5$_i[1];
           if (requirement === 'unlocked' && !state.realms.unlocked.includes(realm)) {
             return false;
           }
@@ -10066,10 +10137,10 @@ var BossSystem = /*#__PURE__*/function () {
 
       // Check boss requirements
       if (condition.bosses) {
-        for (var _i5 = 0, _Object$entries5 = Object.entries(condition.bosses); _i5 < _Object$entries5.length; _i5++) {
-          var _Object$entries5$_i = _slicedToArray(_Object$entries5[_i5], 2),
-            requiredBoss = _Object$entries5$_i[0],
-            _requirement = _Object$entries5$_i[1];
+        for (var _i6 = 0, _Object$entries6 = Object.entries(condition.bosses); _i6 < _Object$entries6.length; _i6++) {
+          var _Object$entries6$_i = _slicedToArray(_Object$entries6[_i6], 2),
+            requiredBoss = _Object$entries6$_i[0],
+            _requirement = _Object$entries6$_i[1];
           var requiredBossState = state.bosses[requiredBoss];
           if (_requirement === 'defeated' && !(requiredBossState !== null && requiredBossState !== void 0 && requiredBossState.defeated)) {
             return false;
@@ -10277,10 +10348,10 @@ var BossSystem = /*#__PURE__*/function () {
     key: "giveRewards",
     value: function giveRewards(bossKey, rewards, isFirstDefeat) {
       // Resource rewards
-      for (var _i6 = 0, _Object$entries6 = Object.entries(rewards); _i6 < _Object$entries6.length; _i6++) {
-        var _Object$entries6$_i = _slicedToArray(_Object$entries6[_i6], 2),
-          resource = _Object$entries6$_i[0],
-          amount = _Object$entries6$_i[1];
+      for (var _i7 = 0, _Object$entries7 = Object.entries(rewards); _i7 < _Object$entries7.length; _i7++) {
+        var _Object$entries7$_i = _slicedToArray(_Object$entries7[_i7], 2),
+          resource = _Object$entries7$_i[0],
+          amount = _Object$entries7$_i[1];
         if (resource === 'guaranteedGuardian' || resource === 'specialReward') continue;
         _StateManager["default"].dispatch({
           type: 'ADD_RESOURCE',
@@ -10404,10 +10475,10 @@ var BossSystem = /*#__PURE__*/function () {
     value: function getUnlockedBosses() {
       var state = _StateManager["default"].getState();
       var unlocked = [];
-      for (var _i7 = 0, _Object$entries7 = Object.entries(this.bosses); _i7 < _Object$entries7.length; _i7++) {
-        var _Object$entries7$_i = _slicedToArray(_Object$entries7[_i7], 2),
-          key = _Object$entries7$_i[0],
-          boss = _Object$entries7$_i[1];
+      for (var _i8 = 0, _Object$entries8 = Object.entries(this.bosses); _i8 < _Object$entries8.length; _i8++) {
+        var _Object$entries8$_i = _slicedToArray(_Object$entries8[_i8], 2),
+          key = _Object$entries8$_i[0],
+          boss = _Object$entries8$_i[1];
         if (boss.locked) continue;
         var bossState = state.bosses[key];
         if (bossState !== null && bossState !== void 0 && bossState.unlocked) {
@@ -10431,10 +10502,10 @@ var BossSystem = /*#__PURE__*/function () {
       var totalBosses = 0;
       var unlockedBosses = 0;
       var defeatedBosses = 0;
-      for (var _i8 = 0, _Object$entries8 = Object.entries(this.bosses); _i8 < _Object$entries8.length; _i8++) {
-        var _Object$entries8$_i = _slicedToArray(_Object$entries8[_i8], 2),
-          key = _Object$entries8$_i[0],
-          boss = _Object$entries8$_i[1];
+      for (var _i9 = 0, _Object$entries9 = Object.entries(this.bosses); _i9 < _Object$entries9.length; _i9++) {
+        var _Object$entries9$_i = _slicedToArray(_Object$entries9[_i9], 2),
+          key = _Object$entries9$_i[0],
+          boss = _Object$entries9$_i[1];
         if (boss.locked) continue;
         totalBosses++;
         var bossState = state.bosses[key];
@@ -12145,6 +12216,16 @@ var QuestSystem = /*#__PURE__*/function () {
                 return false;
               }
             }
+            for (var _i4 = 0, _Object$entries4 = Object.entries(condition.bosses); _i4 < _Object$entries4.length; _i4++) {
+              var _state$bosses$bossId;
+              var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
+                bossId = _Object$entries4$_i[0],
+                status = _Object$entries4$_i[1];
+              if (bossId === 'unlocked') continue;
+              if (status === 'unlocked' && !((_state$bosses$bossId = state.bosses[bossId]) !== null && _state$bosses$bossId !== void 0 && _state$bosses$bossId.unlocked)) {
+                return false;
+              }
+            }
           }
 
           // Ascension
@@ -12420,6 +12501,12 @@ var QuestSystem = /*#__PURE__*/function () {
                   return s.level || 0;
                 })));
                 break;
+              case 'tidalEnergyPerSecond':
+                currentValue = state.production.tidalEnergy || 0;
+                break;
+              case 'pearls':
+                currentValue = state.resources.pearls || 0;
+                break;
             }
             if (currentValue >= quest.amount && quest.progress < quest.amount) {
               _StateManager["default"].dispatch({
@@ -12476,10 +12563,10 @@ var QuestSystem = /*#__PURE__*/function () {
       }
 
       // Give rewards
-      for (var _i4 = 0, _Object$entries4 = Object.entries(quest.rewards); _i4 < _Object$entries4.length; _i4++) {
-        var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
-          resource = _Object$entries4$_i[0],
-          amount = _Object$entries4$_i[1];
+      for (var _i5 = 0, _Object$entries5 = Object.entries(quest.rewards); _i5 < _Object$entries5.length; _i5++) {
+        var _Object$entries5$_i = _slicedToArray(_Object$entries5[_i5], 2),
+          resource = _Object$entries5$_i[0],
+          amount = _Object$entries5$_i[1];
         _StateManager["default"].dispatch({
           type: 'ADD_RESOURCE',
           payload: {
@@ -12744,19 +12831,37 @@ var RealmSystem = /*#__PURE__*/function () {
         }
       }
 
-      // Check cost
-      if (realm.unlockCost) {
-        for (var _i3 = 0, _Object$entries3 = Object.entries(realm.unlockCost); _i3 < _Object$entries3.length; _i3++) {
+      // Check production requirements
+      if (condition.production) {
+        for (var _i3 = 0, _Object$entries3 = Object.entries(condition.production); _i3 < _Object$entries3.length; _i3++) {
           var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
             resource = _Object$entries3$_i[0],
             amount = _Object$entries3$_i[1];
-          if (state.resources[resource] < amount) {
+          if (state.production[resource] < amount) {
+            return {
+              can: false,
+              reason: 'production-required',
+              resource: resource,
+              required: amount,
+              current: state.production[resource]
+            };
+          }
+        }
+      }
+
+      // Check cost
+      if (realm.unlockCost) {
+        for (var _i4 = 0, _Object$entries4 = Object.entries(realm.unlockCost); _i4 < _Object$entries4.length; _i4++) {
+          var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
+            _resource = _Object$entries4$_i[0],
+            _amount = _Object$entries4$_i[1];
+          if (state.resources[_resource] < _amount) {
             return {
               can: false,
               reason: 'insufficient-resources',
-              resource: resource,
-              required: amount,
-              current: state.resources[resource]
+              resource: _resource,
+              required: _amount,
+              current: state.resources[_resource]
             };
           }
         }
@@ -12782,22 +12887,14 @@ var RealmSystem = /*#__PURE__*/function () {
         return false;
       }
       var realm = this.realms[realmId];
-      var cost = 0;
-      if (realm.unlockCost) {
-        for (var _i4 = 0, _Object$entries4 = Object.entries(realm.unlockCost); _i4 < _Object$entries4.length; _i4++) {
-          var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
-            resource = _Object$entries4$_i[0],
-            amount = _Object$entries4$_i[1];
-          cost = amount; // Assuming single resource cost
-        }
-      }
+      var costs = realm.unlockCost || {};
 
       // Unlock realm
       _StateManager["default"].dispatch({
         type: 'UNLOCK_REALM',
         payload: {
           realmId: realmId,
-          cost: cost
+          costs: costs
         }
       });
       _Logger["default"].info('RealmSystem', "Unlocked realm: ".concat(realm.name));
@@ -14064,6 +14161,7 @@ var _structures = _interopRequireDefault(require("../data/structures.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _RealmSystem = _interopRequireDefault(require("../systems/RealmSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -14128,6 +14226,14 @@ var StructureSystem = /*#__PURE__*/function () {
 
       // Recalculate when guardians change
       _EventBus["default"].on('state:ADD_GUARDIAN', function () {
+        _this.recalculateProduction();
+      });
+
+      // Recalculate when realm changes (bonuses may apply)
+      _EventBus["default"].on('state:UNLOCK_REALM', function () {
+        _this.recalculateProduction();
+      });
+      _EventBus["default"].on('state:SWITCH_REALM', function () {
         _this.recalculateProduction();
       });
 
@@ -14298,11 +14404,13 @@ var StructureSystem = /*#__PURE__*/function () {
   }, {
     key: "getGlobalMultipliers",
     value: function getGlobalMultipliers(resource) {
+      var _realmSystem$getRealm, _realmSystem$getRealm2, _realmSystem$getRealm3, _realmSystem$getRealm4, _realmSystem$getRealm5;
       var state = _StateManager["default"].getState();
       var multipliers = {
         ascension: 1,
         upgrades: 1,
         guardians: 1,
+        realm: 1,
         total: 1
       };
 
@@ -14310,6 +14418,25 @@ var StructureSystem = /*#__PURE__*/function () {
       if (state.ascension.level > 0) {
         multipliers.ascension = 1 + state.ascension.level * 0.1;
       }
+
+      // Realm bonuses
+      var cosmicBonus = state.realms.unlocked.includes('cosmos') ? ((_realmSystem$getRealm = _RealmSystem["default"].getRealm('cosmos')) === null || _realmSystem$getRealm === void 0 || (_realmSystem$getRealm = _realmSystem$getRealm.bonuses) === null || _realmSystem$getRealm === void 0 ? void 0 : _realmSystem$getRealm.allProduction) || 1.0 : 1.0;
+      var resourceBonus = 1.0;
+      switch (resource) {
+        case 'volcanicEnergy':
+          if (state.realms.unlocked.includes('volcano')) resourceBonus = ((_realmSystem$getRealm2 = _RealmSystem["default"].getRealm('volcano')) === null || _realmSystem$getRealm2 === void 0 || (_realmSystem$getRealm2 = _realmSystem$getRealm2.bonuses) === null || _realmSystem$getRealm2 === void 0 ? void 0 : _realmSystem$getRealm2.volcanicProduction) || 1.0;
+          break;
+        case 'tidalEnergy':
+          if (state.realms.unlocked.includes('ocean')) resourceBonus = ((_realmSystem$getRealm3 = _RealmSystem["default"].getRealm('ocean')) === null || _realmSystem$getRealm3 === void 0 || (_realmSystem$getRealm3 = _realmSystem$getRealm3.bonuses) === null || _realmSystem$getRealm3 === void 0 ? void 0 : _realmSystem$getRealm3.tidalProduction) || 1.0;
+          break;
+        case 'solarEssence':
+          if (state.realms.unlocked.includes('desert')) resourceBonus = ((_realmSystem$getRealm4 = _RealmSystem["default"].getRealm('desert')) === null || _realmSystem$getRealm4 === void 0 || (_realmSystem$getRealm4 = _realmSystem$getRealm4.bonuses) === null || _realmSystem$getRealm4 === void 0 ? void 0 : _realmSystem$getRealm4.solarProduction) || 1.0;
+          break;
+        case 'cryoEnergy':
+          if (state.realms.unlocked.includes('tundra')) resourceBonus = ((_realmSystem$getRealm5 = _RealmSystem["default"].getRealm('tundra')) === null || _realmSystem$getRealm5 === void 0 || (_realmSystem$getRealm5 = _realmSystem$getRealm5.bonuses) === null || _realmSystem$getRealm5 === void 0 ? void 0 : _realmSystem$getRealm5.cryoProduction) || 1.0;
+          break;
+      }
+      multipliers.realm = resourceBonus * cosmicBonus;
 
       // ===== FIX: Use UpgradeSystem instead of duplicate logic =====
       var upgradeSystem = require('./UpgradeSystem.js')["default"];
@@ -14321,7 +14448,7 @@ var StructureSystem = /*#__PURE__*/function () {
       multipliers.guardians = guardianSystem.getProductionMultiplier(resource);
 
       // Calculate total
-      multipliers.total = multipliers.ascension * multipliers.upgrades * multipliers.guardians;
+      multipliers.total = multipliers.ascension * multipliers.upgrades * multipliers.guardians * multipliers.realm;
       return multipliers;
     }
 
@@ -14448,6 +14575,7 @@ var StructureSystem = /*#__PURE__*/function () {
       var solarEssenceProduction = 0;
       var cryoEnergyProduction = 0;
       var cosmicEnergyProduction = 0;
+      var gemsProduction = 0;
 
       // Sum production from all structures
       for (var _i6 = 0, _Object$entries5 = Object.entries(this.structures); _i6 < _Object$entries5.length; _i6++) {
@@ -14480,7 +14608,7 @@ var StructureSystem = /*#__PURE__*/function () {
             cosmicEnergyProduction += production;
             break;
           case 'gems':
-            // Gems production is handled separately (very slow)
+            gemsProduction += production;
             break;
         }
       }
@@ -14535,11 +14663,19 @@ var StructureSystem = /*#__PURE__*/function () {
           amount: cosmicEnergyProduction
         }
       });
+      _StateManager["default"].dispatch({
+        type: 'SET_PRODUCTION',
+        payload: {
+          resource: 'gems',
+          amount: gemsProduction
+        }
+      });
       _Logger["default"].debug('StructureSystem', 'Production recalculated', {
         energy: energyProduction,
         mana: manaProduction,
         volcanic: volcanicProduction,
-        tidal: tidalProduction
+        tidal: tidalProduction,
+        gems: gemsProduction
       });
       _EventBus["default"].emit('production:updated', {
         energy: energyProduction,
@@ -14548,7 +14684,8 @@ var StructureSystem = /*#__PURE__*/function () {
         tidalEnergy: tidalProduction,
         solarEssence: solarEssenceProduction,
         cryoEnergy: cryoEnergyProduction,
-        cosmicEnergy: cosmicEnergyProduction
+        cosmicEnergy: cosmicEnergyProduction,
+        gems: gemsProduction
       });
     }
 
@@ -14617,7 +14754,7 @@ var StructureSystem = /*#__PURE__*/function () {
 var structureSystem = new StructureSystem();
 var _default = exports["default"] = structureSystem;
 
-},{"../core/StateManager.js":6,"../data/structures.js":15,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24,"./UpgradeSystem.js":34}],32:[function(require,module,exports){
+},{"../core/StateManager.js":6,"../data/structures.js":15,"../systems/RealmSystem.js":28,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24,"./UpgradeSystem.js":34}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19864,22 +20001,11 @@ var StructuresUI = /*#__PURE__*/function () {
         _iterator2.f();
       }
     }
-
-    /**
-     * Get realm display name
-     */
   }, {
     key: "getRealmName",
     value: function getRealmName(realmId) {
-      var names = {
-        forest: 'Forest Realm',
-        volcano: 'Volcanic Realm',
-        ocean: 'Ocean Depths',
-        desert: 'Desert Expanse',
-        tundra: 'Frozen Tundra',
-        cosmos: 'Cosmic Expanse'
-      };
-      return names[realmId] || realmId;
+      var _realmSystem$getRealm;
+      return ((_realmSystem$getRealm = _RealmSystem["default"].getRealm(realmId)) === null || _realmSystem$getRealm === void 0 ? void 0 : _realmSystem$getRealm.name) || realmId;
     }
 
     /**
@@ -20452,6 +20578,13 @@ var ResourceDisplay = /*#__PURE__*/function () {
         label: 'Tidal',
         show: state.realms.unlocked.includes('ocean')
       }, {
+        key: 'pearls',
+        icon: '🦪',
+        label: 'Pearls',
+        show: state.realms.unlocked.includes('ocean'),
+        noBar: true,
+        noRate: true
+      }, {
         key: 'solarEssence',
         icon: '☀️',
         label: 'Solar',
@@ -20670,7 +20803,11 @@ var StructureCard = /*#__PURE__*/function () {
         mana: '✨',
         gems: '💎',
         crystals: '💠',
-        volcanicEnergy: '🌋'
+        volcanicEnergy: '🌋',
+        tidalEnergy: '🌊',
+        solarEssence: '☀️',
+        cryoEnergy: '❄️',
+        cosmicEnergy: '🌌'
       };
       return icons[this.structure.costResource] || '';
     }

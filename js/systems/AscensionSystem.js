@@ -306,8 +306,10 @@ applyQuickStart(previousResources = null) {
     
     const milestones = [
       { level: 1, reward: 'Unlock Volcano Realm' },
-      { level: 3, reward: 'Unlock Ocean Realm' },
-      { level: 5, reward: 'Unlock Cosmic Realm, Boss 3' },
+      { level: 2, reward: 'Unlock Ocean Depths' },
+      { level: 3, reward: 'Unlock Desert Expanse' },
+      { level: 4, reward: 'Unlock Frozen Tundra' },
+      { level: 5, reward: 'Unlock Cosmic Expanse, Defeat Cosmic Harbinger' },
       { level: 10, reward: 'Special Achievement' }
     ];
     

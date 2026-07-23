@@ -7,6 +7,7 @@ import stateManager from './StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import resourceManager from './ResourceManager.js';
+import realmSystem from '../systems/RealmSystem.js';
 
 class TickManager {
   constructor() {
@@ -121,8 +122,13 @@ class TickManager {
   const criticalMultiplier = isCritical ? 2 : 1;
   // ===== END FIX =====
   
+  // Get cosmic allProduction bonus (affects ALL resource types)
+  const cosmicBonus = state.realms.unlocked.includes('cosmos')
+    ? (realmSystem.getRealm('cosmos')?.bonuses?.allProduction || 1.0)
+    : 1.0;
+
   // Energy production
-  let energyPerTick = state.production.energy * this.deltaTime;
+  let energyPerTick = state.production.energy * this.deltaTime * cosmicBonus;
   
   // ✅ Apply critical multiplier
   if (isCritical && energyPerTick > 0) {
@@ -147,8 +153,8 @@ class TickManager {
     });
   }
   
-  // Mana production (same as before)
-  const manaPerTick = state.production.mana * this.deltaTime;
+  // Mana production
+  const manaPerTick = state.production.mana * this.deltaTime * cosmicBonus;
   if (manaPerTick > 0) {
     stateManager.dispatch({
       type: 'ADD_RESOURCE',
@@ -159,7 +165,7 @@ class TickManager {
     });
   }
   
-  // Volcanic energy production (same as before)
+  // Volcanic energy production
   if (state.realms.unlocked.includes('volcano')) {
     const volcanicPerTick = state.production.volcanicEnergy * this.deltaTime;
     if (volcanicPerTick > 0) {
@@ -225,6 +231,31 @@ class TickManager {
           resource: 'cosmicEnergy',
           amount: cosmicPerTick
         }
+      });
+    }
+  }
+
+  // Gems production
+  if (state.production.gems && state.production.gems > 0) {
+    const gemsPerTick = state.production.gems * this.deltaTime;
+    if (gemsPerTick > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: {
+          resource: 'gems',
+          amount: gemsPerTick
+        }
+      });
+    }
+  }
+
+  // Pearl generation (Ocean realm passive chance)
+  if (state.realms.unlocked.includes('ocean')) {
+    const pearlChance = realmSystem.getRealm('ocean')?.bonuses?.pearlDropChance || 0.06;
+    if (Math.random() < pearlChance * this.deltaTime) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: { resource: 'pearls', amount: 1 }
       });
     }
   }
@@ -342,6 +373,10 @@ class TickManager {
   const cosmicEnergyEarned = state.realms.unlocked.includes('cosmos')
     ? Math.floor(state.production.cosmicEnergy * secondsOffline * offlineMultiplier)
     : 0;
+
+  const gemsEarned = state.production.gems > 0
+    ? Math.floor(state.production.gems * secondsOffline * offlineMultiplier)
+    : 0;
   
   logger.info('TickManager', 'Offline progress calculated', {
     timeOffline: cappedTimeDiff,
@@ -352,7 +387,8 @@ class TickManager {
     tidalEarned,
     solarEssenceEarned,
     cryoEnergyEarned,
-    cosmicEnergyEarned
+    cosmicEnergyEarned,
+    gemsEarned
   });
   
   return {
@@ -364,7 +400,8 @@ class TickManager {
       tidalEnergy: tidalEarned,
       solarEssence: solarEssenceEarned,
       cryoEnergy: cryoEnergyEarned,
-      cosmicEnergy: cosmicEnergyEarned
+      cosmicEnergy: cosmicEnergyEarned,
+      gems: gemsEarned
     },
     wasCapped: timeDiff > CONFIG.BALANCING.OFFLINE_TIME_CAP
   };
@@ -429,6 +466,13 @@ class TickManager {
       stateManager.dispatch({
         type: 'ADD_RESOURCE',
         payload: { resource: 'cosmicEnergy', amount: resources.cosmicEnergy }
+      });
+    }
+
+    if (resources.gems > 0) {
+      stateManager.dispatch({
+        type: 'ADD_RESOURCE',
+        payload: { resource: 'gems', amount: resources.gems }
       });
     }
     

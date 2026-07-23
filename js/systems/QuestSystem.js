@@ -188,6 +188,12 @@ class QuestSystem {
               return false;
             }
           }
+          for (let [bossId, status] of Object.entries(condition.bosses)) {
+            if (bossId === 'unlocked') continue;
+            if (status === 'unlocked' && !state.bosses[bossId]?.unlocked) {
+              return false;
+            }
+          }
         }
         
         // Ascension
@@ -441,6 +447,12 @@ class QuestSystem {
             break;
           case 'maxStructureLevel':
             currentValue = Math.max(...Object.values(state.structures).map(s => s.level || 0));
+            break;
+          case 'tidalEnergyPerSecond':
+            currentValue = state.production.tidalEnergy || 0;
+            break;
+          case 'pearls':
+            currentValue = state.resources.pearls || 0;
             break;
         }
         

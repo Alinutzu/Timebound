@@ -108,9 +108,7 @@ const REALMS = {
     },
     
     bossId: 'oceanLeviathan',
-    questIds: ['ocean_intro', 'tide_master', 'kelp_tycoon', 'pearl_diver'],
-    
-    locked: false // ✅ Acum e disponibil! 
+    questIds: ['ocean_intro', 'tide_master', 'kelp_tycoon', 'pearl_diver']
   },
   
   // === FUTURE REALMS ===

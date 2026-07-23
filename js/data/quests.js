@@ -438,13 +438,13 @@ const QUEST_TEMPLATES = {
 
   pearl_diver: {
     id: 'pearl_diver',
-    type: 'collect',
+    type: 'milestone',
     name: 'Pearl Diver',
-    description: 'Collect 30 pearls using Coral Battery.',
+    description: 'Collect 30 pearls in Ocean Realm.',
     emoji: '🏝️',
     realm: 'ocean',
     
-    resource: 'pearls',
+    metric: 'pearls',
     amounts: [30],
     
     rewards: (amount) => {

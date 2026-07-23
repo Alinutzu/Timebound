@@ -227,19 +227,8 @@ class StructuresUI {
     }
   }
   
-  /**
-   * Get realm display name
-   */
   getRealmName(realmId) {
-    const names = {
-      forest: 'Forest Realm',
-      volcano: 'Volcanic Realm',
-      ocean: 'Ocean Depths',
-      desert: 'Desert Expanse',
-      tundra: 'Frozen Tundra',
-      cosmos: 'Cosmic Expanse'
-    };
-    return names[realmId] || realmId;
+    return realmSystem.getRealm(realmId)?.name || realmId;
   }
   
   /**

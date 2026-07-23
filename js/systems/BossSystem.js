@@ -136,12 +136,15 @@ class BossSystem {
     
     // Check structure requirement
     if (condition.structures) {
-      if (condition.structures.total) {
-        const structureSystem = require('./StructureSystem.js').default;
-        const totalLevels = structureSystem.getStats().totalLevels;
-        
-        if (totalLevels < condition.structures.total) {
-          return false;
+      const structureSystem = require('./StructureSystem.js').default;
+      
+      for (let [key, value] of Object.entries(condition.structures)) {
+        if (key === 'total') {
+          const totalLevels = structureSystem.getStats().totalLevels;
+          if (totalLevels < value) return false;
+        } else {
+          const currentLevel = state.structures[key]?.level || 0;
+          if (currentLevel < value) return false;
         }
       }
     }

@@ -71,6 +71,7 @@ class StateManager {
       
       // Guardians
       guardians: [],
+      guardianPity: { epic: 0, legendary: 0 },
       
       // Quests
       quests: {
@@ -368,20 +369,23 @@ class StateManager {
         };
       
       // ===== GUARDIANS =====
-      case 'ADD_GUARDIAN':
+      case 'ADD_GUARDIAN': {
+        const summonCost = action.payload.cost ?? CONFIG.BALANCING.GUARDIAN_SUMMON_COST;
         return {
           ...state,
           guardians: [...state.guardians, action.payload.guardian],
+          guardianPity: action.payload.newPity || state.guardianPity,
           resources: {
             ...state.resources,
-            gems: state.resources.gems - CONFIG.BALANCING.GUARDIAN_SUMMON_COST
+            gems: state.resources.gems - summonCost
           },
-          statistics: {
+          statistics: summonCost > 0 ? {
             ...state.statistics,
             guardiansSummoned: (state.statistics.guardiansSummoned || 0) + 1,
-            gemsSpent: state.statistics.gemsSpent + CONFIG.BALANCING.GUARDIAN_SUMMON_COST
-          }
+            gemsSpent: state.statistics.gemsSpent + summonCost
+          } : state.statistics
         };
+      }
       
       case 'ADD_GUARDIAN_DIRECT':
         return {

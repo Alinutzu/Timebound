@@ -6,6 +6,11 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import Formatters from '../utils/Formatters.js';
+import structureSystem from './StructureSystem.js';
+import upgradeSystem from './UpgradeSystem.js';
+import guardianSystem from './GuardianSystem.js';
+import bossSystem from './BossSystem.js';
+import achievementSystem from './AchievementSystem.js';
 
 class StatisticsSystem {
   constructor() {
@@ -235,7 +240,6 @@ class StatisticsSystem {
    * Get total structure levels
    */
   getTotalStructureLevels() {
-    const structureSystem = require('./StructureSystem.js').default;
     return structureSystem.getStats().totalLevels;
   }
   
@@ -271,7 +275,6 @@ class StatisticsSystem {
     }
     
     if (favorite) {
-      const structureSystem = require('./StructureSystem.js').default;
       const data = structureSystem.getStructure(favorite);
       return `${data.emoji} ${data.name}`;
     }
@@ -283,7 +286,6 @@ class StatisticsSystem {
    * Get total upgrade levels
    */
   getTotalUpgradeLevels() {
-    const upgradeSystem = require('./UpgradeSystem.js').default;
     return upgradeSystem.getStats().totalLevels;
   }
   
@@ -328,7 +330,6 @@ class StatisticsSystem {
    * Get total guardian bonus
    */
   getTotalGuardianBonus() {
-    const guardianSystem = require('./GuardianSystem.js').default;
     const energyBonus = guardianSystem.getTotalBonus('energy');
     const manaBonus = guardianSystem.getTotalBonus('mana');
     const allBonus = guardianSystem.getTotalBonus('all');
@@ -353,7 +354,6 @@ class StatisticsSystem {
    * Get bosses unlocked
    */
   getBossesUnlocked() {
-    const bossSystem = require('./BossSystem.js').default;
     return bossSystem.getStats().unlocked;
   }
   
@@ -361,7 +361,6 @@ class StatisticsSystem {
    * Get achievement completion
    */
   getAchievementCompletion() {
-    const achievementSystem = require('./AchievementSystem.js').default;
     const progress = achievementSystem.getProgress();
     return `${progress.unlocked}/${progress.total} (${progress.percentageUnlocked.toFixed(1)}%)`;
   }

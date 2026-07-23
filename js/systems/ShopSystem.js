@@ -6,6 +6,9 @@ import SHOP_ITEMS from '../data/shop.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import guardianSystem from './GuardianSystem.js';
+import { GUARDIAN_POOL, RARITIES } from '../data/guardians.js';
+import DailySpinGame from '../ui/games/DailySpinGame.js';
 
 class ShopSystem {
   constructor() {
@@ -73,8 +76,6 @@ class ShopSystem {
     if (pkg.bonus) {
       for (let [resource, amount] of Object.entries(pkg.bonus)) {
         if (resource === 'guardian') {
-          // Summon guardians
-          const guardianSystem = require('./GuardianSystem.js').default;
           for (let i = 0; i < amount; i++) {
             guardianSystem.summon();
           }
@@ -162,8 +163,6 @@ completeSpinPurchase(packageId) {
     
     logger.info('ShopSystem', 'Unlimited spins activated for 24h');
   } else {
-    // Add purchased spins
-    const DailySpinGame = require('../ui/games/DailySpinGame.js').default;
     DailySpinGame.addPurchasedSpins(pkg.spins);
   }
   
@@ -212,10 +211,7 @@ completeSpinPurchase(packageId) {
    * Summon guaranteed legendary
    */
   summonGuaranteedLegendary(count) {
-    const guardianPool = require('../data/guardians.js').default;
-    
-    // Get all legendary guardians
-    const legendaryGuardians = Object.entries(guardianPool)
+    const legendaryGuardians = Object.entries(GUARDIAN_POOL)
       .filter(([key, data]) => data.rarities.includes('legendary'));
     
     for (let i = 0; i < count; i++) {
@@ -225,9 +221,7 @@ completeSpinPurchase(packageId) {
         Math.floor(Math.random() * legendaryGuardians.length)
       ];
       
-      // Roll bonus in legendary range
-      const rarityData = require('../data/guardians.js').RARITIES.legendary;
-      const [min, max] = rarityData.bonusRange;
+      const [min, max] = RARITIES.legendary.bonusRange;
       const bonus = Math.floor(Math.random() * (max - min + 1)) + min;
       
       const guardian = {

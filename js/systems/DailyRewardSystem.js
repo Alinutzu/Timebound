@@ -5,6 +5,7 @@
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import guardianSystem from './GuardianSystem.js';
 
 class DailyRewardSystem {
   constructor() {
@@ -165,8 +166,6 @@ class DailyRewardSystem {
     // Give rewards
     for (let [resource, amount] of Object.entries(dayReward.rewards)) {
       if (resource === 'guardian') {
-        // Summon random guardian
-        const guardianSystem = require('./GuardianSystem.js').default;
         for (let i = 0; i < amount; i++) {
           guardianSystem.summon();
         }

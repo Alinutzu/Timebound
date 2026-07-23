@@ -7,6 +7,8 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import realmSystem from '../systems/RealmSystem.js';
+import upgradeSystem from './UpgradeSystem.js';
+import guardianSystem from './GuardianSystem.js';
 
 class StructureSystem {
   constructor() {
@@ -247,13 +249,10 @@ class StructureSystem {
   
   multipliers.realm = resourceBonus * cosmicBonus;
   
-  // ===== FIX: Use UpgradeSystem instead of duplicate logic =====
-  const upgradeSystem = require('./UpgradeSystem.js').default;
+  // Upgrade bonuses
   multipliers.upgrades = upgradeSystem.getProductionMultiplier(resource);
-  // ===== END FIX =====
   
   // Guardian bonuses
-  const guardianSystem = require('./GuardianSystem.js').default;
   multipliers.guardians = guardianSystem.getProductionMultiplier(resource);
   
   // Calculate total
@@ -269,12 +268,13 @@ class StructureSystem {
     const state = stateManager.getState();
     let synergyMultiplier = 1;
     
-    // Example: Solar Synergy upgrade
+    // Upgrade synergies
     if (structureKey === 'solarPanel' && state.upgrades.solarSynergy) {
       synergyMultiplier *= 1 + (state.upgrades.solarSynergy.level * 0.5);
     }
     
-    // Add more synergies as needed
+    // Guardian synergies (e.g. kelpGuardian boosts kelpFarm)
+    synergyMultiplier *= guardianSystem.getStructureSynergy(structureKey);
     
     return synergyMultiplier;
   }

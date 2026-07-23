@@ -9,6 +9,7 @@ import logger from '../utils/Logger.js';
 import resourceManager from './ResourceManager.js';
 import realmSystem from '../systems/RealmSystem.js';
 import upgradeSystem from '../systems/UpgradeSystem.js';
+import guardianSystem from '../systems/GuardianSystem.js';
 
 class TickManager {
   constructor() {
@@ -116,12 +117,9 @@ class TickManager {
   productionTick() {
   const state = stateManager.getState();
 
-  // ===== FIX: Apply critical energy chance =====
-  const upgradeSystem = require('../systems/UpgradeSystem.js').default;
-  const criticalChance = upgradeSystem.getCriticalChance(); // Returns 0-0.20 (0-20%)
+  const criticalChance = upgradeSystem.getCriticalChance();
   const isCritical = Math.random() < criticalChance;
   const criticalMultiplier = isCritical ? 2 : 1;
-  // ===== END FIX =====
   
   // Get cosmic allProduction bonus (affects ALL resource types)
   const cosmicBonus = state.realms.unlocked.includes('cosmos')
@@ -238,7 +236,8 @@ class TickManager {
 
   // Gems production
   if (state.production.gems && state.production.gems > 0) {
-    const gemsPerTick = state.production.gems * this.deltaTime;
+    const gemBonus = guardianSystem.getSpecialBonuses().gemBonus;
+    let gemsPerTick = state.production.gems * this.deltaTime * (1 + gemBonus);
     if (gemsPerTick > 0) {
       stateManager.dispatch({
         type: 'ADD_RESOURCE',
@@ -257,6 +256,8 @@ class TickManager {
     if (pearlHarvestEffect && pearlHarvestEffect.pearlDropBonus) {
       pearlChance += pearlHarvestEffect.pearlDropBonus;
     }
+    // Guardian chance bonuses (e.g. coralWarden)
+    pearlChance += guardianSystem.getChanceBonus('coralBattery');
     if (Math.random() < pearlChance * this.deltaTime) {
       stateManager.dispatch({
         type: 'ADD_RESOURCE',
@@ -340,14 +341,12 @@ class TickManager {
   const cappedTimeDiff = Math.min(timeDiff, CONFIG.BALANCING.OFFLINE_TIME_CAP);
   const state = stateManager.getState();
   
-  // ===== FIX: Use upgrade effect directly =====
-  const upgradeSystem = require('../systems/UpgradeSystem.js').default;
   const offlinePercent = upgradeSystem.getLevel('offlineProduction') > 0
-    ? upgradeSystem.getEffect('offlineProduction') // Returns 10, 20, 30...100
-    : CONFIG.BALANCING.OFFLINE_PRODUCTION_BASE * 100; // 50%
+    ? upgradeSystem.getEffect('offlineProduction')
+    : CONFIG.BALANCING.OFFLINE_PRODUCTION_BASE * 100;
   
-  const offlineMultiplier = offlinePercent / 100; // Convert to decimal
-  // ===== END FIX =====
+  const guardianOfflineBonus = guardianSystem.getSpecialBonuses().offlineBonus;
+  const offlineMultiplier = (offlinePercent / 100) * (1 + guardianOfflineBonus);
   
   const secondsOffline = cappedTimeDiff / 1000;
   

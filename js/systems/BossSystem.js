@@ -6,6 +6,9 @@ import BOSSES from '../data/bosses.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import structureSystem from './StructureSystem.js';
+import guardianSystem from './GuardianSystem.js';
+import { GUARDIAN_POOL, RARITIES } from '../data/guardians.js';
 
 class BossSystem {
   constructor() {
@@ -136,7 +139,6 @@ class BossSystem {
     
     // Check structure requirement
     if (condition.structures) {
-      const structureSystem = require('./StructureSystem.js').default;
       
       for (let [key, value] of Object.entries(condition.structures)) {
         if (key === 'total') {
@@ -369,14 +371,9 @@ class BossSystem {
     
     // Guaranteed guardian
     if (rewards.guaranteedGuardian) {
-      const guardianSystem = require('./GuardianSystem.js').default;
-      
-      // Summon specific rarity/type
       const { rarity, type } = rewards.guaranteedGuardian;
       
-      // Filter guardians by type
-      const guardianPool = require('../data/guardians.js').default;
-      const availableGuardians = Object.entries(guardianPool)
+      const availableGuardians = Object.entries(GUARDIAN_POOL)
         .filter(([key, data]) => {
           if (data.type !== type && data.type !== 'all') return false;
           if (!data.rarities.includes(rarity)) return false;
@@ -388,9 +385,7 @@ class BossSystem {
         const guardianKey = availableGuardians[Math.floor(Math.random() * availableGuardians.length)];
         const guardianData = guardianPool[guardianKey];
         
-        // Roll bonus in rarity range
-        const rarityData = require('../data/guardians.js').RARITIES[rarity];
-        const [min, max] = rarityData.bonusRange;
+        const [min, max] = RARITIES[rarity].bonusRange;
         const bonus = Math.floor(Math.random() * (max - min + 1)) + min;
         
         const guardian = {

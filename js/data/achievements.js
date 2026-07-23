@@ -33,7 +33,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.structuresPurchased >= 1;
     },
     
@@ -54,7 +54,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.upgradesPurchased >= 1;
     },
     
@@ -74,7 +74,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.guardians.length >= 1;
     },
     
@@ -96,7 +96,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.ascension.lifetimeEnergy >= 5000;
     },
     
@@ -117,7 +117,7 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.ascension.lifetimeEnergy >= 50000;
     },
     
@@ -138,7 +138,7 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.ascension.lifetimeEnergy >= 500000;
     },
     
@@ -159,7 +159,7 @@ const ACHIEVEMENTS = {
     tier: 'platinum',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.ascension.lifetimeEnergy >= 10000000;
     },
     
@@ -181,7 +181,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.production.energy >= 50;
     },
     
@@ -202,7 +202,7 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.production.energy >= 500;
     },
     
@@ -223,7 +223,7 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.production.energy >= 5000;
     },
     
@@ -245,7 +245,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const structureSystem = require('../systems/StructureSystem.js').default;
+      const structureSystem = StructureSystem;
       return structureSystem.getStats().totalLevels >= 10;
     },
     
@@ -266,7 +266,7 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const structureSystem = require('../systems/StructureSystem.js').default;
+      const structureSystem = StructureSystem;
       return structureSystem.getStats().totalLevels >= 30;
     },
     
@@ -287,7 +287,7 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const structureSystem = require('../systems/StructureSystem.js').default;
+      const structureSystem = StructureSystem;
       return structureSystem.getStats().totalLevels >= 100;
     },
     
@@ -308,7 +308,7 @@ const ACHIEVEMENTS = {
     tier: 'platinum',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return Object.values(state.structures).some(s => s.level >= 50);
     },
     
@@ -330,7 +330,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.upgradesPurchased >= 5;
     },
     
@@ -350,7 +350,7 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.upgradesPurchased >= 25;
     },
     
@@ -372,7 +372,7 @@ const ACHIEVEMENTS = {
     
     condition: () => {
       // This will be tracked via event
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.achievements.patientUpgrader?.triggered || false;
     },
     
@@ -394,7 +394,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.guardians.length >= 3;
     },
     
@@ -414,7 +414,7 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.guardians.length >= 10;
     },
     
@@ -435,7 +435,7 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.guardians.length >= 25;
     },
     
@@ -456,7 +456,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.guardians.some(g => g.rarity === 'rare');
     },
     
@@ -476,7 +476,7 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.guardians.some(g => g.rarity === 'epic');
     },
     
@@ -497,7 +497,7 @@ const ACHIEVEMENTS = {
     tier: 'platinum',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.guardians.some(g => g.rarity === 'legendary');
     },
     
@@ -519,7 +519,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.questsCompleted >= 5;
     },
     
@@ -539,7 +539,7 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.questsCompleted >= 25;
     },
     
@@ -560,7 +560,7 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.questsCompleted >= 100;
     },
     
@@ -582,7 +582,7 @@ const ACHIEVEMENTS = {
     tier: 'bronze',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.puzzlesWon >= 1;
     },
     
@@ -602,7 +602,7 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.puzzlesWon >= 10;
     },
     
@@ -623,7 +623,7 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.puzzleHighScore >= 1500;
     },
     
@@ -645,7 +645,7 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.ascension.level >= 1;
     },
     
@@ -666,7 +666,7 @@ const ACHIEVEMENTS = {
     tier: 'platinum',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.ascension.level >= 3;
     },
     
@@ -687,7 +687,7 @@ const ACHIEVEMENTS = {
     tier: 'diamond',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.ascension.level >= 5;
     },
     
@@ -709,7 +709,7 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.realms.unlocked.includes('volcano');
     },
     
@@ -731,7 +731,7 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.bossesDefeated >= 1;
     },
     
@@ -752,7 +752,7 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.bossesDefeated >= 3;
     },
     
@@ -773,7 +773,7 @@ const ACHIEVEMENTS = {
     category: 'realms',
     tier: 'gold',
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.realms.unlocked.includes('ocean');
     },
     reward: { 
@@ -792,7 +792,7 @@ const ACHIEVEMENTS = {
     category: 'milestone',
     tier: 'gold',
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.production.tidalEnergy >= 1000 && state.realms.current === 'ocean';
     },
     reward: { 
@@ -811,7 +811,7 @@ const ACHIEVEMENTS = {
     category: 'structures',
     tier: 'platinum',
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.structures.kelpFarm?.level >= 25;
     },
     reward: { 
@@ -831,7 +831,7 @@ const ACHIEVEMENTS = {
     category: 'resources',
     tier: 'platinum',
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.resources.pearls >= 100;
     },
     reward: { 
@@ -850,7 +850,7 @@ const ACHIEVEMENTS = {
     category: 'bosses',
     tier: 'diamond',
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.bossesDefeatedIds?.includes('oceanLeviathan');
     },
     reward: {
@@ -872,7 +872,7 @@ const ACHIEVEMENTS = {
     tier: 'platinum',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.ascension.lifetimeEnergy >= 500000 && 
              state.statistics.totalPlayTime < 3600000;
     },
@@ -894,7 +894,7 @@ const ACHIEVEMENTS = {
     tier: 'gold',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.resources.gems >= 2500;
     },
     
@@ -914,7 +914,7 @@ const ACHIEVEMENTS = {
     tier: 'silver',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.totalPlayTime >= 18000000; // 5 hours in ms
     },
     
@@ -935,7 +935,7 @@ const ACHIEVEMENTS = {
     tier: 'platinum',
     
     condition: () => {
-      const state = require('../core/StateManager.js').default.getState();
+      const state = StateManager.getState();
       return state.statistics.totalPlayTime >= 180000000; // 50 hours in ms
     },
     

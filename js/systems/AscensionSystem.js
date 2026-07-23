@@ -6,6 +6,7 @@ import CONFIG from '../config.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import upgradeSystem from './UpgradeSystem.js';
 
 class AscensionSystem {
   constructor() {
@@ -169,7 +170,6 @@ class AscensionSystem {
  * Apply quick start bonus (from upgrades)
  */
 applyQuickStart(previousResources = null) {
-  const upgradeSystem = require('./UpgradeSystem.js').default;
   const quickStartLevel = upgradeSystem.getLevel('quickStart');
   
   if (quickStartLevel === 0) return;

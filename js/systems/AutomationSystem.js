@@ -6,6 +6,11 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import resourceManager from '../core/ResourceManager.js';
+import structureSystem from './StructureSystem.js';
+import questSystem from './QuestSystem.js';
+import upgradeSystem from './UpgradeSystem.js';
+import upgradeQueueSystem from './UpgradeQueueSystem.js';
+import guardianSystem from './GuardianSystem.js';
 
 class AutomationSystem {
   constructor() {
@@ -234,8 +239,7 @@ class AutomationSystem {
    */
   autoBuyStructures() {
     const state = stateManager.getState();
-    const structureSystem = require('./StructureSystem.js').default;
-    const threshold = state.automation.autoBuyThreshold || 0.8; // 80% of cost
+    const threshold = state.automation.autoBuyThreshold || 0.8;
     
     // Get all affordable structures
     const currentRealm = state.realms.current;
@@ -267,7 +271,6 @@ class AutomationSystem {
    * Auto-claim quests
    */
   autoClaimQuests() {
-    const questSystem = require('./QuestSystem.js').default;
     const activeQuests = questSystem.getActiveQuests();
     
     let claimedCount = 0;
@@ -291,8 +294,6 @@ class AutomationSystem {
    */
   autoQueueUpgrades() {
     const state = stateManager.getState();
-    const upgradeSystem = require('./UpgradeSystem.js').default;
-    const upgradeQueueSystem = require('./UpgradeQueueSystem.js').default;
     
     // Check if queue has space
     const queueInfo = upgradeQueueSystem.getQueueInfo();
@@ -319,7 +320,6 @@ class AutomationSystem {
    */
   autoSummonGuardians() {
     const state = stateManager.getState();
-    const guardianSystem = require('./GuardianSystem.js').default;
     
     // Check gem threshold (only summon if >= 1000 gems)
     const gemThreshold = state.automation.autoSummonThreshold || 1000;

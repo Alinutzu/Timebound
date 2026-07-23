@@ -7,6 +7,7 @@ import CONFIG from '../config.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import upgradeSystem from './UpgradeSystem.js';
 
 class QuestSystem {
   constructor() {
@@ -486,10 +487,8 @@ class QuestSystem {
       return false;
     }
 
-    // ===== INSEREAZĂ AICI - FIX LUCKY GEMS =====
-// Apply lucky gems bonus chance
-const upgradeSystem = require('./UpgradeSystem.js').default;
-const luckyChance = upgradeSystem.getLuckyGemsChance(); // Returns 0-0.50
+    // Apply lucky gems bonus chance
+const luckyChance = upgradeSystem.getLuckyGemsChance();
 
 if (quest.rewards.gems && luckyChance > 0 && Math.random() < luckyChance) {
   const bonusGems = Math.floor(quest.rewards.gems * 0.5); // +50% bonus

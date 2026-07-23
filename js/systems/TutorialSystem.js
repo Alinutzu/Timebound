@@ -6,6 +6,7 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import resourceManager from '../core/ResourceManager.js';
+import upgradeSystem from './UpgradeSystem.js';
 
 class TutorialSystem {
   constructor() {
@@ -116,7 +117,6 @@ class TutorialSystem {
         position: 'right',
         highlight: true,
         condition: () => {
-          const upgradeSystem = require('./UpgradeSystem.js').default;
           return upgradeSystem.getLevel('energyBoost') === 0;
         },
         waitFor: 'upgrade:purchased'

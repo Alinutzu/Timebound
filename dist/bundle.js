@@ -1317,6 +1317,10 @@ var StateManager = /*#__PURE__*/function () {
         upgrades: {},
         // Guardians
         guardians: [],
+        guardianPity: {
+          epic: 0,
+          legendary: 0
+        },
         // Quests
         quests: {
           active: [],
@@ -1563,16 +1567,21 @@ var StateManager = /*#__PURE__*/function () {
 
         // ===== GUARDIANS =====
         case 'ADD_GUARDIAN':
-          return _objectSpread(_objectSpread({}, state), {}, {
-            guardians: [].concat(_toConsumableArray(state.guardians), [action.payload.guardian]),
-            resources: _objectSpread(_objectSpread({}, state.resources), {}, {
-              gems: state.resources.gems - _config["default"].BALANCING.GUARDIAN_SUMMON_COST
-            }),
-            statistics: _objectSpread(_objectSpread({}, state.statistics), {}, {
-              guardiansSummoned: (state.statistics.guardiansSummoned || 0) + 1,
-              gemsSpent: state.statistics.gemsSpent + _config["default"].BALANCING.GUARDIAN_SUMMON_COST
-            })
-          });
+          {
+            var _action$payload$cost;
+            var summonCost = (_action$payload$cost = action.payload.cost) !== null && _action$payload$cost !== void 0 ? _action$payload$cost : _config["default"].BALANCING.GUARDIAN_SUMMON_COST;
+            return _objectSpread(_objectSpread({}, state), {}, {
+              guardians: [].concat(_toConsumableArray(state.guardians), [action.payload.guardian]),
+              guardianPity: action.payload.newPity || state.guardianPity,
+              resources: _objectSpread(_objectSpread({}, state.resources), {}, {
+                gems: state.resources.gems - summonCost
+              }),
+              statistics: summonCost > 0 ? _objectSpread(_objectSpread({}, state.statistics), {}, {
+                guardiansSummoned: (state.statistics.guardiansSummoned || 0) + 1,
+                gemsSpent: state.statistics.gemsSpent + summonCost
+              }) : state.statistics
+            });
+          }
         case 'ADD_GUARDIAN_DIRECT':
           return _objectSpread(_objectSpread({}, state), {}, {
             guardians: [].concat(_toConsumableArray(state.guardians), [action.payload.guardian])
@@ -2237,6 +2246,7 @@ var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _ResourceManager = _interopRequireDefault(require("./ResourceManager.js"));
 var _RealmSystem = _interopRequireDefault(require("../systems/RealmSystem.js"));
 var _UpgradeSystem = _interopRequireDefault(require("../systems/UpgradeSystem.js"));
+var _GuardianSystem = _interopRequireDefault(require("../systems/GuardianSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -2356,13 +2366,9 @@ var TickManager = /*#__PURE__*/function () {
     value: function productionTick() {
       var _realmSystem$getRealm;
       var state = _StateManager["default"].getState();
-
-      // ===== FIX: Apply critical energy chance =====
-      var upgradeSystem = require('../systems/UpgradeSystem.js')["default"];
-      var criticalChance = upgradeSystem.getCriticalChance(); // Returns 0-0.20 (0-20%)
+      var criticalChance = _UpgradeSystem["default"].getCriticalChance();
       var isCritical = Math.random() < criticalChance;
       var criticalMultiplier = isCritical ? 2 : 1;
-      // ===== END FIX =====
 
       // Get cosmic allProduction bonus (affects ALL resource types)
       var cosmicBonus = state.realms.unlocked.includes('cosmos') ? ((_realmSystem$getRealm = _RealmSystem["default"].getRealm('cosmos')) === null || _realmSystem$getRealm === void 0 || (_realmSystem$getRealm = _realmSystem$getRealm.bonuses) === null || _realmSystem$getRealm === void 0 ? void 0 : _realmSystem$getRealm.allProduction) || 1.0 : 1.0;
@@ -2481,7 +2487,8 @@ var TickManager = /*#__PURE__*/function () {
 
       // Gems production
       if (state.production.gems && state.production.gems > 0) {
-        var gemsPerTick = state.production.gems * this.deltaTime;
+        var gemBonus = _GuardianSystem["default"].getSpecialBonuses().gemBonus;
+        var gemsPerTick = state.production.gems * this.deltaTime * (1 + gemBonus);
         if (gemsPerTick > 0) {
           _StateManager["default"].dispatch({
             type: 'ADD_RESOURCE',
@@ -2497,10 +2504,12 @@ var TickManager = /*#__PURE__*/function () {
       if (state.realms.unlocked.includes('ocean')) {
         var _realmSystem$getRealm2;
         var pearlChance = ((_realmSystem$getRealm2 = _RealmSystem["default"].getRealm('ocean')) === null || _realmSystem$getRealm2 === void 0 || (_realmSystem$getRealm2 = _realmSystem$getRealm2.bonuses) === null || _realmSystem$getRealm2 === void 0 ? void 0 : _realmSystem$getRealm2.pearlDropChance) || 0.06;
-        var pearlHarvestEffect = upgradeSystem.getEffect('pearlHarvest');
+        var pearlHarvestEffect = _UpgradeSystem["default"].getEffect('pearlHarvest');
         if (pearlHarvestEffect && pearlHarvestEffect.pearlDropBonus) {
           pearlChance += pearlHarvestEffect.pearlDropBonus;
         }
+        // Guardian chance bonuses (e.g. coralWarden)
+        pearlChance += _GuardianSystem["default"].getChanceBonus('coralBattery');
         if (Math.random() < pearlChance * this.deltaTime) {
           _StateManager["default"].dispatch({
             type: 'ADD_RESOURCE',
@@ -2591,15 +2600,9 @@ var TickManager = /*#__PURE__*/function () {
       }
       var cappedTimeDiff = Math.min(timeDiff, _config["default"].BALANCING.OFFLINE_TIME_CAP);
       var state = _StateManager["default"].getState();
-
-      // ===== FIX: Use upgrade effect directly =====
-      var upgradeSystem = require('../systems/UpgradeSystem.js')["default"];
-      var offlinePercent = upgradeSystem.getLevel('offlineProduction') > 0 ? upgradeSystem.getEffect('offlineProduction') // Returns 10, 20, 30...100
-      : _config["default"].BALANCING.OFFLINE_PRODUCTION_BASE * 100; // 50%
-
-      var offlineMultiplier = offlinePercent / 100; // Convert to decimal
-      // ===== END FIX =====
-
+      var offlinePercent = _UpgradeSystem["default"].getLevel('offlineProduction') > 0 ? _UpgradeSystem["default"].getEffect('offlineProduction') : _config["default"].BALANCING.OFFLINE_PRODUCTION_BASE * 100;
+      var guardianOfflineBonus = _GuardianSystem["default"].getSpecialBonuses().offlineBonus;
+      var offlineMultiplier = offlinePercent / 100 * (1 + guardianOfflineBonus);
       var secondsOffline = cappedTimeDiff / 1000;
       var energyEarned = Math.floor(state.production.energy * secondsOffline * offlineMultiplier);
       var manaEarned = Math.floor(state.production.mana * secondsOffline * offlineMultiplier);
@@ -2756,7 +2759,7 @@ var TickManager = /*#__PURE__*/function () {
 var tickManager = new TickManager();
 var _default = exports["default"] = tickManager;
 
-},{"../config.js":1,"../systems/RealmSystem.js":28,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./ResourceManager.js":4,"./StateManager.js":6}],8:[function(require,module,exports){
+},{"../config.js":1,"../systems/GuardianSystem.js":24,"../systems/RealmSystem.js":28,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./ResourceManager.js":4,"./StateManager.js":6}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2797,7 +2800,7 @@ var ACHIEVEMENTS = {
     category: 'tutorial',
     tier: 'bronze',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.structuresPurchased >= 1;
     },
     reward: {
@@ -2814,7 +2817,7 @@ var ACHIEVEMENTS = {
     category: 'tutorial',
     tier: 'bronze',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.upgradesPurchased >= 1;
     },
     reward: {
@@ -2830,7 +2833,7 @@ var ACHIEVEMENTS = {
     category: 'tutorial',
     tier: 'bronze',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.guardians.length >= 1;
     },
     reward: {
@@ -2848,7 +2851,7 @@ var ACHIEVEMENTS = {
     category: 'production',
     tier: 'bronze',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.ascension.lifetimeEnergy >= 5000;
     },
     reward: {
@@ -2865,7 +2868,7 @@ var ACHIEVEMENTS = {
     category: 'production',
     tier: 'silver',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.ascension.lifetimeEnergy >= 50000;
     },
     reward: {
@@ -2882,7 +2885,7 @@ var ACHIEVEMENTS = {
     category: 'production',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.ascension.lifetimeEnergy >= 500000;
     },
     reward: {
@@ -2899,7 +2902,7 @@ var ACHIEVEMENTS = {
     category: 'production',
     tier: 'platinum',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.ascension.lifetimeEnergy >= 10000000;
     },
     reward: {
@@ -2917,7 +2920,7 @@ var ACHIEVEMENTS = {
     category: 'milestone',
     tier: 'bronze',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.production.energy >= 50;
     },
     reward: {
@@ -2934,7 +2937,7 @@ var ACHIEVEMENTS = {
     category: 'milestone',
     tier: 'silver',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.production.energy >= 500;
     },
     reward: {
@@ -2951,7 +2954,7 @@ var ACHIEVEMENTS = {
     category: 'milestone',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.production.energy >= 5000;
     },
     reward: {
@@ -2969,7 +2972,7 @@ var ACHIEVEMENTS = {
     category: 'structures',
     tier: 'bronze',
     condition: function condition() {
-      var structureSystem = require('../systems/StructureSystem.js')["default"];
+      var structureSystem = _StructureSystem["default"];
       return structureSystem.getStats().totalLevels >= 10;
     },
     reward: {
@@ -2986,7 +2989,7 @@ var ACHIEVEMENTS = {
     category: 'structures',
     tier: 'silver',
     condition: function condition() {
-      var structureSystem = require('../systems/StructureSystem.js')["default"];
+      var structureSystem = _StructureSystem["default"];
       return structureSystem.getStats().totalLevels >= 30;
     },
     reward: {
@@ -3003,7 +3006,7 @@ var ACHIEVEMENTS = {
     category: 'structures',
     tier: 'gold',
     condition: function condition() {
-      var structureSystem = require('../systems/StructureSystem.js')["default"];
+      var structureSystem = _StructureSystem["default"];
       return structureSystem.getStats().totalLevels >= 100;
     },
     reward: {
@@ -3020,7 +3023,7 @@ var ACHIEVEMENTS = {
     category: 'structures',
     tier: 'platinum',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return Object.values(state.structures).some(function (s) {
         return s.level >= 50;
       });
@@ -3040,7 +3043,7 @@ var ACHIEVEMENTS = {
     category: 'upgrades',
     tier: 'bronze',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.upgradesPurchased >= 5;
     },
     reward: {
@@ -3056,7 +3059,7 @@ var ACHIEVEMENTS = {
     category: 'upgrades',
     tier: 'silver',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.upgradesPurchased >= 25;
     },
     reward: {
@@ -3075,7 +3078,7 @@ var ACHIEVEMENTS = {
     condition: function condition() {
       var _state$achievements$p;
       // This will be tracked via event
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return ((_state$achievements$p = state.achievements.patientUpgrader) === null || _state$achievements$p === void 0 ? void 0 : _state$achievements$p.triggered) || false;
     },
     reward: {
@@ -3093,7 +3096,7 @@ var ACHIEVEMENTS = {
     category: 'guardians',
     tier: 'bronze',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.guardians.length >= 3;
     },
     reward: {
@@ -3109,7 +3112,7 @@ var ACHIEVEMENTS = {
     category: 'guardians',
     tier: 'silver',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.guardians.length >= 10;
     },
     reward: {
@@ -3126,7 +3129,7 @@ var ACHIEVEMENTS = {
     category: 'guardians',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.guardians.length >= 25;
     },
     reward: {
@@ -3143,7 +3146,7 @@ var ACHIEVEMENTS = {
     category: 'guardians',
     tier: 'bronze',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.guardians.some(function (g) {
         return g.rarity === 'rare';
       });
@@ -3161,7 +3164,7 @@ var ACHIEVEMENTS = {
     category: 'guardians',
     tier: 'silver',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.guardians.some(function (g) {
         return g.rarity === 'epic';
       });
@@ -3180,7 +3183,7 @@ var ACHIEVEMENTS = {
     category: 'guardians',
     tier: 'platinum',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.guardians.some(function (g) {
         return g.rarity === 'legendary';
       });
@@ -3200,7 +3203,7 @@ var ACHIEVEMENTS = {
     category: 'quests',
     tier: 'bronze',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.questsCompleted >= 5;
     },
     reward: {
@@ -3216,7 +3219,7 @@ var ACHIEVEMENTS = {
     category: 'quests',
     tier: 'silver',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.questsCompleted >= 25;
     },
     reward: {
@@ -3233,7 +3236,7 @@ var ACHIEVEMENTS = {
     category: 'quests',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.questsCompleted >= 100;
     },
     reward: {
@@ -3251,7 +3254,7 @@ var ACHIEVEMENTS = {
     category: 'puzzle',
     tier: 'bronze',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.puzzlesWon >= 1;
     },
     reward: {
@@ -3267,7 +3270,7 @@ var ACHIEVEMENTS = {
     category: 'puzzle',
     tier: 'silver',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.puzzlesWon >= 10;
     },
     reward: {
@@ -3284,7 +3287,7 @@ var ACHIEVEMENTS = {
     category: 'puzzle',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.puzzleHighScore >= 1500;
     },
     reward: {
@@ -3302,7 +3305,7 @@ var ACHIEVEMENTS = {
     category: 'ascension',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.ascension.level >= 1;
     },
     reward: {
@@ -3319,7 +3322,7 @@ var ACHIEVEMENTS = {
     category: 'ascension',
     tier: 'platinum',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.ascension.level >= 3;
     },
     reward: {
@@ -3336,7 +3339,7 @@ var ACHIEVEMENTS = {
     category: 'ascension',
     tier: 'diamond',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.ascension.level >= 5;
     },
     reward: {
@@ -3354,7 +3357,7 @@ var ACHIEVEMENTS = {
     category: 'realms',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.realms.unlocked.includes('volcano');
     },
     reward: {
@@ -3372,7 +3375,7 @@ var ACHIEVEMENTS = {
     category: 'bosses',
     tier: 'silver',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.bossesDefeated >= 1;
     },
     reward: {
@@ -3389,7 +3392,7 @@ var ACHIEVEMENTS = {
     category: 'bosses',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.bossesDefeated >= 3;
     },
     reward: {
@@ -3407,7 +3410,7 @@ var ACHIEVEMENTS = {
     category: 'realms',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.realms.unlocked.includes('ocean');
     },
     reward: {
@@ -3425,7 +3428,7 @@ var ACHIEVEMENTS = {
     category: 'milestone',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.production.tidalEnergy >= 1000 && state.realms.current === 'ocean';
     },
     reward: {
@@ -3444,7 +3447,7 @@ var ACHIEVEMENTS = {
     tier: 'platinum',
     condition: function condition() {
       var _state$structures$kel;
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return ((_state$structures$kel = state.structures.kelpFarm) === null || _state$structures$kel === void 0 ? void 0 : _state$structures$kel.level) >= 25;
     },
     reward: {
@@ -3463,7 +3466,7 @@ var ACHIEVEMENTS = {
     category: 'resources',
     tier: 'platinum',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.resources.pearls >= 100;
     },
     reward: {
@@ -3482,7 +3485,7 @@ var ACHIEVEMENTS = {
     tier: 'diamond',
     condition: function condition() {
       var _state$statistics$bos;
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return (_state$statistics$bos = state.statistics.bossesDefeatedIds) === null || _state$statistics$bos === void 0 ? void 0 : _state$statistics$bos.includes('oceanLeviathan');
     },
     reward: {
@@ -3505,7 +3508,7 @@ var ACHIEVEMENTS = {
     category: 'special',
     tier: 'platinum',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.ascension.lifetimeEnergy >= 500000 && state.statistics.totalPlayTime < 3600000;
     },
     reward: {
@@ -3522,7 +3525,7 @@ var ACHIEVEMENTS = {
     category: 'special',
     tier: 'gold',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.resources.gems >= 2500;
     },
     reward: {
@@ -3538,7 +3541,7 @@ var ACHIEVEMENTS = {
     category: 'special',
     tier: 'silver',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.totalPlayTime >= 18000000; // 5 hours in ms
     },
     reward: {
@@ -3555,7 +3558,7 @@ var ACHIEVEMENTS = {
     category: 'special',
     tier: 'platinum',
     condition: function condition() {
-      var state = require('../core/StateManager.js')["default"].getState();
+      var state = _StateManager["default"].getState();
       return state.statistics.totalPlayTime >= 180000000; // 50 hours in ms
     },
     reward: {
@@ -9031,6 +9034,7 @@ var _config = _interopRequireDefault(require("../config.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
@@ -9207,10 +9211,9 @@ var AscensionSystem = /*#__PURE__*/function () {
     key: "applyQuickStart",
     value: function applyQuickStart() {
       var previousResources = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-      var upgradeSystem = require('./UpgradeSystem.js')["default"];
-      var quickStartLevel = upgradeSystem.getLevel('quickStart');
+      var quickStartLevel = _UpgradeSystem["default"].getLevel('quickStart');
       if (quickStartLevel === 0) return;
-      var quickStartPercent = upgradeSystem.getEffect('quickStart');
+      var quickStartPercent = _UpgradeSystem["default"].getEffect('quickStart');
 
       // ✅ Acum folosim resursele reale din run-ul anterior
       if (previousResources) {
@@ -9394,6 +9397,11 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _ResourceManager = _interopRequireDefault(require("../core/ResourceManager.js"));
+var _StructureSystem = _interopRequireDefault(require("./StructureSystem.js"));
+var _QuestSystem = _interopRequireDefault(require("./QuestSystem.js"));
+var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
+var _UpgradeQueueSystem = _interopRequireDefault(require("./UpgradeQueueSystem.js"));
+var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -9664,23 +9672,22 @@ var AutomationSystem = /*#__PURE__*/function () {
     key: "autoBuyStructures",
     value: function autoBuyStructures() {
       var state = _StateManager["default"].getState();
-      var structureSystem = require('./StructureSystem.js')["default"];
-      var threshold = state.automation.autoBuyThreshold || 0.8; // 80% of cost
+      var threshold = state.automation.autoBuyThreshold || 0.8;
 
       // Get all affordable structures
       var currentRealm = state.realms.current;
-      var structures = structureSystem.getStructuresForRealm(currentRealm);
+      var structures = _StructureSystem["default"].getStructuresForRealm(currentRealm);
       var purchasesMade = 0;
       for (var _i2 = 0, _Object$entries2 = Object.entries(structures); _i2 < _Object$entries2.length; _i2++) {
         var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
           key = _Object$entries2$_i[0],
           structureData = _Object$entries2$_i[1];
-        if (!structureSystem.isUnlocked(key)) continue;
-        var cost = structureSystem.getCost(key);
+        if (!_StructureSystem["default"].isUnlocked(key)) continue;
+        var cost = _StructureSystem["default"].getCost(key);
         var costResource = structureData.costResource || 'energy';
         var canAfford = (state.resources[costResource] || 0) >= cost * threshold;
         if (canAfford) {
-          var success = structureSystem.buy(key);
+          var success = _StructureSystem["default"].buy(key);
           if (success) {
             purchasesMade++;
           }
@@ -9697,8 +9704,7 @@ var AutomationSystem = /*#__PURE__*/function () {
   }, {
     key: "autoClaimQuests",
     value: function autoClaimQuests() {
-      var questSystem = require('./QuestSystem.js')["default"];
-      var activeQuests = questSystem.getActiveQuests();
+      var activeQuests = _QuestSystem["default"].getActiveQuests();
       var claimedCount = 0;
       var _iterator = _createForOfIteratorHelper(activeQuests),
         _step;
@@ -9706,7 +9712,7 @@ var AutomationSystem = /*#__PURE__*/function () {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var quest = _step.value;
           if (quest.completed) {
-            var success = questSystem.claim(quest.id);
+            var success = _QuestSystem["default"].claim(quest.id);
             if (success) {
               claimedCount++;
             }
@@ -9729,17 +9735,15 @@ var AutomationSystem = /*#__PURE__*/function () {
     key: "autoQueueUpgrades",
     value: function autoQueueUpgrades() {
       var state = _StateManager["default"].getState();
-      var upgradeSystem = require('./UpgradeSystem.js')["default"];
-      var upgradeQueueSystem = require('./UpgradeQueueSystem.js')["default"];
 
       // Check if queue has space
-      var queueInfo = upgradeQueueSystem.getQueueInfo();
+      var queueInfo = _UpgradeQueueSystem["default"].getQueueInfo();
       if (queueInfo.queue.length >= queueInfo.slots) {
         return; // Queue full
       }
 
       // Get recommended upgrades
-      var recommended = upgradeSystem.getRecommendedUpgrades(3);
+      var recommended = _UpgradeSystem["default"].getRecommendedUpgrades(3);
       var _iterator2 = _createForOfIteratorHelper(recommended),
         _step2;
       try {
@@ -9748,7 +9752,7 @@ var AutomationSystem = /*#__PURE__*/function () {
           if (queueInfo.queue.length >= queueInfo.slots) break;
 
           // Try to buy/queue
-          var success = upgradeSystem.buy(rec.key);
+          var success = _UpgradeSystem["default"].buy(rec.key);
           if (success) {
             _Logger["default"].debug('AutomationSystem', "Auto-queued upgrade: ".concat(rec.key));
           }
@@ -9767,12 +9771,11 @@ var AutomationSystem = /*#__PURE__*/function () {
     key: "autoSummonGuardians",
     value: function autoSummonGuardians() {
       var state = _StateManager["default"].getState();
-      var guardianSystem = require('./GuardianSystem.js')["default"];
 
       // Check gem threshold (only summon if >= 1000 gems)
       var gemThreshold = state.automation.autoSummonThreshold || 1000;
       if (state.resources.gems >= gemThreshold) {
-        var success = guardianSystem.summon();
+        var success = _GuardianSystem["default"].summon();
         if (success) {
           _Logger["default"].info('AutomationSystem', 'Auto-summoned guardian');
         }
@@ -9938,6 +9941,9 @@ var _bosses = _interopRequireDefault(require("../data/bosses.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _StructureSystem = _interopRequireDefault(require("./StructureSystem.js"));
+var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
+var _guardians = require("../data/guardians.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -10102,13 +10108,12 @@ var BossSystem = /*#__PURE__*/function () {
 
       // Check structure requirement
       if (condition.structures) {
-        var structureSystem = require('./StructureSystem.js')["default"];
         for (var _i4 = 0, _Object$entries4 = Object.entries(condition.structures); _i4 < _Object$entries4.length; _i4++) {
           var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
             key = _Object$entries4$_i[0],
             value = _Object$entries4$_i[1];
           if (key === 'total') {
-            var totalLevels = structureSystem.getStats().totalLevels;
+            var totalLevels = _StructureSystem["default"].getStats().totalLevels;
             if (totalLevels < value) return false;
           } else {
             var _state$structures$key;
@@ -10377,16 +10382,10 @@ var BossSystem = /*#__PURE__*/function () {
 
       // Guaranteed guardian
       if (rewards.guaranteedGuardian) {
-        var guardianSystem = require('./GuardianSystem.js')["default"];
-
-        // Summon specific rarity/type
         var _rewards$guaranteedGu = rewards.guaranteedGuardian,
           rarity = _rewards$guaranteedGu.rarity,
           type = _rewards$guaranteedGu.type;
-
-        // Filter guardians by type
-        var guardianPool = require('../data/guardians.js')["default"];
-        var availableGuardians = Object.entries(guardianPool).filter(function (_ref) {
+        var availableGuardians = Object.entries(_guardians.GUARDIAN_POOL).filter(function (_ref) {
           var _ref2 = _slicedToArray(_ref, 2),
             key = _ref2[0],
             data = _ref2[1];
@@ -10401,12 +10400,9 @@ var BossSystem = /*#__PURE__*/function () {
         if (availableGuardians.length > 0) {
           var guardianKey = availableGuardians[Math.floor(Math.random() * availableGuardians.length)];
           var guardianData = guardianPool[guardianKey];
-
-          // Roll bonus in rarity range
-          var rarityData = require('../data/guardians.js').RARITIES[rarity];
-          var _rarityData$bonusRang = _slicedToArray(rarityData.bonusRange, 2),
-            min = _rarityData$bonusRang[0],
-            max = _rarityData$bonusRang[1];
+          var _RARITIES$rarity$bonu = _slicedToArray(_guardians.RARITIES[rarity].bonusRange, 2),
+            min = _RARITIES$rarity$bonu[0],
+            max = _RARITIES$rarity$bonu[1];
           var bonus = Math.floor(Math.random() * (max - min + 1)) + min;
           var guardian = {
             id: Date.now() + Math.random(),
@@ -10562,6 +10558,7 @@ exports["default"] = void 0;
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -10742,10 +10739,8 @@ var DailyRewardSystem = /*#__PURE__*/function () {
           resource = _Object$entries$_i[0],
           amount = _Object$entries$_i[1];
         if (resource === 'guardian') {
-          // Summon random guardian
-          var guardianSystem = require('./GuardianSystem.js')["default"];
           for (var i = 0; i < amount; i++) {
-            guardianSystem.summon();
+            _GuardianSystem["default"].summon();
           }
         } else {
           _StateManager["default"].dispatch({
@@ -10948,12 +10943,9 @@ var _config = _interopRequireDefault(require("../config.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -10961,6 +10953,9 @@ function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) 
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
 function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
 function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
 function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
@@ -11017,6 +11012,20 @@ var GuardianSystem = /*#__PURE__*/function () {
         });
         return null;
       }
+      var MAX_GUARDIANS = 20;
+      if (this.getGuardians().length >= MAX_GUARDIANS) {
+        _Logger["default"].warn('GuardianSystem', 'Guardian roster full');
+        _EventBus["default"].emit('guardian:summon-failed', {
+          reason: 'roster-full'
+        });
+        _EventBus["default"].emit('notification:show', {
+          type: 'warning',
+          title: 'Roster Full',
+          message: "You can have at most ".concat(MAX_GUARDIANS, " guardians. Dismiss one first."),
+          duration: 4000
+        });
+        return null;
+      }
       var state = _StateManager["default"].getState();
       var currentRealm = realmId || state.realms.current;
 
@@ -11031,34 +11040,96 @@ var GuardianSystem = /*#__PURE__*/function () {
       var guardianKey = availableGuardians[Math.floor(Math.random() * availableGuardians.length)];
       var guardianData = this.guardianPool[guardianKey];
 
-      // Roll rarity
-      var rarity = this.rollRarity(guardianData.rarities);
+      // Pity system
+      var pity = state.guardianPity || {
+        epic: 0,
+        legendary: 0
+      };
+      var PITY_EPIC = 25;
+      var PITY_LEGENDARY = 50;
+      var forcedRarity = null;
+      if (pity.legendary >= PITY_LEGENDARY - 1) {
+        forcedRarity = 'legendary';
+      } else if (pity.epic >= PITY_EPIC - 1) {
+        forcedRarity = 'epic';
+      }
+
+      // Roll rarity (with pity override)
+      var rarity;
+      if (forcedRarity && guardianData.rarities.includes(forcedRarity)) {
+        rarity = forcedRarity;
+      } else {
+        rarity = this.rollRarity(guardianData.rarities);
+      }
 
       // Roll bonus within rarity range
       var bonus = this.rollBonus(rarity);
 
+      // Update pity counters
+      var newPity = _objectSpread({}, pity);
+      if (rarity === 'legendary') {
+        newPity.epic = 0;
+        newPity.legendary = 0;
+      } else if (rarity === 'epic') {
+        newPity.epic = 0;
+        newPity.legendary = pity.legendary + 1;
+      } else {
+        newPity.epic = pity.epic + 1;
+        newPity.legendary = pity.legendary + 1;
+      }
+
       // Create guardian instance
       var guardian = {
         id: Date.now() + Math.random(),
-        // Unique ID
         key: guardianKey,
         name: guardianData.name,
         emoji: guardianData.emoji,
         type: guardianData.type,
+        realm: guardianData.realm,
         rarity: rarity,
         bonus: bonus,
         summonedAt: Date.now(),
-        special: guardianData.special || null
+        special: guardianData.special || null,
+        ability: guardianData.ability || null
       };
 
       // Add to state
       _StateManager["default"].dispatch({
         type: 'ADD_GUARDIAN',
         payload: {
-          guardian: guardian
+          guardian: guardian,
+          newPity: newPity
         }
       });
-      _Logger["default"].info('GuardianSystem', "Summoned ".concat(guardian.name, " (").concat(rarity, ") with +").concat(bonus, "% bonus"));
+      _Logger["default"].info('GuardianSystem', "Summoned ".concat(guardian.name, " (").concat(rarity, ") with +").concat(bonus, "% bonus (pity: ").concat(newPity.epic, "/").concat(newPity.legendary, ")"));
+      if (forcedRarity) {
+        _EventBus["default"].emit('notification:show', {
+          type: 'success',
+          title: 'Pity System!',
+          message: "You were guaranteed a ".concat(forcedRarity, " after ").concat(pity[forcedRarity], " summons without one!"),
+          duration: 5000
+        });
+      }
+
+      // Apply unlock abilities (e.g. abyssSerpent unlocks pressureTech)
+      if (guardianData.ability && guardianData.ability.type === 'unlock') {
+        var target = guardianData.ability.target;
+        if (!state.upgrades[target] || state.upgrades[target].level === 0) {
+          _StateManager["default"].dispatch({
+            type: 'BUY_UPGRADE',
+            payload: {
+              upgradeKey: target,
+              skipResourceDeduction: true
+            }
+          });
+          _EventBus["default"].emit('notification:show', {
+            type: 'success',
+            title: 'Guardian Unlock',
+            message: "".concat(guardianData.name, " unlocked ").concat(target, "!"),
+            duration: 4000
+          });
+        }
+      }
 
       // Emit event
       _EventBus["default"].emit('guardian:summoned', guardian);
@@ -11152,14 +11223,22 @@ var GuardianSystem = /*#__PURE__*/function () {
     }
 
     /**
-     * Get guardians by type
+     * Get guardians by type — maps realm resources (e.g. 'tidalEnergy') to guardian type ('water')
      */
   }, {
     key: "getGuardiansByType",
     value: function getGuardiansByType(type) {
       var guardians = this.getGuardians();
+      var resourceToType = {
+        volcanicEnergy: 'volcanic',
+        tidalEnergy: 'water',
+        solarEssence: 'solar',
+        cryoEnergy: 'cryo',
+        cosmicEnergy: 'cosmic'
+      };
+      var mappedType = resourceToType[type] || type;
       return guardians.filter(function (g) {
-        return g.type === type || g.type === 'all';
+        return g.type === mappedType || g.type === 'all';
       });
     }
 
@@ -11189,9 +11268,8 @@ var GuardianSystem = /*#__PURE__*/function () {
       }, 0);
 
       // Apply guardian bond upgrade if exists
-      var upgradeSystem = require('./UpgradeSystem.js')["default"];
-      if (upgradeSystem.getLevel('guardianBond') > 0) {
-        var bondMultiplier = upgradeSystem.getGuardianBonusMultiplier();
+      if (_UpgradeSystem["default"].getLevel('guardianBond') > 0) {
+        var bondMultiplier = _UpgradeSystem["default"].getGuardianBonusMultiplier();
         totalBonus *= bondMultiplier;
       }
       return totalBonus;
@@ -11204,7 +11282,108 @@ var GuardianSystem = /*#__PURE__*/function () {
     key: "getProductionMultiplier",
     value: function getProductionMultiplier(resourceType) {
       var bonus = this.getTotalBonus(resourceType);
-      return 1 + bonus / 100; // Convert percentage to multiplier
+      var abilityMultiplier = this.getAbilityMultiplier(resourceType);
+      return (1 + bonus / 100) * abilityMultiplier;
+    }
+
+    /**
+     * Get ability-based multiplier for a resource
+     */
+  }, {
+    key: "getAbilityMultiplier",
+    value: function getAbilityMultiplier(resourceType) {
+      var guardians = this.getGuardians();
+      var multiplier = 1;
+      var _iterator2 = _createForOfIteratorHelper(guardians),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var g = _step2.value;
+          if (g.ability && g.ability.type === 'boost' && g.ability.target === resourceType) {
+            multiplier *= g.ability.multiplier;
+          }
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+      return multiplier;
+    }
+
+    /**
+     * Get structure-specific synergy multiplier from guardians
+     */
+  }, {
+    key: "getStructureSynergy",
+    value: function getStructureSynergy(structureKey) {
+      var guardians = this.getGuardians();
+      var multiplier = 1;
+      var _iterator3 = _createForOfIteratorHelper(guardians),
+        _step3;
+      try {
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var g = _step3.value;
+          if (g.ability && g.ability.type === 'synergy' && g.ability.target === structureKey) {
+            multiplier *= g.ability.multiplier;
+          }
+        }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
+      }
+      return multiplier;
+    }
+
+    /**
+     * Get unlock abilities (auto-unlock upgrades/structures)
+     */
+  }, {
+    key: "getUnlockAbilities",
+    value: function getUnlockAbilities() {
+      var guardians = this.getGuardians();
+      var unlocks = [];
+      var _iterator4 = _createForOfIteratorHelper(guardians),
+        _step4;
+      try {
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var g = _step4.value;
+          if (g.ability && g.ability.type === 'unlock') {
+            unlocks.push(g.ability.target);
+          }
+        }
+      } catch (err) {
+        _iterator4.e(err);
+      } finally {
+        _iterator4.f();
+      }
+      return unlocks;
+    }
+
+    /**
+     * Get chance-based bonuses (e.g. extra pearl chance)
+     */
+  }, {
+    key: "getChanceBonus",
+    value: function getChanceBonus(targetKey) {
+      var guardians = this.getGuardians();
+      var totalChance = 0;
+      var _iterator5 = _createForOfIteratorHelper(guardians),
+        _step5;
+      try {
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var g = _step5.value;
+          if (g.ability && g.ability.type === 'chanceBonus' && g.ability.target === targetKey) {
+            totalChance += g.ability.chance;
+          }
+        }
+      } catch (err) {
+        _iterator5.e(err);
+      } finally {
+        _iterator5.f();
+      }
+      return totalChance;
     }
 
     /**
@@ -11240,10 +11419,12 @@ var GuardianSystem = /*#__PURE__*/function () {
           energy: this.getTotalBonus('energy'),
           mana: this.getTotalBonus('mana'),
           volcanic: this.getTotalBonus('volcanic'),
+          water: this.getTotalBonus('water'),
           all: this.getTotalBonus('all')
         },
         averageBonus: 0,
-        bestGuardian: null
+        bestGuardian: null,
+        collection: this.getCollectionProgress()
       };
 
       // Count by rarity
@@ -11258,7 +11439,7 @@ var GuardianSystem = /*#__PURE__*/function () {
       }
 
       // Count by type
-      var types = ['energy', 'mana', 'volcanic', 'all', 'gems'];
+      var types = ['energy', 'mana', 'volcanic', 'water', 'all', 'gems'];
       var _loop2 = function _loop2() {
         var type = _types[_i2];
         stats.byType[type] = guardians.filter(function (g) {
@@ -11315,11 +11496,11 @@ var GuardianSystem = /*#__PURE__*/function () {
         offlineBonus: 0,
         gemBonus: 0
       };
-      var _iterator2 = _createForOfIteratorHelper(guardians),
-        _step2;
+      var _iterator6 = _createForOfIteratorHelper(guardians),
+        _step6;
       try {
-        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-          var guardian = _step2.value;
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var guardian = _step6.value;
           if (guardian.special) {
             if (guardian.special.offlineBonus) {
               bonuses.offlineBonus += guardian.special.offlineBonus;
@@ -11330,65 +11511,206 @@ var GuardianSystem = /*#__PURE__*/function () {
           }
         }
       } catch (err) {
-        _iterator2.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator2.f();
+        _iterator6.f();
       }
       return bonuses;
     }
 
     /**
-     * Summon multiple guardians
+     * Bulk summon — x10 with one guaranteed Rare+
      */
   }, {
-    key: "summonMultiple",
-    value: (function () {
-      var _summonMultiple = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(count) {
-        var results, i, guardian;
-        return _regenerator().w(function (_context) {
-          while (1) switch (_context.n) {
-            case 0:
-              results = [];
-              i = 0;
-            case 1:
-              if (!(i < count)) {
-                _context.n = 4;
-                break;
-              }
-              if (this.canSummon()) {
-                _context.n = 2;
-                break;
-              }
-              return _context.a(3, 4);
-            case 2:
-              guardian = this.summon();
-              if (guardian) {
-                results.push(guardian);
-              }
-            case 3:
-              i++;
-              _context.n = 1;
-              break;
-            case 4:
-              if (results.length > 0) {
-                _EventBus["default"].emit('guardian:bulk-summoned', {
-                  count: results.length,
-                  guardians: results
-                });
-              }
-              return _context.a(2, results);
-          }
-        }, _callee, this);
-      }));
-      function summonMultiple(_x) {
-        return _summonMultiple.apply(this, arguments);
+    key: "summonBulk",
+    value: function summonBulk() {
+      var count = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+      var state = _StateManager["default"].getState();
+      var totalCost = this.summonCost * count;
+      if (state.resources.gems < totalCost) {
+        _EventBus["default"].emit('guardian:summon-failed', {
+          reason: 'insufficient-gems'
+        });
+        return [];
       }
-      return summonMultiple;
-    }()
+      var freeSlots = 20 - this.getGuardians().length;
+      if (freeSlots < count) {
+        _EventBus["default"].emit('notification:show', {
+          type: 'warning',
+          title: 'Roster Full',
+          message: "Need ".concat(count, " free slots but only ").concat(freeSlots, " available. Dismiss some guardians first."),
+          duration: 4000
+        });
+        return [];
+      }
+      var results = [];
+      var hasRareOrBetter = false;
+      for (var i = 0; i < count; i++) {
+        var guardian = this.summon();
+        if (guardian) {
+          results.push(guardian);
+          if (guardian.rarity === 'rare' || guardian.rarity === 'epic' || guardian.rarity === 'legendary') {
+            hasRareOrBetter = true;
+          }
+        }
+      }
+
+      // Guarantee: replace last common with rare if no Rare+ was pulled
+      if (!hasRareOrBetter && results.length > 0) {
+        this.dismiss(results[results.length - 1].id);
+        results[results.length - 1] = this.summonGuaranteed('rare');
+      }
+      if (results.length > 0) {
+        _EventBus["default"].emit('guardian:bulk-summoned', {
+          count: results.length,
+          guardians: results
+        });
+      }
+      return results;
+    }
+
+    /**
+     * Summon a guaranteed minimum rarity
+     */
+  }, {
+    key: "summonGuaranteed",
+    value: function summonGuaranteed(minRarity) {
+      var state = _StateManager["default"].getState();
+      var currentRealm = state.realms.current;
+      var availableGuardians = this.getAvailableGuardians(currentRealm);
+      if (availableGuardians.length === 0) return null;
+      var guardianKey = availableGuardians[Math.floor(Math.random() * availableGuardians.length)];
+      var guardianData = this.guardianPool[guardianKey];
+      var validRarities = guardianData.rarities.filter(function (r) {
+        var order = {
+          common: 1,
+          uncommon: 2,
+          rare: 3,
+          epic: 4,
+          legendary: 5
+        };
+        return order[r] >= order[minRarity];
+      });
+      var rarity = validRarities.length > 0 ? validRarities[Math.floor(Math.random() * validRarities.length)] : this.rollRarity(guardianData.rarities);
+      var bonus = this.rollBonus(rarity);
+      var pity = state.guardianPity || {
+        epic: 0,
+        legendary: 0
+      };
+      var newPity = _objectSpread({}, pity);
+      if (rarity === 'legendary') {
+        newPity.epic = 0;
+        newPity.legendary = 0;
+      } else if (rarity === 'epic') {
+        newPity.epic = 0;
+        newPity.legendary = pity.legendary + 1;
+      } else {
+        newPity.epic = pity.epic + 1;
+        newPity.legendary = pity.legendary + 1;
+      }
+      var guardian = {
+        id: Date.now() + Math.random(),
+        key: guardianKey,
+        name: guardianData.name,
+        emoji: guardianData.emoji,
+        type: guardianData.type,
+        realm: guardianData.realm,
+        rarity: rarity,
+        bonus: bonus,
+        summonedAt: Date.now(),
+        special: guardianData.special || null,
+        ability: guardianData.ability || null
+      };
+      _StateManager["default"].dispatch({
+        type: 'ADD_GUARDIAN',
+        payload: {
+          guardian: guardian,
+          newPity: newPity,
+          cost: 0
+        }
+      });
+      return guardian;
+    }
+
+    /**
+     * Fuse 3 same-rarity guardians into 1 of next rarity
+     */
+  }, {
+    key: "fuseGuardians",
+    value: function fuseGuardians(guardianIds) {
+      if (guardianIds.length !== 3) return null;
+      var guardians = this.getGuardians();
+      var selected = guardians.filter(function (g) {
+        return guardianIds.includes(g.id);
+      });
+      if (selected.length !== 3) return null;
+      var rarity = selected[0].rarity;
+      if (!selected.every(function (g) {
+        return g.rarity === rarity;
+      })) return null;
+      var rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+      var idx = rarityOrder.indexOf(rarity);
+      if (idx === -1 || idx >= rarityOrder.length - 1) return null;
+      var nextRarity = rarityOrder[idx + 1];
+
+      // Remove the 3 fused guardians
+      var _iterator7 = _createForOfIteratorHelper(selected),
+        _step7;
+      try {
+        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+          var g = _step7.value;
+          _StateManager["default"].dispatch({
+            type: 'REMOVE_GUARDIAN',
+            payload: {
+              guardianId: g.id
+            }
+          });
+        }
+
+        // Pick a random guardian from the pool that can be of next rarity
+      } catch (err) {
+        _iterator7.e(err);
+      } finally {
+        _iterator7.f();
+      }
+      var available = Object.values(this.guardianPool).filter(function (g) {
+        return g.rarities.includes(nextRarity);
+      });
+      if (available.length === 0) return null;
+      var data = available[Math.floor(Math.random() * available.length)];
+      var bonus = this.rollBonus(nextRarity);
+      var guardian = {
+        id: Date.now() + Math.random(),
+        key: data.id,
+        name: data.name,
+        emoji: data.emoji,
+        type: data.type,
+        realm: data.realm,
+        rarity: nextRarity,
+        bonus: bonus,
+        summonedAt: Date.now(),
+        special: data.special || null,
+        ability: data.ability || null
+      };
+      _StateManager["default"].dispatch({
+        type: 'ADD_GUARDIAN_DIRECT',
+        payload: {
+          guardian: guardian
+        }
+      });
+      _EventBus["default"].emit('notification:show', {
+        type: 'success',
+        title: 'Guardian Fusion!',
+        message: "Fused 3 ".concat(rarity, " into ").concat(data.emoji, " ").concat(data.name, " (").concat(nextRarity, ")!"),
+        duration: 5000
+      });
+      _EventBus["default"].emit('guardian:summoned', guardian);
+      return guardian;
+    }
+
     /**
      * Get rarity display name
      */
-    )
   }, {
     key: "getRarityName",
     value: function getRarityName(rarity) {
@@ -11994,6 +12316,7 @@ var _config = _interopRequireDefault(require("../config.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
@@ -12547,11 +12870,8 @@ var QuestSystem = /*#__PURE__*/function () {
         return false;
       }
 
-      // ===== INSEREAZĂ AICI - FIX LUCKY GEMS =====
       // Apply lucky gems bonus chance
-      var upgradeSystem = require('./UpgradeSystem.js')["default"];
-      var luckyChance = upgradeSystem.getLuckyGemsChance(); // Returns 0-0.50
-
+      var luckyChance = _UpgradeSystem["default"].getLuckyGemsChance();
       if (quest.rewards.gems && luckyChance > 0 && Math.random() < luckyChance) {
         var bonusGems = Math.floor(quest.rewards.gems * 0.5); // +50% bonus
         quest.rewards.gems += bonusGems;
@@ -13035,6 +13355,9 @@ var _shop = _interopRequireDefault(require("../data/shop.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
+var _guardians = require("../data/guardians.js");
+var _DailySpinGame = _interopRequireDefault(require("../ui/games/DailySpinGame.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -13125,10 +13448,8 @@ var ShopSystem = /*#__PURE__*/function () {
             resource = _Object$entries$_i[0],
             amount = _Object$entries$_i[1];
           if (resource === 'guardian') {
-            // Summon guardians
-            var guardianSystem = require('./GuardianSystem.js')["default"];
             for (var i = 0; i < amount; i++) {
-              guardianSystem.summon();
+              _GuardianSystem["default"].summon();
             }
           } else if (resource === 'guaranteedLegendary') {
             // Summon legendary guardian
@@ -13218,9 +13539,7 @@ var ShopSystem = /*#__PURE__*/function () {
         });
         _Logger["default"].info('ShopSystem', 'Unlimited spins activated for 24h');
       } else {
-        // Add purchased spins
-        var DailySpinGame = require('../ui/games/DailySpinGame.js')["default"];
-        DailySpinGame.addPurchasedSpins(pkg.spins);
+        _DailySpinGame["default"].addPurchasedSpins(pkg.spins);
       }
 
       // Give bonuses
@@ -13275,10 +13594,7 @@ var ShopSystem = /*#__PURE__*/function () {
   }, {
     key: "summonGuaranteedLegendary",
     value: function summonGuaranteedLegendary(count) {
-      var guardianPool = require('../data/guardians.js')["default"];
-
-      // Get all legendary guardians
-      var legendaryGuardians = Object.entries(guardianPool).filter(function (_ref) {
+      var legendaryGuardians = Object.entries(_guardians.GUARDIAN_POOL).filter(function (_ref) {
         var _ref2 = _slicedToArray(_ref, 2),
           key = _ref2[0],
           data = _ref2[1];
@@ -13289,12 +13605,9 @@ var ShopSystem = /*#__PURE__*/function () {
         var _legendaryGuardians$M = _slicedToArray(legendaryGuardians[Math.floor(Math.random() * legendaryGuardians.length)], 2),
           guardianKey = _legendaryGuardians$M[0],
           guardianData = _legendaryGuardians$M[1];
-
-        // Roll bonus in legendary range
-        var rarityData = require('../data/guardians.js').RARITIES.legendary;
-        var _rarityData$bonusRang = _slicedToArray(rarityData.bonusRange, 2),
-          min = _rarityData$bonusRang[0],
-          max = _rarityData$bonusRang[1];
+        var _RARITIES$legendary$b = _slicedToArray(_guardians.RARITIES.legendary.bonusRange, 2),
+          min = _RARITIES$legendary$b[0],
+          max = _RARITIES$legendary$b[1];
         var bonus = Math.floor(Math.random() * (max - min + 1)) + min;
         var guardian = {
           id: Date.now() + Math.random(),
@@ -13648,6 +13961,11 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
+var _StructureSystem = _interopRequireDefault(require("./StructureSystem.js"));
+var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
+var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
+var _BossSystem = _interopRequireDefault(require("./BossSystem.js"));
+var _AchievementSystem = _interopRequireDefault(require("./AchievementSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -13899,8 +14217,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
   }, {
     key: "getTotalStructureLevels",
     value: function getTotalStructureLevels() {
-      var structureSystem = require('./StructureSystem.js')["default"];
-      return structureSystem.getStats().totalLevels;
+      return _StructureSystem["default"].getStats().totalLevels;
     }
 
     /**
@@ -13939,8 +14256,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
         }
       }
       if (favorite) {
-        var structureSystem = require('./StructureSystem.js')["default"];
-        var data = structureSystem.getStructure(favorite);
+        var data = _StructureSystem["default"].getStructure(favorite);
         return "".concat(data.emoji, " ").concat(data.name);
       }
       return 'None';
@@ -13952,8 +14268,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
   }, {
     key: "getTotalUpgradeLevels",
     value: function getTotalUpgradeLevels() {
-      var upgradeSystem = require('./UpgradeSystem.js')["default"];
-      return upgradeSystem.getStats().totalLevels;
+      return _UpgradeSystem["default"].getStats().totalLevels;
     }
 
     /**
@@ -14003,10 +14318,9 @@ var StatisticsSystem = /*#__PURE__*/function () {
   }, {
     key: "getTotalGuardianBonus",
     value: function getTotalGuardianBonus() {
-      var guardianSystem = require('./GuardianSystem.js')["default"];
-      var energyBonus = guardianSystem.getTotalBonus('energy');
-      var manaBonus = guardianSystem.getTotalBonus('mana');
-      var allBonus = guardianSystem.getTotalBonus('all');
+      var energyBonus = _GuardianSystem["default"].getTotalBonus('energy');
+      var manaBonus = _GuardianSystem["default"].getTotalBonus('mana');
+      var allBonus = _GuardianSystem["default"].getTotalBonus('all');
       return "Energy: +".concat(energyBonus, "%, Mana: +").concat(manaBonus, "%, All: +").concat(allBonus, "%");
     }
 
@@ -14029,8 +14343,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
   }, {
     key: "getBossesUnlocked",
     value: function getBossesUnlocked() {
-      var bossSystem = require('./BossSystem.js')["default"];
-      return bossSystem.getStats().unlocked;
+      return _BossSystem["default"].getStats().unlocked;
     }
 
     /**
@@ -14039,8 +14352,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
   }, {
     key: "getAchievementCompletion",
     value: function getAchievementCompletion() {
-      var achievementSystem = require('./AchievementSystem.js')["default"];
-      var progress = achievementSystem.getProgress();
+      var progress = _AchievementSystem["default"].getProgress();
       return "".concat(progress.unlocked, "/").concat(progress.total, " (").concat(progress.percentageUnlocked.toFixed(1), "%)");
     }
 
@@ -14164,6 +14476,8 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _RealmSystem = _interopRequireDefault(require("../systems/RealmSystem.js"));
+var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
+var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -14440,14 +14754,11 @@ var StructureSystem = /*#__PURE__*/function () {
       }
       multipliers.realm = resourceBonus * cosmicBonus;
 
-      // ===== FIX: Use UpgradeSystem instead of duplicate logic =====
-      var upgradeSystem = require('./UpgradeSystem.js')["default"];
-      multipliers.upgrades = upgradeSystem.getProductionMultiplier(resource);
-      // ===== END FIX =====
+      // Upgrade bonuses
+      multipliers.upgrades = _UpgradeSystem["default"].getProductionMultiplier(resource);
 
       // Guardian bonuses
-      var guardianSystem = require('./GuardianSystem.js')["default"];
-      multipliers.guardians = guardianSystem.getProductionMultiplier(resource);
+      multipliers.guardians = _GuardianSystem["default"].getProductionMultiplier(resource);
 
       // Calculate total
       multipliers.total = multipliers.ascension * multipliers.upgrades * multipliers.guardians * multipliers.realm;
@@ -14463,13 +14774,13 @@ var StructureSystem = /*#__PURE__*/function () {
       var state = _StateManager["default"].getState();
       var synergyMultiplier = 1;
 
-      // Example: Solar Synergy upgrade
+      // Upgrade synergies
       if (structureKey === 'solarPanel' && state.upgrades.solarSynergy) {
         synergyMultiplier *= 1 + state.upgrades.solarSynergy.level * 0.5;
       }
 
-      // Add more synergies as needed
-
+      // Guardian synergies (e.g. kelpGuardian boosts kelpFarm)
+      synergyMultiplier *= _GuardianSystem["default"].getStructureSynergy(structureKey);
       return synergyMultiplier;
     }
 
@@ -14767,6 +15078,7 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _ResourceManager = _interopRequireDefault(require("../core/ResourceManager.js"));
+var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
@@ -14882,8 +15194,7 @@ var TutorialSystem = /*#__PURE__*/function () {
         position: 'right',
         highlight: true,
         condition: function condition() {
-          var upgradeSystem = require('./UpgradeSystem.js')["default"];
-          return upgradeSystem.getLevel('energyBoost') === 0;
+          return _UpgradeSystem["default"].getLevel('energyBoost') === 0;
         },
         waitFor: 'upgrade:purchased'
       }, {
@@ -18218,6 +18529,10 @@ var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
 var _ConfirmModal = _interopRequireDefault(require("./ConfirmModal.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t["return"] && (u = t["return"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -18237,6 +18552,7 @@ var GuardiansUI = /*#__PURE__*/function () {
       _this = this;
     _classCallCheck(this, GuardiansUI);
     this.container = document.getElementById(containerId);
+    this.showCollection = false;
     if (!this.container) {
       console.error("GuardiansUI: Container ".concat(containerId, " not found"));
       return;
@@ -18244,10 +18560,37 @@ var GuardiansUI = /*#__PURE__*/function () {
     this.render();
     this.subscribe();
 
-    // Bind summon button
+    // Bind summon buttons
     (_document$getElementB = document.getElementById('summon-guardian-btn')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
       _this.summonGuardian();
     });
+    var summonBtn = document.getElementById('summon-guardian-btn');
+    if (summonBtn && !document.getElementById('summon-x10-btn')) {
+      var x10Btn = document.createElement('button');
+      x10Btn.id = 'summon-x10-btn';
+      x10Btn.className = 'btn btn-secondary btn-large summon-x10-btn';
+      x10Btn.textContent = 'Summon x10 (💰5,000)';
+      x10Btn.addEventListener('click', function () {
+        return _this.summonBulk();
+      });
+      summonBtn.parentNode.insertBefore(x10Btn, summonBtn.nextSibling);
+    }
+
+    // Collection toggle
+    if (!document.getElementById('collection-toggle-btn')) {
+      var toggleBtn = document.createElement('button');
+      toggleBtn.id = 'collection-toggle-btn';
+      toggleBtn.className = 'btn btn-small btn-secondary';
+      toggleBtn.textContent = '📖 Collection';
+      toggleBtn.style.marginLeft = '8px';
+      toggleBtn.addEventListener('click', function () {
+        _this.showCollection = !_this.showCollection;
+        toggleBtn.textContent = _this.showCollection ? '📋 My Guardians' : '📖 Collection';
+        _this.renderGuardians();
+      });
+      var statsEl = document.getElementById('guardian-stats');
+      if (statsEl) statsEl.parentNode.insertBefore(toggleBtn, statsEl.nextSibling);
+    }
   }
   return _createClass(GuardiansUI, [{
     key: "subscribe",
@@ -18257,6 +18600,9 @@ var GuardiansUI = /*#__PURE__*/function () {
         return _this2.render();
       });
       _EventBus["default"].on('guardian:dismissed', function () {
+        return _this2.render();
+      });
+      _EventBus["default"].on('guardian:bulk-summoned', function () {
         return _this2.render();
       });
       _EventBus["default"].on('state:ADD_RESOURCE', function () {
@@ -18273,16 +18619,21 @@ var GuardiansUI = /*#__PURE__*/function () {
   }, {
     key: "renderStats",
     value: function renderStats() {
+      var _state$guardianPity, _state$guardianPity2, _state$guardianPity3, _state$guardianPity4;
       var statsContainer = document.getElementById('guardian-stats');
       if (!statsContainer) return;
       var stats = _GuardianSystem["default"].getStats();
       var state = _StateManager["default"].getState();
-      statsContainer.innerHTML = "\n      <div class=\"summary-card\">\n        <h4>Total Guardians</h4>\n        <p class=\"summary-value\">".concat(stats.total, "</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>\u26A1 Energy Bonus</h4>\n        <p class=\"summary-value\">+").concat(stats.totalBonus.energy, "%</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>\u2728 Mana Bonus</h4>\n        <p class=\"summary-value\">+").concat(stats.totalBonus.mana, "%</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>\uD83C\uDF1F Universal Bonus</h4>\n        <p class=\"summary-value\">+").concat(stats.totalBonus.all, "%</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>Average Bonus</h4>\n        <p class=\"summary-value\">").concat(stats.averageBonus.toFixed(1), "%</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>\u2B50 Legendary</h4>\n        <p class=\"summary-value\">").concat(stats.byRarity.legendary || 0, "</p>\n      </div>\n    ");
+      statsContainer.innerHTML = "\n      <div class=\"summary-card\">\n        <h4>Total Guardians</h4>\n        <p class=\"summary-value\">".concat(stats.total, "</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>\u26A1 Energy Bonus</h4>\n        <p class=\"summary-value\">+").concat(stats.totalBonus.energy, "%</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>\u2728 Mana Bonus</h4>\n        <p class=\"summary-value\">+").concat(stats.totalBonus.mana, "%</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>\uD83C\uDF1F Universal Bonus</h4>\n        <p class=\"summary-value\">+").concat(stats.totalBonus.all, "%</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>Average Bonus</h4>\n        <p class=\"summary-value\">").concat(stats.averageBonus.toFixed(1), "%</p>\n      </div>\n      \n      <div class=\"summary-card\">\n        <h4>\u2B50 Legendary</h4>\n        <p class=\"summary-value\">").concat(stats.byRarity.legendary || 0, "</p>\n      </div>\n      \n      <div class=\"summary-card collection-card\">\n        <h4>\uD83D\uDCD6 Collection</h4>\n        <p class=\"summary-value\">").concat(stats.collection.unique, "/").concat(stats.collection.total, "</p>\n      </div>\n      \n      <div class=\"summary-card pity-card\">\n        <h4>\uD83C\uDFAF Pity Progress</h4>\n        <div class=\"pity-bar-container\">\n          <div class=\"pity-bar-label\">Epic</div>\n          <div class=\"pity-bar-track\">\n            <div class=\"pity-bar-fill epic\" style=\"width:").concat(Math.min((((_state$guardianPity = state.guardianPity) === null || _state$guardianPity === void 0 ? void 0 : _state$guardianPity.epic) || 0) / 25 * 100, 100), "%\"></div>\n          </div>\n          <span class=\"pity-bar-text\">").concat(((_state$guardianPity2 = state.guardianPity) === null || _state$guardianPity2 === void 0 ? void 0 : _state$guardianPity2.epic) || 0, "/25</span>\n        </div>\n        <div class=\"pity-bar-container\">\n          <div class=\"pity-bar-label\">Legendary</div>\n          <div class=\"pity-bar-track\">\n            <div class=\"pity-bar-fill legendary\" style=\"width:").concat(Math.min((((_state$guardianPity3 = state.guardianPity) === null || _state$guardianPity3 === void 0 ? void 0 : _state$guardianPity3.legendary) || 0) / 50 * 100, 100), "%\"></div>\n          </div>\n          <span class=\"pity-bar-text\">").concat(((_state$guardianPity4 = state.guardianPity) === null || _state$guardianPity4 === void 0 ? void 0 : _state$guardianPity4.legendary) || 0, "/50</span>\n        </div>\n      </div>\n    ");
     }
   }, {
     key: "renderGuardians",
     value: function renderGuardians() {
       var _this3 = this;
+      if (this.showCollection) {
+        this.renderCollection();
+        return;
+      }
       var guardians = _GuardianSystem["default"].getGuardians();
       if (guardians.length === 0) {
         this.container.innerHTML = "\n        <div class=\"empty-state\">\n          <p style=\"font-size: 3rem; margin-bottom: 1rem;\">\uD83D\uDC09</p>\n          <h3>No Guardians Yet</h3>\n          <p>Summon your first guardian to boost your production!</p>\n        </div>\n      ";
@@ -18307,11 +18658,93 @@ var GuardiansUI = /*#__PURE__*/function () {
         var card = _this3.createGuardianCard(guardian);
         _this3.container.appendChild(card);
       });
+
+      // Fusion section
+      var fusionSection = this.createFusionSection(guardians);
+      if (fusionSection) this.container.appendChild(fusionSection);
+    }
+  }, {
+    key: "renderCollection",
+    value: function renderCollection() {
+      var _this4 = this;
+      var pool = _GuardianSystem["default"].guardianPool;
+      var owned = _GuardianSystem["default"].getGuardians();
+      var ownedKeys = new Set(owned.map(function (g) {
+        return g.key;
+      }));
+      this.container.innerHTML = '';
+      var header = document.createElement('div');
+      header.className = 'collection-header';
+      header.innerHTML = "<p style=\"margin-bottom:12px;opacity:0.8\">".concat(ownedKeys.size, "/").concat(Object.keys(pool).length, " guardians collected</p>");
+      this.container.appendChild(header);
+      Object.entries(pool).forEach(function (_ref) {
+        var _ref2 = _slicedToArray(_ref, 2),
+          key = _ref2[0],
+          data = _ref2[1];
+        var card = document.createElement('div');
+        var has = ownedKeys.has(key);
+        var count = owned.filter(function (g) {
+          return g.key === key;
+        }).length;
+        card.className = "guardian-card collection-card ".concat(has ? 'owned' : 'missing');
+        card.innerHTML = "\n        <div class=\"guardian-header\">\n          <span class=\"guardian-emoji\" style=\"opacity:".concat(has ? 1 : 0.3, "\">").concat(data.emoji, "</span>\n          <div class=\"guardian-info\">\n            <h4 class=\"guardian-name\">").concat(data.name, "</h4>\n            <span class=\"guardian-rarity ").concat(data.rarities[data.rarities.length - 1], "\">\n              ").concat(data.rarities.map(function (r) {
+          return _GuardianSystem["default"].getRarityName(r);
+        }).join('/'), "\n            </span>\n          </div>\n        </div>\n        <div class=\"guardian-meta\">\n          <small>").concat(has ? "Owned: ".concat(count, "x") : '🔒 Not collected', "</small>\n        </div>\n      ");
+        _this4.container.appendChild(card);
+      });
+    }
+  }, {
+    key: "createFusionSection",
+    value: function createFusionSection(guardians) {
+      var rarityOrder = ['common', 'uncommon', 'rare', 'epic'];
+      var rarityNames = {
+        common: 'Common',
+        uncommon: 'Uncommon',
+        rare: 'Rare',
+        epic: 'Epic'
+      };
+      var available = rarityOrder.filter(function (r) {
+        return guardians.filter(function (g) {
+          return g.rarity === r;
+        }).length >= 3;
+      });
+      if (available.length === 0) return null;
+      var section = document.createElement('div');
+      section.className = 'fusion-section';
+      section.innerHTML = "<h4>\uD83D\uDD00 Fusion Available</h4><div class=\"fusion-options\"></div>";
+      var options = section.querySelector('.fusion-options');
+      available.forEach(function (rarity) {
+        var count = guardians.filter(function (g) {
+          return g.rarity === rarity;
+        }).length;
+        var fusions = Math.floor(count / 3);
+        var nextIdx = {
+          common: 'uncommon',
+          uncommon: 'rare',
+          rare: 'epic',
+          epic: 'legendary'
+        };
+        var btn = document.createElement('button');
+        btn.className = 'btn btn-small btn-fusion';
+        btn.textContent = "Fuse 3 ".concat(rarityNames[rarity], " \u2192 1 ").concat(rarityNames[nextIdx[rarity]], " (").concat(fusions, "x)");
+        btn.addEventListener('click', function () {
+          var ids = guardians.filter(function (g) {
+            return g.rarity === rarity;
+          }).sort(function (a, b) {
+            return a.bonus - b.bonus;
+          }).slice(0, 3).map(function (g) {
+            return g.id;
+          });
+          _GuardianSystem["default"].fuseGuardians(ids);
+        });
+        options.appendChild(btn);
+      });
+      return section;
     }
   }, {
     key: "createGuardianCard",
     value: function createGuardianCard(guardian) {
-      var _this4 = this;
+      var _this5 = this;
       var card = document.createElement('div');
       card.className = "guardian-card rarity-".concat(guardian.rarity);
       var typeName = this.getTypeName(guardian.type);
@@ -18320,21 +18753,26 @@ var GuardiansUI = /*#__PURE__*/function () {
       // ===== ADAUGĂ EVENT LISTENER =====
       var dismissBtn = card.querySelector('.guardian-dismiss-btn');
       dismissBtn.addEventListener('click', function () {
-        _this4.dismissGuardian(guardian);
+        _this5.dismissGuardian(guardian);
       });
       return card;
     }
   }, {
     key: "dismissGuardian",
     value: function dismissGuardian(guardian) {
+      var rarityLabel = _GuardianSystem["default"].getRarityName(guardian.rarity);
+      var message = "Dismiss ".concat(guardian.emoji, " ").concat(rarityLabel, " ").concat(guardian.name, "? It provides +").concat(guardian.bonus, "% ").concat(this.getTypeName(guardian.type), " production and cannot be recovered!");
+      if (guardian.rarity === 'legendary') {
+        message = "\u2620\uFE0F PERMANENT LOSS \u2620\uFE0F\nYou are about to dismiss a LEGENDARY guardian! ".concat(guardian.emoji, " ").concat(guardian.name, " provides +").concat(guardian.bonus, "% ").concat(this.getTypeName(guardian.type), " production. This action CANNOT be undone!");
+      } else if (guardian.rarity === 'epic') {
+        message = "\u26A0\uFE0F You are about to dismiss an EPIC guardian! ".concat(guardian.emoji, " ").concat(guardian.name, " provides +").concat(guardian.bonus, "% ").concat(this.getTypeName(guardian.type), " production. This cannot be undone.");
+      }
       _ConfirmModal["default"].show({
-        title: 'Dismiss Guardian',
-        message: "Are you sure you want to dismiss ".concat(guardian.emoji, " ").concat(guardian.name, "? This guardian provides +").concat(guardian.bonus, "% ").concat(this.getTypeName(guardian.type), " production and cannot be recovered!"),
+        title: "Dismiss ".concat(rarityLabel, " Guardian"),
+        message: message,
         danger: true,
         onConfirm: function onConfirm() {
           _GuardianSystem["default"].dismiss(guardian.id);
-
-          // Show notification
           _EventBus["default"].emit('notification:show', {
             type: 'info',
             title: 'Guardian Dismissed',
@@ -18348,18 +18786,41 @@ var GuardiansUI = /*#__PURE__*/function () {
     key: "summonGuardian",
     value: function summonGuardian() {
       var success = _GuardianSystem["default"].summon();
-      if (!success) {
-        // Notification will be shown by GuardianSystem
-        return;
-      }
-
-      // Show animation
+      if (!success) return;
       var btn = document.getElementById('summon-guardian-btn');
       if (btn) {
         btn.classList.add('btn-loading');
+        btn.style.transform = 'scale(0.95)';
         setTimeout(function () {
           btn.classList.remove('btn-loading');
-        }, 1000);
+          btn.style.transform = '';
+          btn.style.boxShadow = '0 0 25px rgba(99, 102, 241, 0.6)';
+          setTimeout(function () {
+            btn.style.boxShadow = '';
+          }, 500);
+        }, 300);
+      }
+    }
+  }, {
+    key: "summonBulk",
+    value: function summonBulk() {
+      var results = _GuardianSystem["default"].summonBulk(10);
+      if (results.length > 0) {
+        var x10Btn = document.getElementById('summon-x10-btn');
+        if (x10Btn) {
+          x10Btn.style.transform = 'scale(0.95)';
+          x10Btn.style.boxShadow = '0 0 30px rgba(245, 158, 11, 0.6)';
+          setTimeout(function () {
+            x10Btn.style.transform = '';
+            x10Btn.style.boxShadow = '';
+          }, 500);
+        }
+        _EventBus["default"].emit('notification:show', {
+          type: 'success',
+          title: 'Bulk Summon',
+          message: "Summoned ".concat(results.length, " guardians!"),
+          duration: 3000
+        });
       }
     }
   }, {
@@ -18367,8 +18828,11 @@ var GuardiansUI = /*#__PURE__*/function () {
     value: function updateSummonButton() {
       var btn = document.getElementById('summon-guardian-btn');
       if (!btn) return;
+      var x10Btn = document.getElementById('summon-x10-btn');
+      var state = _StateManager["default"].getState();
       var canSummon = _GuardianSystem["default"].canSummon();
       btn.disabled = !canSummon;
+      if (x10Btn) x10Btn.disabled = (state.resources.gems || 0) < _GuardianSystem["default"].summonCost * 10;
     }
   }, {
     key: "getTypeName",
@@ -18377,6 +18841,7 @@ var GuardiansUI = /*#__PURE__*/function () {
         energy: 'Energy',
         mana: 'Mana',
         volcanic: 'Volcanic',
+        water: 'Water',
         all: 'All Resources',
         gems: 'Gem'
       };

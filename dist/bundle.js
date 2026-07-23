@@ -17876,42 +17876,100 @@ var ArenaUI = /*#__PURE__*/function () {
           }, _callee11, null, [[0, 2]]);
         })));
       });
+      list.addEventListener('click', function (e) {
+        var card = e.target.closest('.arena-guardian-card');
+        if (!card) return;
+        var id = parseInt(card.dataset.id);
+        if (e.target.closest('.levelup-btn') || e.target.closest('.arena-guardian-select') || e.target.closest('.btn-release-row')) return;
+        var g = _this7.guardians.find(function (g) {
+          return g.id === id;
+        });
+        if (g) _this7.showGuardianDetails(g);
+      });
       list.querySelectorAll('.btn-release-row').forEach(function (btn) {
         btn.addEventListener('click', /*#__PURE__*/function () {
           var _ref9 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(e) {
-            var _t12;
+            var guardian, name, rarity, rarities, rarityName, warnings, confirmed, _t12;
             return _regenerator().w(function (_context12) {
               while (1) switch (_context12.p = _context12.n) {
                 case 0:
                   e.stopPropagation();
-                  _context12.p = 1;
-                  _context12.n = 2;
-                  return _api["default"].releaseGuardian(parseInt(btn.dataset.id));
+                  guardian = _this7.guardians.find(function (g) {
+                    return g.id === parseInt(btn.dataset.id);
+                  });
+                  name = guardian ? guardian.name : 'this guardian';
+                  rarity = guardian ? guardian.rarity : 'unknown';
+                  rarities = {
+                    common: 'Common',
+                    uncommon: 'Uncommon',
+                    rare: 'Rare',
+                    epic: 'Epic',
+                    legendary: 'Legendary'
+                  };
+                  rarityName = rarities[rarity] || rarity;
+                  warnings = {
+                    common: 'Are you sure? This action cannot be undone.',
+                    uncommon: 'Are you sure? This action cannot be undone.',
+                    rare: 'Are you sure? This Rare guardian will be lost forever!',
+                    epic: '⚠️ This Epic guardian is valuable! Are you absolutely sure?',
+                    legendary: '❌ LEGENDARY GUARDIAN! Are you absolutely sure you want to release this? This is permanent!'
+                  };
+                  _context12.n = 1;
+                  return _this7.showConfirmDialog("Release ".concat(rarityName, " Guardian"), "".concat(warnings[rarity] || warnings.common));
+                case 1:
+                  confirmed = _context12.v;
+                  if (confirmed) {
+                    _context12.n = 2;
+                    break;
+                  }
+                  return _context12.a(2);
                 case 2:
+                  _context12.p = 2;
+                  _context12.n = 3;
+                  return _api["default"].releaseGuardian(parseInt(btn.dataset.id));
+                case 3:
                   _this7.showNotification('Guardian released', 'info');
                   _this7.loadGuardians();
-                  _context12.n = 4;
+                  _context12.n = 5;
                   break;
-                case 3:
-                  _context12.p = 3;
+                case 4:
+                  _context12.p = 4;
                   _t12 = _context12.v;
                   _this7.showNotification(_t12.message, 'warning');
-                case 4:
+                case 5:
                   return _context12.a(2);
               }
-            }, _callee12, null, [[1, 3]]);
+            }, _callee12, null, [[2, 4]]);
           }));
           return function (_x2) {
             return _ref9.apply(this, arguments);
           };
         }());
       });
-      list.querySelectorAll('.guardian-details-trigger').forEach(function (el) {
-        el.addEventListener('click', function () {
-          var g = _this7.guardians.find(function (g) {
-            return g.id === parseInt(el.dataset.id);
-          });
-          if (g) _this7.showGuardianDetails(g);
+    }
+  }, {
+    key: "showConfirmDialog",
+    value: function showConfirmDialog(title, message) {
+      return new Promise(function (resolve) {
+        var existing = document.querySelector('.confirm-dialog-overlay');
+        if (existing) existing.remove();
+        var overlay = document.createElement('div');
+        overlay.className = 'modal-overlay confirm-dialog-overlay';
+        overlay.innerHTML = "\n        <div class=\"modal-content confirm-dialog\">\n          <h3 style=\"margin-top:0\">".concat(title, "</h3>\n          <p style=\"color:var(--text-secondary);margin:var(--spacing-md) 0\">").concat(message, "</p>\n          <div class=\"confirm-dialog-actions\">\n            <button class=\"btn btn-danger confirm-yes\">Yes, Release</button>\n            <button class=\"btn btn-secondary confirm-no\">Cancel</button>\n          </div>\n        </div>\n      ");
+        document.body.appendChild(overlay);
+        overlay.querySelector('.confirm-yes').addEventListener('click', function () {
+          overlay.remove();
+          resolve(true);
+        });
+        overlay.querySelector('.confirm-no').addEventListener('click', function () {
+          overlay.remove();
+          resolve(false);
+        });
+        overlay.addEventListener('click', function (e) {
+          if (e.target === overlay) {
+            overlay.remove();
+            resolve(false);
+          }
         });
       });
     }

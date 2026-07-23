@@ -610,9 +610,32 @@ class ArenaUI {
       });
     });
 
+    list.addEventListener('click', (e) => {
+      const card = e.target.closest('.arena-guardian-card');
+      if (!card) return;
+      const id = parseInt(card.dataset.id);
+      if (e.target.closest('.levelup-btn') || e.target.closest('.arena-guardian-select') || e.target.closest('.btn-release-row')) return;
+      const g = this.guardians.find(g => g.id === id);
+      if (g) this.showGuardianDetails(g);
+    });
+
     list.querySelectorAll('.btn-release-row').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
+        const guardian = this.guardians.find(g => g.id === parseInt(btn.dataset.id));
+        const name = guardian ? guardian.name : 'this guardian';
+        const rarity = guardian ? guardian.rarity : 'unknown';
+        const rarities = { common: 'Common', uncommon: 'Uncommon', rare: 'Rare', epic: 'Epic', legendary: 'Legendary' };
+        const rarityName = rarities[rarity] || rarity;
+        const warnings = {
+          common: 'Are you sure? This action cannot be undone.',
+          uncommon: 'Are you sure? This action cannot be undone.',
+          rare: 'Are you sure? This Rare guardian will be lost forever!',
+          epic: '⚠️ This Epic guardian is valuable! Are you absolutely sure?',
+          legendary: '❌ LEGENDARY GUARDIAN! Are you absolutely sure you want to release this? This is permanent!'
+        };
+        const confirmed = await this.showConfirmDialog(`Release ${rarityName} Guardian`, `${warnings[rarity] || warnings.common}`);
+        if (!confirmed) return;
         try {
           await api.releaseGuardian(parseInt(btn.dataset.id));
           this.showNotification('Guardian released', 'info');
@@ -622,12 +645,28 @@ class ArenaUI {
         }
       });
     });
+  }
 
-    list.querySelectorAll('.guardian-details-trigger').forEach(el => {
-      el.addEventListener('click', () => {
-        const g = this.guardians.find(g => g.id === parseInt(el.dataset.id));
-        if (g) this.showGuardianDetails(g);
-      });
+  showConfirmDialog(title, message) {
+    return new Promise(resolve => {
+      const existing = document.querySelector('.confirm-dialog-overlay');
+      if (existing) existing.remove();
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay confirm-dialog-overlay';
+      overlay.innerHTML = `
+        <div class="modal-content confirm-dialog">
+          <h3 style="margin-top:0">${title}</h3>
+          <p style="color:var(--text-secondary);margin:var(--spacing-md) 0">${message}</p>
+          <div class="confirm-dialog-actions">
+            <button class="btn btn-danger confirm-yes">Yes, Release</button>
+            <button class="btn btn-secondary confirm-no">Cancel</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      overlay.querySelector('.confirm-yes').addEventListener('click', () => { overlay.remove(); resolve(true); });
+      overlay.querySelector('.confirm-no').addEventListener('click', () => { overlay.remove(); resolve(false); });
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) { overlay.remove(); resolve(false); } });
     });
   }
 

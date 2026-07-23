@@ -684,6 +684,48 @@
   text-decoration: underline;
 }
 
+/* ===== Confirm Dialog ===== */
+.confirm-dialog {
+  max-width: 380px;
+  margin: 20vh auto;
+  padding: var(--spacing-xl);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.confirm-dialog h3 {
+  font-size: 1.15rem;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  margin-top: var(--spacing-lg);
+}
+
+.confirm-dialog-actions .btn {
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .confirm-dialog {
+    margin: 10vh auto;
+    padding: var(--spacing-md);
+  }
+
+  .confirm-dialog-actions {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .confirm-dialog-actions .btn {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
 /* ===== Matchmaking difficulty ===== */
 .arena-opponents-header {
   display: flex;

@@ -260,10 +260,11 @@ class ArenaUI {
           <span id="arena-gems-display" class="arena-gems">💎 ${this.gems.toLocaleString()}</span>
           <span id="arena-energy-display" class="arena-energy">⚡ ${this.energy.toLocaleString()}</span>
           <span id="arena-username-display"></span>
-          ${this.isGuest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Register</button>' : ''}
+          ${this.isGuest
+            ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Login / Register</button>'
+            : '<button class="btn btn-small btn-danger" id="arena-logout">Logout</button>'}
           <button class="btn btn-small btn-secondary" id="arena-save-cloud">☁️ Save</button>
           <button class="btn btn-small btn-secondary" id="arena-load-cloud">☁️ Load</button>
-          <button class="btn btn-small btn-danger" id="arena-logout">Logout</button>
         </div>
       </div>
       ${this.isGuest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : ''}

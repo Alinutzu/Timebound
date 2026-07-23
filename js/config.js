@@ -6,7 +6,7 @@
 const CONFIG = {
   // Game identity
   GAME_NAME: 'Idle Energy Empire',
-  VERSION: '2.0.0',
+  VERSION: '2.1.0',
   
   // Save system
   SAVE_KEY: 'idle_energy_empire_save_v2',

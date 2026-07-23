@@ -1,9 +1,10 @@
-const CACHE_NAME = 'idle-energy-empire-v2.0.0';
+const CACHE_NAME = 'idle-energy-empire-v2.1.0';
 const urlsToCache = [
   '/',
   '/index.html',
   '/css/variables.css',
   '/css/main.css',
+  '/css/mobile.css',
   '/css/components/buttons.css',
   '/css/components/cards.css',
   '/css/components/tabs.css',
@@ -12,6 +13,13 @@ const urlsToCache = [
   '/css/components/tooltips.css',
   '/css/components/tutorial.css',
   '/css/components/upgrade-queue.css',
+  '/css/components/arena.css',
+  '/css/components/puzzle.css',
+  '/css/components/shop.css',
+  '/css/components/guardians.css',
+  '/css/components/mini-games-cards.css',
+  '/css/games/daily-spin.css',
+  '/css/games/game-2048.css',
   '/js/main.js'
 ];
 

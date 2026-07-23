@@ -2,6 +2,7 @@
   "name": "Idle Energy Empire",
   "short_name": "Energy Empire",
   "description": "Build your energy empire and ascend to greatness!",
+  "version": "2.1.0",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a1a2e",

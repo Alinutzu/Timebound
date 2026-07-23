@@ -1,5 +1,5 @@
 /**
- * BadgeManager - Manages notification badges across tabs
+ * BadgeManager - Manages notification badges across tabs (desktop + mobile)
  */
 
 import stateManager from '../core/StateManager.js';
@@ -48,38 +48,37 @@ class BadgeManager {
     const completedQuests = state.quests.active.filter(q => q.completed).length;
     
     this.setBadge('quests', completedQuests);
+    
+    // Update more menu badge if exists
+    this.updateMoreBadgeForTab('quests', completedQuests);
   }
   
   updateAchievementsBadge() {
-  const state = stateManager.getState();
-  
-  // ===== FIX: Adaptare pentru structura de array =====
-  // Verifică dacă achievements sunt în formatul vechi (array-based)
-  if (Array.isArray(state.achievements?.unlocked)) {
-    // Formatul: { unlocked: [], claimed: [] }
-    const unlockedAchievements = state.achievements.unlocked || [];
-    const claimedAchievements = state.achievements.claimed || [];
+    const state = stateManager.getState();
+    let unclaimedCount = 0;
     
-    // Achievements unlocked dar NU claimed
-    const unclaimedCount = unlockedAchievements.filter(
-      key => !claimedAchievements.includes(key)
-    ).length;
+    // Adaptare pentru structura de array
+    if (Array.isArray(state.achievements?.unlocked)) {
+      const unlockedAchievements = state.achievements.unlocked || [];
+      const claimedAchievements = state.achievements.claimed || [];
+      
+      unclaimedCount = unlockedAchievements.filter(
+        key => !claimedAchievements.includes(key)
+      ).length;
+    } else {
+      // Fallback: format nou (object-based)
+      for (let achievement of Object.values(state.achievements)) {
+        if (achievement.unlocked && !achievement.claimed) {
+          unclaimedCount++;
+        }
+      }
+    }
     
     this.setBadge('achievements', unclaimedCount);
-    return;
+    
+    // Update more menu badge
+    this.updateMoreBadgeForTab('achievements', unclaimedCount);
   }
-  
-  // Fallback: format nou (object-based)
-  let unclaimedCount = 0;
-  for (let achievement of Object.values(state.achievements)) {
-    if (achievement.unlocked && !achievement.claimed) {
-      unclaimedCount++;
-    }
-  }
-  
-  this.setBadge('achievements', unclaimedCount);
-  // ===== SFÂRȘIT FIX =====
-}
   
   updateGuardiansBadge() {
     const state = stateManager.getState();
@@ -113,6 +112,56 @@ class BadgeManager {
     const badge = this.badges[badgeKey];
     if (badge) {
       badge.style.display = 'none';
+    }
+  }
+  
+  // Update badge in more menu (for tabs hidden in More)
+  updateMoreBadgeForTab(tabName, count) {
+    const moreBadge = document.getElementById(`more-${tabName}-badge`);
+    if (!moreBadge) return;
+    
+    if (count > 0) {
+      moreBadge.textContent = count;
+      moreBadge.style.display = 'flex';
+    } else {
+      moreBadge.style.display = 'none';
+    }
+    
+    // Also update bottom nav badge for main tabs
+    const bottomBadge = document.getElementById(`bottom-${tabName}-badge`);
+    if (bottomBadge) {
+      if (count > 0) {
+        bottomBadge.textContent = count;
+        bottomBadge.style.display = 'flex';
+      } else {
+        bottomBadge.style.display = 'none';
+      }
+    }
+    
+    // Update "More" button badge
+    this.updateMoreButtonBadge();
+  }
+  
+  // Update the "More" button badge with total count
+  updateMoreButtonBadge() {
+    const moreBadge = document.getElementById('bottom-more-badge');
+    if (!moreBadge) return;
+    
+    let totalCount = 0;
+    
+    // Check all badges in more menu
+    const moreBadges = document.querySelectorAll('.more-badge');
+    moreBadges.forEach(badge => {
+      if (badge.style.display !== 'none') {
+        totalCount += parseInt(badge.textContent) || 0;
+      }
+    });
+    
+    if (totalCount > 0) {
+      moreBadge.textContent = totalCount;
+      moreBadge.style.display = 'flex';
+    } else {
+      moreBadge.style.display = 'none';
     }
   }
   

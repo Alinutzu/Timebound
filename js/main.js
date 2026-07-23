@@ -206,10 +206,12 @@ function bindGlobalEvents() {
         eventBus.emit('modal:show', { modalId: 'daily-reward-modal' });
     });
     
-    document.querySelectorAll('.tab-btn').forEach(btn => {
+    document.querySelectorAll('.tab-btn, .bottom-nav-btn, .more-menu-item').forEach(btn => {
      btn.addEventListener('click', () => {
     const tabName = btn.dataset.tab;
-    badgeManager.clearBadgeOnTabClick(tabName);
+    if (tabName && tabName !== 'more') {
+      badgeManager.clearBadgeOnTabClick(tabName);
+    }
      });
     });
 
@@ -516,8 +518,9 @@ function handleSwipe() {
   const diff = touchEndX - touchStartX;
   if (Math.abs(diff) < 50) return; // Minimum swipe distance
   
-  const activeTab = document.querySelector('.tab-btn.active');
-  const allTabs = Array.from(document.querySelectorAll('.tab-btn'));
+  // Use desktop tabs for swipe order (source of truth)
+  const activeTab = document.querySelector('.desktop-tabs .tab-btn.active');
+  const allTabs = Array.from(document.querySelectorAll('.desktop-tabs .tab-btn'));
   const currentIndex = allTabs.indexOf(activeTab);
   
   if (diff < 0 && currentIndex < allTabs.length - 1) {

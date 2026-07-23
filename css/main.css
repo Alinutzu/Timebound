@@ -194,6 +194,11 @@ body {
     overflow-x: auto;
 }
 
+/* Bottom Navigation — hidden by default, shown on mobile */
+.bottom-nav {
+  display: none;
+}
+
 .tab-btn {
     padding: var(--spacing-sm) var(--spacing-md);
     background: transparent;

@@ -77,8 +77,8 @@
         <!-- Main Content -->
         <main class="game-main">
             
-            <!-- Navigation Tabs -->
-            <nav class="game-tabs">
+            <!-- Navigation Tabs (Desktop) -->
+            <nav class="game-tabs desktop-tabs">
                 <button class="tab-btn active" data-tab="structures">
                     🏗️ Structures
                 </button>
@@ -273,6 +273,70 @@
                 </button>
             </div>
         </footer>
+
+        <!-- Bottom Navigation (Mobile) -->
+        <nav class="bottom-nav" id="bottom-nav">
+            <button class="bottom-nav-btn active" data-tab="structures">
+                <span class="bottom-nav-icon">🏗️</span>
+                <span class="bottom-nav-label">Structures</span>
+            </button>
+            <button class="bottom-nav-btn" data-tab="upgrades">
+                <span class="bottom-nav-icon">⬆️</span>
+                <span class="bottom-nav-label">Upgrades</span>
+            </button>
+            <button class="bottom-nav-btn" data-tab="guardians">
+                <span class="bottom-nav-icon">🐉</span>
+                <span class="bottom-nav-label">Guardians</span>
+                <span class="tab-badge bottom-nav-badge" id="bottom-guardians-badge" style="display: none;">!</span>
+            </button>
+            <button class="bottom-nav-btn" data-tab="arena">
+                <span class="bottom-nav-icon">⚔️</span>
+                <span class="bottom-nav-label">Arena</span>
+            </button>
+            <button class="bottom-nav-btn" data-tab="quests">
+                <span class="bottom-nav-icon">📜</span>
+                <span class="bottom-nav-label">Quests</span>
+                <span class="tab-badge bottom-nav-badge" id="bottom-quests-badge" style="display: none;">0</span>
+            </button>
+            <button class="bottom-nav-btn" data-tab="more" id="more-menu-btn">
+                <span class="bottom-nav-icon">⋯</span>
+                <span class="bottom-nav-label">More</span>
+                <span class="tab-badge bottom-nav-badge" id="bottom-more-badge" style="display: none;">0</span>
+            </button>
+        </nav>
+
+        <!-- More Menu Overlay -->
+        <div class="more-menu-overlay" id="more-menu-overlay">
+            <div class="more-menu-content">
+                <div class="more-menu-header">
+                    <h3>More</h3>
+                    <button class="more-menu-close" id="more-menu-close">&times;</button>
+                </div>
+                <div class="more-menu-items">
+                    <button class="more-menu-item" data-tab="achievements">
+                        <span class="more-menu-icon">🏆</span>
+                        <span class="more-menu-label">Achievements</span>
+                        <span class="tab-badge more-badge" id="more-achievements-badge" style="display: none;">0</span>
+                    </button>
+                    <button class="more-menu-item" data-tab="bosses">
+                        <span class="more-menu-icon">⚔️</span>
+                        <span class="more-menu-label">Bosses</span>
+                    </button>
+                    <button class="more-menu-item" data-tab="puzzle">
+                        <span class="more-menu-icon">🧩</span>
+                        <span class="more-menu-label">Puzzle</span>
+                    </button>
+                    <button class="more-menu-item" data-tab="shop">
+                        <span class="more-menu-icon">💎</span>
+                        <span class="more-menu-label">Shop</span>
+                    </button>
+                    <button class="more-menu-item" data-tab="statistics">
+                        <span class="more-menu-icon">📊</span>
+                        <span class="more-menu-label">Statistics</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
     </div>
 

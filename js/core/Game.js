@@ -6,6 +6,7 @@
 import CONFIG from '../config.js';
 import stateManager from './StateManager.js';
 import saveManager from './SaveManager.js';
+import persistenceManager from './PersistenceManager.js';
 import tickManager from './TickManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
@@ -80,7 +81,7 @@ class Game {
       tickManager.start();
       
       // Start auto-save
-      saveManager.startAutoSave();
+      persistenceManager.startAutoSave();
       
       // Initialize UI (will be done in UI layer)
       eventBus.emit('game:initialized');
@@ -114,7 +115,7 @@ class Game {
    * Save game manually
    */
   save() {
-    return saveManager.save();
+    return persistenceManager.saveLocal();
   }
   
   /**
@@ -125,7 +126,7 @@ class Game {
       return false;
     }
     
-    saveManager.deleteSave();
+    persistenceManager.deleteSave();
     location.reload();
     
     return true;
@@ -135,14 +136,14 @@ class Game {
    * Export save
    */
   exportSave() {
-    return saveManager.export();
+    return persistenceManager.exportSave();
   }
   
   /**
    * Import save
    */
   async importSave(file) {
-    return await saveManager.import(file);
+    return await persistenceManager.importSave(file);
   }
 }
 

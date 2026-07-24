@@ -5,6 +5,7 @@ import Formatters from '../utils/Formatters.js';
 import { io } from 'socket.io-client';
 import authManager from '../api/AuthManager.js';
 import logger from '../utils/Logger.js';
+import persistenceManager from '../core/PersistenceManager.js';
 
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -31,7 +32,6 @@ class ArenaUI {
     this.pveCooldown = 0;
     this.pvpCooldown = 0;
     this.cooldownTimer = null;
-    this.autoSaveTimer = null;
     this.socket = null;
     this.selectedGuardianIds = new Set();
     this.guardianDetails = null;
@@ -39,7 +39,7 @@ class ArenaUI {
 
     eventBus.on('auth:stateChanged', ({ state }) => {
       if (state === 'UNAUTHENTICATED') {
-        this.stopAutoSave();
+        persistenceManager.setCloudEnabled(false);
         this.disconnectSocket();
         if (this.cooldownTimer) {
           clearInterval(this.cooldownTimer);
@@ -113,44 +113,12 @@ class ArenaUI {
   }
 
   async autoLoadCloud() {
-    try {
-      const data = await api.loadCloud();
-      if (data.state) {
-        stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: data.state } });
-        eventBus.emit('cloud:loaded');
-        this.showNotification('☁️ Cloud save loaded', 'info');
-      }
-    } catch (e) {
-      logger.warn('[ArenaUI] autoLoadCloud failed:', e.message);
-    }
-  }
-
-  async autoSave() {
-    if (!authManager.getToken()) return;
-    try {
-      const state = stateManager.getState();
-      const payload = JSON.stringify(state);
-      if (payload.length > 900000) {
-        const trimmed = { resources: state.resources, stats: state.stats, structures: state.structures, upgrades: state.upgrades, guardians: state.guardians };
-        await api.saveCloud(trimmed);
-      } else {
-        await api.saveCloud(state);
-      }
-    } catch (e) {
-      if (e.status !== 401) logger.warn('[ArenaUI] autoSave failed:', e.message);
-    }
+    const ok = await persistenceManager.loadCloud();
+    if (ok) this.showNotification('☁️ Cloud save loaded', 'info');
   }
 
   startAutoSave() {
-    this.stopAutoSave();
-    this.autoSaveTimer = setInterval(() => this.autoSave(), 30000);
-  }
-
-  stopAutoSave() {
-    if (this.autoSaveTimer) {
-      clearInterval(this.autoSaveTimer);
-      this.autoSaveTimer = null;
-    }
+    persistenceManager.setCloudEnabled(true);
   }
 
   startCooldownTimer() {

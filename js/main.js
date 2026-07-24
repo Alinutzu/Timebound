@@ -14,6 +14,7 @@ import stateManager from './core/StateManager.js';
 import resourceApi from './api/ResourceAPI.js';
 import Formatters from './utils/Formatters.js';
 import miniGameAchievementSystem from './systems/MiniGameAchievementSystem.js'; // ✅ ADĂUGAT
+import CheatMenu from './ui/CheatMenu.js';
 
 // UI Managers
 import ResourceDisplay from './ui/components/ResourceDisplay.js';
@@ -459,6 +460,9 @@ if (CONFIG.DEBUG_MODE || CONFIG.ENABLE_CHEATS) {
     window.eventBus = eventBus;
     window.stateManager = stateManager;
     window.logger = logger;
+    
+    // In-game cheat menu
+    new CheatMenu();
     
     // Cheat commands — uses ResourceAPI
     window.cheat = {

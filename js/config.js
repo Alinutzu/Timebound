@@ -17,7 +17,7 @@ const CONFIG = {
   
   // Debug
   DEBUG_MODE: false,
-  ENABLE_CHEATS: false, // Production only
+  ENABLE_CHEATS: true, // Production only
   LOG_LEVEL: 'info', // 'error', 'warn', 'info', 'debug'
   
   // UI

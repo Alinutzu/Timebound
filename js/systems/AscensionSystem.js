@@ -7,6 +7,7 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import upgradeSystem from './UpgradeSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class AscensionSystem {
   constructor() {
@@ -60,7 +61,7 @@ class AscensionSystem {
       currentLevel: state.ascension.level,
       newLevel: newLevel,
       crystalsEarned: crystalsEarned,
-      totalCrystals: state.resources.crystals + crystalsEarned,
+      totalCrystals: resourceApi.get('crystals') + crystalsEarned,
       
       bonuses: {
         production: {
@@ -76,16 +77,16 @@ class AscensionSystem {
       },
       
       willLose: {
-        energy: state.resources.energy,
-        mana: state.resources.mana,
-        volcanicEnergy: state.resources.volcanicEnergy,
+        energy: resourceApi.get('energy'),
+        mana: resourceApi.get('mana'),
+        volcanicEnergy: resourceApi.get('volcanicEnergy'),
         structures: this.getStructuresSummary(),
         upgrades: this.getUpgradesSummary()
       },
       
       willKeep: {
-        gems: state.resources.gems,
-        crystals: state.resources.crystals + crystalsEarned,
+        gems: resourceApi.get('gems'),
+        crystals: resourceApi.get('crystals') + crystalsEarned,
         guardians: state.guardians.length,
         achievements: this.getUnlockedAchievementsCount(),
         realms: state.realms.unlocked.length,
@@ -125,9 +126,9 @@ class AscensionSystem {
      // ===== ADAUGĂ: Save current resources for Quick Start =====
   const stateBefore = stateManager.getState();
   const previousResources = {
-    energy: stateBefore.resources.energy,
-    mana: stateBefore.resources.mana,
-    volcanicEnergy: stateBefore.resources.volcanicEnergy
+    energy: resourceApi.get('energy'),
+    mana: resourceApi.get('mana'),
+    volcanicEnergy: resourceApi.get('volcanicEnergy')
   };
   // ===== SFÂRȘIT ADĂUGARE =====
 
@@ -183,24 +184,15 @@ applyQuickStart(previousResources = null) {
     const volcanicBonus = Math.floor(previousResources.volcanicEnergy * quickStartPercent);
     
     if (energyBonus > 0) {
-      stateManager.dispatch({
-        type: 'ADD_RESOURCE',
-        payload: { resource: 'energy', amount: energyBonus }
-      });
+      resourceApi.add('energy', energyBonus);
     }
     
     if (manaBonus > 0) {
-      stateManager.dispatch({
-        type: 'ADD_RESOURCE',
-        payload: { resource: 'mana', amount: manaBonus }
-      });
+      resourceApi.add('mana', manaBonus);
     }
     
     if (volcanicBonus > 0) {
-      stateManager.dispatch({
-        type: 'ADD_RESOURCE',
-        payload: { resource: 'volcanicEnergy', amount: volcanicBonus }
-      });
+      resourceApi.add('volcanicEnergy', volcanicBonus);
     }
     
     logger.info('AscensionSystem', `🚀 Quick Start bonus: +${energyBonus} energy, +${manaBonus} mana, +${volcanicBonus} volcanic`);

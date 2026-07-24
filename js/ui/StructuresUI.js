@@ -8,6 +8,7 @@ import eventBus from '../utils/EventBus.js';
 import StructureCard from './components/StructureCard.js';
 import Formatters from '../utils/Formatters.js';
 import realmSystem from '../systems/RealmSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class StructuresUI {
   constructor(containerId) {
@@ -55,7 +56,7 @@ class StructuresUI {
             const state = stateManager.getState();
             const realm = realmSystem.getRealm(realmId);
             const cost = realm?.unlockCost?.crystals;
-            if (cost && state.resources.crystals < cost) {
+            if (cost && !resourceApi.canAfford('crystals', cost)) {
               eventBus.emit('notification:show', {
                 type: 'warning',
                 message: `Need ${cost} 💠 to unlock ${realm.name}`

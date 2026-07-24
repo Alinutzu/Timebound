@@ -6,6 +6,7 @@
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import resourceApi from '../api/ResourceAPI.js';
 import { 
   MINI_GAME_ACHIEVEMENTS, 
   getAchievementsByGame,
@@ -176,11 +177,7 @@ class MiniGameAchievementSystem {
           guaranteed: true
         });
       } else {
-        // Add resource
-        stateManager.dispatch({
-          type: 'ADD_RESOURCE',
-          payload: { resource, amount }
-        });
+        resourceApi.add(resource, amount);
       }
     }
     

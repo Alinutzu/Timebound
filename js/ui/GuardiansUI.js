@@ -7,6 +7,7 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import Formatters from '../utils/Formatters.js';
 import confirmModal from './ConfirmModal.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class GuardiansUI {
   constructor(containerId) {
@@ -347,7 +348,7 @@ class GuardiansUI {
     const state = stateManager.getState();
     const canSummon = guardianSystem.canSummon();
     btn.disabled = !canSummon;
-    if (x10Btn) x10Btn.disabled = (state.resources.gems || 0) < guardianSystem.summonCost * 10;
+    if (x10Btn) x10Btn.disabled = !resourceApi.canAfford('gems', guardianSystem.summonCost * 10);
   }
   
   getTypeName(type) {

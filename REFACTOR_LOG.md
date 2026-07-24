@@ -33,8 +33,20 @@
 | 9 | Migrat `DailySpinGame.js` | ✅ Complet |
 | 10 | Migrat `Game2048.js` | ✅ Complet |
 | 11 | Migrat `BadgeManager.js` | ✅ Complet |
-| 12 | Migrat `ArenaUI.js` (partial — resource reads) | 🔜 De migrat în Faza 5 (decompoziție) |
-| 13 | Eliminat `this.energy` / `this.gems` din ArenaUI | 🔜 De migrat în Faza 5 |
+| 12 | Migrat `AscensionSystem.js` | ✅ Complet |
+| 13 | Migrat `AutomationSystem.js` | ✅ Complet |
+| 14 | Migrat `UpgradeQueueSystem.js` | ✅ Complet |
+| 15 | Migrat `TutorialSystem.js` | ✅ Complet |
+| 16 | Migrat `QuestSystem.js` | ✅ Complet |
+| 17 | Migrat `AchievementSystem.js` | ✅ Complet |
+| 18 | Migrat `MiniGameAchievementSystem.js` | ✅ Complet |
+| 19 | Migrat `BossSystem.js` | ✅ Complet |
+| 20 | Migrat `StructuresUI.js` | ✅ Complet |
+| 21 | Migrat `GuardiansUI.js` | ✅ Complet |
+| 22 | Migrat `StatisticsSystem.js` | ✅ Complet |
+| 23 | Creat `CheatMenu.js` (in-game UI) | ✅ Complet |
+| 14 | Migrat `ArenaUI.js` (partial — resource reads) | 🔜 Singurul rămas |
+| 15 | Eliminat `this.energy` / `this.gems` din ArenaUI | 🔜 În Faza 5 (decompoziție) |
 
 ---
 
@@ -56,6 +68,18 @@
 | `js/ui/games/DailySpinGame.js` | `grantReward()` folosește `resourceApi.add()` |
 | `js/ui/games/Game2048.js` | `grantReward()` folosește `resourceApi.add()` |
 | `js/ui/BadgeManager.js` | `updateGuardiansBadge()` folosește `resourceApi.canAfford()` |
+| `js/systems/AscensionSystem.js` | `getAscensionPreview()` și `applyQuickStart()` folosesc `resourceApi.get()`/`add()` |
+| `js/systems/AutomationSystem.js` | `unlock()`, `autoBuyStructures()`, `autoSummonGuardians()`, `autoPuzzlePlay()` folosesc ResourceAPI |
+| `js/systems/UpgradeQueueSystem.js` | `cancelQueuedUpgrade()`, `speedUp()`, `upgradeQueueSlots()` folosesc ResourceAPI |
+| `js/systems/TutorialSystem.js` | `condition` checks și rewards folosesc ResourceAPI |
+| `js/systems/QuestSystem.js` | `pearls` check și quest rewards folosesc ResourceAPI |
+| `js/systems/AchievementSystem.js` | Achievement rewards folosesc `resourceApi.add()` |
+| `js/systems/MiniGameAchievementSystem.js` | Achievement rewards folosesc `resourceApi.add()` |
+| `js/systems/BossSystem.js` | Boss rewards folosesc `resourceApi.add()` |
+| `js/ui/StructuresUI.js` | Realm unlock crystals check folosește `resourceApi.canAfford()` |
+| `js/ui/GuardiansUI.js` | Summon x10 gems check folosește `resourceApi.canAfford()` |
+| `js/systems/StatisticsSystem.js` | Gem tracking și export folosesc `resourceApi.get()` |
+| `js/ui/CheatMenu.js` | **NOU** — panel de cheat în joc (SET/ADD/MAX/RESET/Spin) |
 
 ---
 

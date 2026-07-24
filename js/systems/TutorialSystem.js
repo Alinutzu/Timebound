@@ -7,6 +7,7 @@ import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import resourceManager from '../core/ResourceManager.js';
 import upgradeSystem from './UpgradeSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class TutorialSystem {
   constructor() {
@@ -62,11 +63,7 @@ class TutorialSystem {
         },
         waitFor: 'structure:purchased',
         onComplete: () => {
-          // Give bonus
-          stateManager.dispatch({
-            type: 'ADD_RESOURCE',
-            payload: { resource: 'energy', amount: 100 }
-          });
+          resourceApi.add('energy', 100);
         }
       },
       
@@ -104,8 +101,7 @@ class TutorialSystem {
         highlight: true,
         onClick: 'click',
         condition: () => {
-          const state = stateManager.getState();
-          return state.resources.energy >= 100;
+          return resourceApi.get('energy') >= 100;
         }
       },
       
@@ -141,8 +137,7 @@ class TutorialSystem {
         highlight: true,
         onClick: 'click',
         condition: () => {
-          const state = stateManager.getState();
-          return state.resources.gems >= 100;
+          return resourceApi.get('gems') >= 100;
         }
       },
       
@@ -159,11 +154,7 @@ class TutorialSystem {
         },
         waitFor: 'guardian:summoned',
         onComplete: () => {
-          // Give bonus gems
-          stateManager.dispatch({
-            type: 'ADD_RESOURCE',
-            payload: { resource: 'gems', amount: 50 }
-          });
+          resourceApi.add('gems', 50);
         }
       },
       
@@ -552,10 +543,7 @@ class TutorialSystem {
     this.hideSpotlight();
     
     // Give completion reward
-    stateManager.dispatch({
-      type: 'ADD_RESOURCE',
-      payload: { resource: 'gems', amount: 500 }
-    });
+    resourceApi.add('gems', 500);
     
     stateManager.dispatch({
       type: 'COMPLETE_TUTORIAL'

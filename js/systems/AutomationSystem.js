@@ -11,6 +11,7 @@ import questSystem from './QuestSystem.js';
 import upgradeSystem from './UpgradeSystem.js';
 import upgradeQueueSystem from './UpgradeQueueSystem.js';
 import guardianSystem from './GuardianSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class AutomationSystem {
   constructor() {
@@ -164,7 +165,7 @@ class AutomationSystem {
     }
     
     // Check cost
-    if (state.resources.gems < feature.cost) {
+    if (!resourceApi.canAfford('gems', feature.cost)) {
       logger.warn('AutomationSystem', `Not enough gems for ${feature.name} (need ${feature.cost})`);
       eventBus.emit('automation:unlock-failed', { 
         featureKey, 
@@ -174,11 +175,8 @@ class AutomationSystem {
       return false;
     }
     
-    // Deduct cost
-    stateManager.dispatch({
-      type: 'REMOVE_RESOURCE',
-      payload: { resource: 'gems', amount: feature.cost }
-    });
+    // Deduct cost via ResourceAPI
+    resourceApi.spend('gems', feature.cost);
     
     // Track spending
     stateManager.dispatch({
@@ -252,7 +250,7 @@ class AutomationSystem {
       
       const cost = structureSystem.getCost(key);
       const costResource = structureData.costResource || 'energy';
-      const canAfford = (state.resources[costResource] || 0) >= cost * threshold;
+      const canAfford = resourceApi.canAfford(costResource, cost * threshold);
       
       if (canAfford) {
         const success = structureSystem.buy(key);
@@ -324,7 +322,7 @@ class AutomationSystem {
     // Check gem threshold (only summon if >= 1000 gems)
     const gemThreshold = state.automation.autoSummonThreshold || 1000;
     
-    if (state.resources.gems >= gemThreshold) {
+    if (resourceApi.canAfford('gems', gemThreshold)) {
       const success = guardianSystem.summon();
       if (success) {
         logger.info('AutomationSystem', 'Auto-summoned guardian');
@@ -346,33 +344,21 @@ class AutomationSystem {
     // Check gem cost (auto-puzzle costs gems)
     const cost = 50; // 50 gems per auto-puzzle
     
-    if (state.resources.gems < cost) {
+    if (!resourceApi.canAfford('gems', cost)) {
       return;
     }
     
     // Simulate puzzle play
-    // In real implementation, this would use AI or random moves
     const simulatedScore = Math.floor(Math.random() * 1000) + 500;
     
-    // Deduct cost
-    stateManager.dispatch({
-      type: 'REMOVE_RESOURCE',
-      payload: { resource: 'gems', amount: cost }
-    });
+    // Deduct cost and give reward via ResourceAPI
+    resourceApi.spend('gems', cost);
     
-    // Give puzzle reward based on score
     const gemReward = Math.floor(simulatedScore / 50);
     const energyReward = simulatedScore * 5;
     
-    stateManager.dispatch({
-      type: 'ADD_RESOURCE',
-      payload: { resource: 'gems', amount: gemReward }
-    });
-    
-    stateManager.dispatch({
-      type: 'ADD_RESOURCE',
-      payload: { resource: 'energy', amount: energyReward }
-    });
+    resourceApi.add('gems', gemReward);
+    resourceApi.add('energy', energyReward);
     
     logger.debug('AutomationSystem', `Auto-puzzle: score ${simulatedScore}, earned ${gemReward} gems`);
   }
@@ -457,7 +443,7 @@ class AutomationSystem {
         unlockable.push({
           key,
           ...feature,
-          canAfford: state.resources.gems >= feature.cost
+          canAfford: resourceApi.canAfford('gems', feature.cost)
         });
       }
     }

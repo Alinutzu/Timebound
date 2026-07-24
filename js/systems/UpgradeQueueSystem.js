@@ -9,6 +9,7 @@ import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import resourceManager from '../core/ResourceManager.js';
 import upgradeSystem from './UpgradeSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class UpgradeQueueSystem {
   constructor() {
@@ -282,14 +283,8 @@ class UpgradeQueueSystem {
       return false;
     }
     
-    // Refund cost
-    stateManager.dispatch({
-      type: 'ADD_RESOURCE',
-      payload: {
-        resource: item.costResource,
-        amount: item.cost
-      }
-    });
+    // Refund cost via ResourceAPI
+    resourceApi.add(item.costResource, item.cost);
     
     // Remove from queue
     stateManager.dispatch({
@@ -330,17 +325,14 @@ class UpgradeQueueSystem {
     
     if (useGems) {
       // Check if player has enough gems
-      if (state.resources.gems < gemCost) {
+      if (!resourceApi.canAfford('gems', gemCost)) {
         logger.warn('UpgradeQueueSystem', `Not enough gems (need ${gemCost})`);
         eventBus.emit('upgrade:speedup-failed', { reason: 'insufficient-gems', cost: gemCost });
         return false;
       }
       
-      // Deduct gems
-      stateManager.dispatch({
-        type: 'REMOVE_RESOURCE',
-        payload: { resource: 'gems', amount: gemCost }
-      });
+      // Deduct gems via ResourceAPI
+      resourceApi.spend('gems', gemCost);
       
       // Track spending
       stateManager.dispatch({
@@ -441,16 +433,13 @@ class UpgradeQueueSystem {
     // Cost: 1000 gems per slot
     const cost = 1000 * currentSlots;
     
-    if (state.resources.gems < cost) {
+    if (!resourceApi.canAfford('gems', cost)) {
       logger.warn('UpgradeQueueSystem', `Not enough gems for slot upgrade (need ${cost})`);
       return false;
     }
     
-    // Deduct gems
-    stateManager.dispatch({
-      type: 'REMOVE_RESOURCE',
-      payload: { resource: 'gems', amount: cost }
-    });
+    // Deduct gems via ResourceAPI
+    resourceApi.spend('gems', cost);
     
     // Increase slots
     stateManager.dispatch({

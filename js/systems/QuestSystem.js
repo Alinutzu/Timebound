@@ -8,6 +8,7 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import upgradeSystem from './UpgradeSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class QuestSystem {
   constructor() {
@@ -453,7 +454,7 @@ class QuestSystem {
             currentValue = state.production.tidalEnergy || 0;
             break;
           case 'pearls':
-            currentValue = state.resources.pearls || 0;
+            currentValue = resourceApi.get('pearls');
             break;
         }
         
@@ -503,12 +504,9 @@ if (quest.rewards.gems && luckyChance > 0 && Math.random() < luckyChance) {
   });
 }
     
-    // Give rewards
+    // Give rewards via ResourceAPI
     for (let [resource, amount] of Object.entries(quest.rewards)) {
-      stateManager.dispatch({
-        type: 'ADD_RESOURCE',
-        payload: { resource, amount }
-      });
+      resourceApi.add(resource, amount);
       
       // Track gem earnings
       if (resource === 'gems') {

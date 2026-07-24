@@ -8,6 +8,7 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import resourceManager from '../core/ResourceManager.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class AchievementSystem {
   constructor() {
@@ -186,10 +187,7 @@ class AchievementSystem {
     }
     
     for (let [resource, amount] of Object.entries(rewards)) {
-      stateManager.dispatch({
-        type: 'ADD_RESOURCE',
-        payload: { resource, amount }
-      });
+      resourceApi.add(resource, amount);
       
       // Track gem earnings
       if (resource === 'gems') {

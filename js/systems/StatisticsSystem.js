@@ -8,6 +8,7 @@ import logger from '../utils/Logger.js';
 import Formatters from '../utils/Formatters.js';
 import structureSystem from './StructureSystem.js';
 import upgradeSystem from './UpgradeSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 import guardianSystem from './GuardianSystem.js';
 import bossSystem from './BossSystem.js';
 import achievementSystem from './AchievementSystem.js';
@@ -92,8 +93,9 @@ class StatisticsSystem {
     
     // Track gems
     eventBus.on('state:ADD_RESOURCE', (data) => {
-      if (data.state.resources.gems > this.getStat('highestGems')) {
-        this.setStat('highestGems', data.state.resources.gems);
+      const currentGems = resourceApi.get('gems');
+      if (currentGems > this.getStat('highestGems')) {
+        this.setStat('highestGems', currentGems);
       }
     });
     
@@ -173,10 +175,10 @@ class StatisticsSystem {
       
       resources: {
         'Lifetime Energy': Formatters.formatNumber(state.ascension.lifetimeEnergy),
-        'Current Energy': Formatters.formatNumber(state.resources.energy),
-        'Current Mana': Formatters.formatNumber(state.resources.mana),
-        'Current Gems': Formatters.formatNumber(state.resources.gems),
-        'Current Crystals': Formatters.formatNumber(state.resources.crystals),
+        'Current Energy': Formatters.formatNumber(resourceApi.get('energy')),
+        'Current Mana': Formatters.formatNumber(resourceApi.get('mana')),
+        'Current Gems': Formatters.formatNumber(resourceApi.get('gems')),
+        'Current Crystals': Formatters.formatNumber(resourceApi.get('crystals')),
         'Highest Energy/s': Formatters.formatNumber(stats.highestEnergyPerSecond || 0),
         'Highest Gems': Formatters.formatNumber(stats.highestGems || 0)
       },

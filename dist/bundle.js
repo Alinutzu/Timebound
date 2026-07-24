@@ -319,7 +319,7 @@ var CONFIG = {
 
   // Debug
   DEBUG_MODE: false,
-  ENABLE_CHEATS: false,
+  ENABLE_CHEATS: true,
   // Production only
   LOG_LEVEL: 'info',
   // 'error', 'warn', 'info', 'debug'
@@ -8866,6 +8866,7 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _ResourceManager = _interopRequireDefault(require("../core/ResourceManager.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -9098,13 +9099,7 @@ var AchievementSystem = /*#__PURE__*/function () {
         var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
           resource = _Object$entries2$_i[0],
           amount = _Object$entries2$_i[1];
-        _StateManager["default"].dispatch({
-          type: 'ADD_RESOURCE',
-          payload: {
-            resource: resource,
-            amount: amount
-          }
-        });
+        _ResourceAPI["default"].add(resource, amount);
 
         // Track gem earnings
         if (resource === 'gems') {
@@ -9364,7 +9359,7 @@ window.claimAchievement = function (achievementKey) {
 };
 var _default = exports["default"] = achievementSystem;
 
-},{"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../data/achievements.js":9,"../utils/EventBus.js":61,"../utils/Logger.js":63}],21:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../data/achievements.js":9,"../utils/EventBus.js":61,"../utils/Logger.js":63}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9376,6 +9371,7 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
@@ -9441,7 +9437,7 @@ var AscensionSystem = /*#__PURE__*/function () {
         currentLevel: state.ascension.level,
         newLevel: newLevel,
         crystalsEarned: crystalsEarned,
-        totalCrystals: state.resources.crystals + crystalsEarned,
+        totalCrystals: _ResourceAPI["default"].get('crystals') + crystalsEarned,
         bonuses: {
           production: {
             current: 1 + state.ascension.level * this.productionBonus,
@@ -9455,15 +9451,15 @@ var AscensionSystem = /*#__PURE__*/function () {
           }
         },
         willLose: {
-          energy: state.resources.energy,
-          mana: state.resources.mana,
-          volcanicEnergy: state.resources.volcanicEnergy,
+          energy: _ResourceAPI["default"].get('energy'),
+          mana: _ResourceAPI["default"].get('mana'),
+          volcanicEnergy: _ResourceAPI["default"].get('volcanicEnergy'),
           structures: this.getStructuresSummary(),
           upgrades: this.getUpgradesSummary()
         },
         willKeep: {
-          gems: state.resources.gems,
-          crystals: state.resources.crystals + crystalsEarned,
+          gems: _ResourceAPI["default"].get('gems'),
+          crystals: _ResourceAPI["default"].get('crystals') + crystalsEarned,
           guardians: state.guardians.length,
           achievements: this.getUnlockedAchievementsCount(),
           realms: state.realms.unlocked.length,
@@ -9506,9 +9502,9 @@ var AscensionSystem = /*#__PURE__*/function () {
       // ===== ADAUGĂ: Save current resources for Quick Start =====
       var stateBefore = _StateManager["default"].getState();
       var previousResources = {
-        energy: stateBefore.resources.energy,
-        mana: stateBefore.resources.mana,
-        volcanicEnergy: stateBefore.resources.volcanicEnergy
+        energy: _ResourceAPI["default"].get('energy'),
+        mana: _ResourceAPI["default"].get('mana'),
+        volcanicEnergy: _ResourceAPI["default"].get('volcanicEnergy')
       };
       // ===== SFÂRȘIT ADĂUGARE =====
 
@@ -9562,31 +9558,13 @@ var AscensionSystem = /*#__PURE__*/function () {
         var manaBonus = Math.floor(previousResources.mana * quickStartPercent);
         var volcanicBonus = Math.floor(previousResources.volcanicEnergy * quickStartPercent);
         if (energyBonus > 0) {
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: 'energy',
-              amount: energyBonus
-            }
-          });
+          _ResourceAPI["default"].add('energy', energyBonus);
         }
         if (manaBonus > 0) {
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: 'mana',
-              amount: manaBonus
-            }
-          });
+          _ResourceAPI["default"].add('mana', manaBonus);
         }
         if (volcanicBonus > 0) {
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: 'volcanicEnergy',
-              amount: volcanicBonus
-            }
-          });
+          _ResourceAPI["default"].add('volcanicEnergy', volcanicBonus);
         }
         _Logger["default"].info('AscensionSystem', "\uD83D\uDE80 Quick Start bonus: +".concat(energyBonus, " energy, +").concat(manaBonus, " mana, +").concat(volcanicBonus, " volcanic"));
       }
@@ -9727,7 +9705,7 @@ var AscensionSystem = /*#__PURE__*/function () {
 var ascensionSystem = new AscensionSystem();
 var _default = exports["default"] = ascensionSystem;
 
-},{"../config.js":2,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],22:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../config.js":2,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9743,6 +9721,7 @@ var _QuestSystem = _interopRequireDefault(require("./QuestSystem.js"));
 var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
 var _UpgradeQueueSystem = _interopRequireDefault(require("./UpgradeQueueSystem.js"));
 var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -9926,7 +9905,7 @@ var AutomationSystem = /*#__PURE__*/function () {
       }
 
       // Check cost
-      if (state.resources.gems < feature.cost) {
+      if (!_ResourceAPI["default"].canAfford('gems', feature.cost)) {
         _Logger["default"].warn('AutomationSystem', "Not enough gems for ".concat(feature.name, " (need ").concat(feature.cost, ")"));
         _EventBus["default"].emit('automation:unlock-failed', {
           featureKey: featureKey,
@@ -9936,14 +9915,8 @@ var AutomationSystem = /*#__PURE__*/function () {
         return false;
       }
 
-      // Deduct cost
-      _StateManager["default"].dispatch({
-        type: 'REMOVE_RESOURCE',
-        payload: {
-          resource: 'gems',
-          amount: feature.cost
-        }
-      });
+      // Deduct cost via ResourceAPI
+      _ResourceAPI["default"].spend('gems', feature.cost);
 
       // Track spending
       _StateManager["default"].dispatch({
@@ -10026,7 +9999,7 @@ var AutomationSystem = /*#__PURE__*/function () {
         if (!_StructureSystem["default"].isUnlocked(key)) continue;
         var cost = _StructureSystem["default"].getCost(key);
         var costResource = structureData.costResource || 'energy';
-        var canAfford = (state.resources[costResource] || 0) >= cost * threshold;
+        var canAfford = _ResourceAPI["default"].canAfford(costResource, cost * threshold);
         if (canAfford) {
           var success = _StructureSystem["default"].buy(key);
           if (success) {
@@ -10115,7 +10088,7 @@ var AutomationSystem = /*#__PURE__*/function () {
 
       // Check gem threshold (only summon if >= 1000 gems)
       var gemThreshold = state.automation.autoSummonThreshold || 1000;
-      if (state.resources.gems >= gemThreshold) {
+      if (_ResourceAPI["default"].canAfford('gems', gemThreshold)) {
         var success = _GuardianSystem["default"].summon();
         if (success) {
           _Logger["default"].info('AutomationSystem', 'Auto-summoned guardian');
@@ -10139,40 +10112,19 @@ var AutomationSystem = /*#__PURE__*/function () {
       // Check gem cost (auto-puzzle costs gems)
       var cost = 50; // 50 gems per auto-puzzle
 
-      if (state.resources.gems < cost) {
+      if (!_ResourceAPI["default"].canAfford('gems', cost)) {
         return;
       }
 
       // Simulate puzzle play
-      // In real implementation, this would use AI or random moves
       var simulatedScore = Math.floor(Math.random() * 1000) + 500;
 
-      // Deduct cost
-      _StateManager["default"].dispatch({
-        type: 'REMOVE_RESOURCE',
-        payload: {
-          resource: 'gems',
-          amount: cost
-        }
-      });
-
-      // Give puzzle reward based on score
+      // Deduct cost and give reward via ResourceAPI
+      _ResourceAPI["default"].spend('gems', cost);
       var gemReward = Math.floor(simulatedScore / 50);
       var energyReward = simulatedScore * 5;
-      _StateManager["default"].dispatch({
-        type: 'ADD_RESOURCE',
-        payload: {
-          resource: 'gems',
-          amount: gemReward
-        }
-      });
-      _StateManager["default"].dispatch({
-        type: 'ADD_RESOURCE',
-        payload: {
-          resource: 'energy',
-          amount: energyReward
-        }
-      });
+      _ResourceAPI["default"].add('gems', gemReward);
+      _ResourceAPI["default"].add('energy', energyReward);
       _Logger["default"].debug('AutomationSystem', "Auto-puzzle: score ".concat(simulatedScore, ", earned ").concat(gemReward, " gems"));
     }
 
@@ -10260,7 +10212,7 @@ var AutomationSystem = /*#__PURE__*/function () {
           unlockable.push(_objectSpread(_objectSpread({
             key: key
           }, feature), {}, {
-            canAfford: state.resources.gems >= feature.cost
+            canAfford: _ResourceAPI["default"].canAfford('gems', feature.cost)
           }));
         }
       }
@@ -10271,7 +10223,7 @@ var AutomationSystem = /*#__PURE__*/function () {
 var automationSystem = new AutomationSystem();
 var _default = exports["default"] = automationSystem;
 
-},{"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25,"./QuestSystem.js":28,"./StructureSystem.js":32,"./UpgradeQueueSystem.js":34,"./UpgradeSystem.js":35}],23:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25,"./QuestSystem.js":28,"./StructureSystem.js":32,"./UpgradeQueueSystem.js":34,"./UpgradeSystem.js":35}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10284,6 +10236,7 @@ var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _StructureSystem = _interopRequireDefault(require("./StructureSystem.js"));
 var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 var _guardians = require("../data/guardians.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -10695,19 +10648,13 @@ var BossSystem = /*#__PURE__*/function () {
   }, {
     key: "giveRewards",
     value: function giveRewards(bossKey, rewards, isFirstDefeat) {
-      // Resource rewards
+      // Resource rewards via ResourceAPI
       for (var _i7 = 0, _Object$entries7 = Object.entries(rewards); _i7 < _Object$entries7.length; _i7++) {
         var _Object$entries7$_i = _slicedToArray(_Object$entries7[_i7], 2),
           resource = _Object$entries7$_i[0],
           amount = _Object$entries7$_i[1];
         if (resource === 'guaranteedGuardian' || resource === 'specialReward') continue;
-        _StateManager["default"].dispatch({
-          type: 'ADD_RESOURCE',
-          payload: {
-            resource: resource,
-            amount: amount
-          }
-        });
+        _ResourceAPI["default"].add(resource, amount);
 
         // Track gem earnings
         if (resource === 'gems') {
@@ -10889,7 +10836,7 @@ var BossSystem = /*#__PURE__*/function () {
 var bossSystem = new BossSystem();
 var _default = exports["default"] = bossSystem;
 
-},{"../core/StateManager.js":7,"../data/bosses.js":10,"../data/guardians.js":11,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25,"./StructureSystem.js":32}],24:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/bosses.js":10,"../data/guardians.js":11,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25,"./StructureSystem.js":32}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12096,6 +12043,7 @@ exports["default"] = void 0;
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 var _miniGameAchievements = require("../data/miniGameAchievements.js");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -12293,14 +12241,7 @@ var MiniGameAchievementSystem = /*#__PURE__*/function () {
             guaranteed: true
           });
         } else {
-          // Add resource
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: resource,
-              amount: amount
-            }
-          });
+          _ResourceAPI["default"].add(resource, amount);
         }
       }
       _Logger["default"].info('MiniGameAchievementSystem', 'Rewards granted', reward);
@@ -12445,7 +12386,7 @@ var MiniGameAchievementSystem = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameAchievementSystem();
 
-},{"../core/StateManager.js":7,"../data/miniGameAchievements.js":12,"../utils/EventBus.js":61,"../utils/Logger.js":63}],27:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/miniGameAchievements.js":12,"../utils/EventBus.js":61,"../utils/Logger.js":63}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12655,6 +12596,7 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
@@ -13168,7 +13110,7 @@ var QuestSystem = /*#__PURE__*/function () {
                 currentValue = state.production.tidalEnergy || 0;
                 break;
               case 'pearls':
-                currentValue = state.resources.pearls || 0;
+                currentValue = _ResourceAPI["default"].get('pearls');
                 break;
             }
             if (currentValue >= quest.amount && quest.progress < quest.amount) {
@@ -13222,18 +13164,12 @@ var QuestSystem = /*#__PURE__*/function () {
         });
       }
 
-      // Give rewards
+      // Give rewards via ResourceAPI
       for (var _i5 = 0, _Object$entries5 = Object.entries(quest.rewards); _i5 < _Object$entries5.length; _i5++) {
         var _Object$entries5$_i = _slicedToArray(_Object$entries5[_i5], 2),
           resource = _Object$entries5$_i[0],
           amount = _Object$entries5$_i[1];
-        _StateManager["default"].dispatch({
-          type: 'ADD_RESOURCE',
-          payload: {
-            resource: resource,
-            amount: amount
-          }
-        });
+        _ResourceAPI["default"].add(resource, amount);
 
         // Track gem earnings
         if (resource === 'gems') {
@@ -13330,7 +13266,7 @@ var QuestSystem = /*#__PURE__*/function () {
 var questSystem = new QuestSystem();
 var _default = exports["default"] = questSystem;
 
-},{"../config.js":2,"../core/StateManager.js":7,"../data/quests.js":13,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],29:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../config.js":2,"../core/StateManager.js":7,"../data/quests.js":13,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14276,6 +14212,7 @@ var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
 var _StructureSystem = _interopRequireDefault(require("./StructureSystem.js"));
 var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
 var _BossSystem = _interopRequireDefault(require("./BossSystem.js"));
 var _AchievementSystem = _interopRequireDefault(require("./AchievementSystem.js"));
@@ -14372,8 +14309,9 @@ var StatisticsSystem = /*#__PURE__*/function () {
 
       // Track gems
       _EventBus["default"].on('state:ADD_RESOURCE', function (data) {
-        if (data.state.resources.gems > _this.getStat('highestGems')) {
-          _this.setStat('highestGems', data.state.resources.gems);
+        var currentGems = _ResourceAPI["default"].get('gems');
+        if (currentGems > _this.getStat('highestGems')) {
+          _this.setStat('highestGems', currentGems);
         }
       });
 
@@ -14470,10 +14408,10 @@ var StatisticsSystem = /*#__PURE__*/function () {
         },
         resources: {
           'Lifetime Energy': _Formatters["default"].formatNumber(state.ascension.lifetimeEnergy),
-          'Current Energy': _Formatters["default"].formatNumber(state.resources.energy),
-          'Current Mana': _Formatters["default"].formatNumber(state.resources.mana),
-          'Current Gems': _Formatters["default"].formatNumber(state.resources.gems),
-          'Current Crystals': _Formatters["default"].formatNumber(state.resources.crystals),
+          'Current Energy': _Formatters["default"].formatNumber(_ResourceAPI["default"].get('energy')),
+          'Current Mana': _Formatters["default"].formatNumber(_ResourceAPI["default"].get('mana')),
+          'Current Gems': _Formatters["default"].formatNumber(_ResourceAPI["default"].get('gems')),
+          'Current Crystals': _Formatters["default"].formatNumber(_ResourceAPI["default"].get('crystals')),
           'Highest Energy/s': _Formatters["default"].formatNumber(stats.highestEnergyPerSecond || 0),
           'Highest Gems': _Formatters["default"].formatNumber(stats.highestGems || 0)
         },
@@ -14777,7 +14715,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
 var statisticsSystem = new StatisticsSystem();
 var _default = exports["default"] = statisticsSystem;
 
-},{"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"../utils/Logger.js":63,"./AchievementSystem.js":20,"./BossSystem.js":23,"./GuardianSystem.js":25,"./StructureSystem.js":32,"./UpgradeSystem.js":35}],32:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"../utils/Logger.js":63,"./AchievementSystem.js":20,"./BossSystem.js":23,"./GuardianSystem.js":25,"./StructureSystem.js":32,"./UpgradeSystem.js":35}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15392,6 +15330,7 @@ var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _ResourceManager = _interopRequireDefault(require("../core/ResourceManager.js"));
 var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
@@ -15456,14 +15395,7 @@ var TutorialSystem = /*#__PURE__*/function () {
         },
         waitFor: 'structure:purchased',
         onComplete: function onComplete() {
-          // Give bonus
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: 'energy',
-              amount: 100
-            }
-          });
+          _ResourceAPI["default"].add('energy', 100);
         }
       }, {
         id: 'production',
@@ -15496,8 +15428,7 @@ var TutorialSystem = /*#__PURE__*/function () {
         highlight: true,
         onClick: 'click',
         condition: function condition() {
-          var state = _StateManager["default"].getState();
-          return state.resources.energy >= 100;
+          return _ResourceAPI["default"].get('energy') >= 100;
         }
       }, {
         id: 'first_upgrade',
@@ -15527,8 +15458,7 @@ var TutorialSystem = /*#__PURE__*/function () {
         highlight: true,
         onClick: 'click',
         condition: function condition() {
-          var state = _StateManager["default"].getState();
-          return state.resources.gems >= 100;
+          return _ResourceAPI["default"].get('gems') >= 100;
         }
       }, {
         id: 'summon_guardian',
@@ -15543,14 +15473,7 @@ var TutorialSystem = /*#__PURE__*/function () {
         },
         waitFor: 'guardian:summoned',
         onComplete: function onComplete() {
-          // Give bonus gems
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: 'gems',
-              amount: 50
-            }
-          });
+          _ResourceAPI["default"].add('gems', 50);
         }
       }, {
         id: 'quests_tab',
@@ -15927,13 +15850,7 @@ var TutorialSystem = /*#__PURE__*/function () {
       this.hideSpotlight();
 
       // Give completion reward
-      _StateManager["default"].dispatch({
-        type: 'ADD_RESOURCE',
-        payload: {
-          resource: 'gems',
-          amount: 500
-        }
-      });
+      _ResourceAPI["default"].add('gems', 500);
       _StateManager["default"].dispatch({
         type: 'COMPLETE_TUTORIAL'
       });
@@ -15980,7 +15897,7 @@ var TutorialSystem = /*#__PURE__*/function () {
 var tutorialSystem = new TutorialSystem();
 var _default = exports["default"] = tutorialSystem;
 
-},{"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],34:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15993,6 +15910,7 @@ var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _ResourceManager = _interopRequireDefault(require("../core/ResourceManager.js"));
 var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -16309,14 +16227,8 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
         return false;
       }
 
-      // Refund cost
-      _StateManager["default"].dispatch({
-        type: 'ADD_RESOURCE',
-        payload: {
-          resource: item.costResource,
-          amount: item.cost
-        }
-      });
+      // Refund cost via ResourceAPI
+      _ResourceAPI["default"].add(item.costResource, item.cost);
 
       // Remove from queue
       _StateManager["default"].dispatch({
@@ -16360,7 +16272,7 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
       var gemCost = Math.max(10, remainingMinutes);
       if (useGems) {
         // Check if player has enough gems
-        if (state.resources.gems < gemCost) {
+        if (!_ResourceAPI["default"].canAfford('gems', gemCost)) {
           _Logger["default"].warn('UpgradeQueueSystem', "Not enough gems (need ".concat(gemCost, ")"));
           _EventBus["default"].emit('upgrade:speedup-failed', {
             reason: 'insufficient-gems',
@@ -16369,14 +16281,8 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
           return false;
         }
 
-        // Deduct gems
-        _StateManager["default"].dispatch({
-          type: 'REMOVE_RESOURCE',
-          payload: {
-            resource: 'gems',
-            amount: gemCost
-          }
-        });
+        // Deduct gems via ResourceAPI
+        _ResourceAPI["default"].spend('gems', gemCost);
 
         // Track spending
         _StateManager["default"].dispatch({
@@ -16485,19 +16391,13 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
 
       // Cost: 1000 gems per slot
       var cost = 1000 * currentSlots;
-      if (state.resources.gems < cost) {
+      if (!_ResourceAPI["default"].canAfford('gems', cost)) {
         _Logger["default"].warn('UpgradeQueueSystem', "Not enough gems for slot upgrade (need ".concat(cost, ")"));
         return false;
       }
 
-      // Deduct gems
-      _StateManager["default"].dispatch({
-        type: 'REMOVE_RESOURCE',
-        payload: {
-          resource: 'gems',
-          amount: cost
-        }
-      });
+      // Deduct gems via ResourceAPI
+      _ResourceAPI["default"].spend('gems', cost);
 
       // Increase slots
       _StateManager["default"].dispatch({
@@ -16530,7 +16430,7 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
 var upgradeQueueSystem = new UpgradeQueueSystem();
 var _default = exports["default"] = upgradeQueueSystem;
 
-},{"../config.js":2,"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],35:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../config.js":2,"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19508,6 +19408,7 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
 var _ConfirmModal = _interopRequireDefault(require("./ConfirmModal.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -19813,7 +19714,7 @@ var GuardiansUI = /*#__PURE__*/function () {
       var state = _StateManager["default"].getState();
       var canSummon = _GuardianSystem["default"].canSummon();
       btn.disabled = !canSummon;
-      if (x10Btn) x10Btn.disabled = (state.resources.gems || 0) < _GuardianSystem["default"].summonCost * 10;
+      if (x10Btn) x10Btn.disabled = !_ResourceAPI["default"].canAfford('gems', _GuardianSystem["default"].summonCost * 10);
     }
   }, {
     key: "getTypeName",
@@ -19832,7 +19733,7 @@ var GuardiansUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = GuardiansUI;
 
-},{"../core/StateManager.js":7,"../systems/GuardianSystem.js":25,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"./ConfirmModal.js":42}],45:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../systems/GuardianSystem.js":25,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"./ConfirmModal.js":42}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21199,6 +21100,7 @@ var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _StructureCard = _interopRequireDefault(require("./components/StructureCard.js"));
 var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
 var _RealmSystem = _interopRequireDefault(require("../systems/RealmSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -21262,7 +21164,7 @@ var StructuresUI = /*#__PURE__*/function () {
               var state = _StateManager["default"].getState();
               var realm = _RealmSystem["default"].getRealm(realmId);
               var cost = realm === null || realm === void 0 || (_realm$unlockCost = realm.unlockCost) === null || _realm$unlockCost === void 0 ? void 0 : _realm$unlockCost.crystals;
-              if (cost && state.resources.crystals < cost) {
+              if (cost && !_ResourceAPI["default"].canAfford('crystals', cost)) {
                 _EventBus["default"].emit('notification:show', {
                   type: 'warning',
                   message: "Need ".concat(cost, " \uD83D\uDCA0 to unlock ").concat(realm.name)
@@ -21629,7 +21531,7 @@ var StructuresUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructuresUI;
 
-},{"../core/StateManager.js":7,"../systems/RealmSystem.js":29,"../systems/StructureSystem.js":32,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"./components/StructureCard.js":56}],53:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../systems/RealmSystem.js":29,"../systems/StructureSystem.js":32,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"./components/StructureCard.js":56}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

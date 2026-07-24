@@ -8,6 +8,7 @@ import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import structureSystem from './StructureSystem.js';
 import guardianSystem from './GuardianSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 import { GUARDIAN_POOL, RARITIES } from '../data/guardians.js';
 
 class BossSystem {
@@ -351,14 +352,11 @@ class BossSystem {
    * Give boss rewards
    */
   giveRewards(bossKey, rewards, isFirstDefeat) {
-    // Resource rewards
+    // Resource rewards via ResourceAPI
     for (let [resource, amount] of Object.entries(rewards)) {
       if (resource === 'guaranteedGuardian' || resource === 'specialReward') continue;
       
-      stateManager.dispatch({
-        type: 'ADD_RESOURCE',
-        payload: { resource, amount }
-      });
+      resourceApi.add(resource, amount);
       
       // Track gem earnings
       if (resource === 'gems') {

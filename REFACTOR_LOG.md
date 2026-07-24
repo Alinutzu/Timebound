@@ -25,16 +25,16 @@
 | 1 | Creat `js/api/ResourceAPI.js` | ✅ Complet |
 | 2 | Creat `tests/ResourceAPI.test.js` (34 teste) | ✅ Toate trec |
 | 3 | Migrat `ResourceDisplay.js` (proof of concept) | ✅ Complet |
-| 4 | Build `dist/bundle.js` | ⏳ Urmează |
-| 5 | Test manual pe Pages | 🔜 De testat de user |
-| 6 | Migrat `DailyRewardSystem.js` | 🔜 |
-| 7 | Migrat `GuardianSystem.js` | 🔜 |
-| 8 | Migrat `ShopSystem.js` | 🔜 |
-| 9 | Migrat `DailySpinGame.js` | 🔜 |
-| 10 | Migrat `Game2048.js` | 🔜 |
-| 11 | Migrat `BadgeManager.js` | 🔜 |
-| 12 | Migrat `ArenaUI.js` (partial — resource reads) | 🔜 |
-| 13 | Eliminat `this.energy` / `this.gems` din ArenaUI | 🔜 |
+| 4 | Build `dist/bundle.js` | ✅ Complet |
+| 5 | Test manual pe Pages | ✅ Confirmat de user |
+| 6 | Migrat `DailyRewardSystem.js` | ✅ Complet |
+| 7 | Migrat `GuardianSystem.js` | ✅ Complet |
+| 8 | Migrat `ShopSystem.js` | ✅ Complet |
+| 9 | Migrat `DailySpinGame.js` | ✅ Complet |
+| 10 | Migrat `Game2048.js` | ✅ Complet |
+| 11 | Migrat `BadgeManager.js` | ✅ Complet |
+| 12 | Migrat `ArenaUI.js` (partial — resource reads) | 🔜 De migrat în Faza 5 (decompoziție) |
+| 13 | Eliminat `this.energy` / `this.gems` din ArenaUI | 🔜 De migrat în Faza 5 |
 
 ---
 
@@ -50,6 +50,12 @@
 | Fișier | Ce s-a schimbat |
 |--------|----------------|
 | `js/ui/components/ResourceDisplay.js` | Importă `resourceApi` în loc de `stateManager` pentru citirea resurselor. Realm visibility rămâne pe `stateManager` (nu e resursă). |
+| `js/systems/DailyRewardSystem.js` | `claim()` folosește `resourceApi.add()` în loc de `stateManager.dispatch(ADD_RESOURCE)` |
+| `js/systems/GuardianSystem.js` | `canSummon()` și `summonBulk()` folosesc `resourceApi.canAfford()` în loc de `state.resources.gems >=` |
+| `js/systems/ShopSystem.js` | `completePurchase()`, `completeSpinPurchase()`, `completeAd()` folosesc `resourceApi.add()` |
+| `js/ui/games/DailySpinGame.js` | `grantReward()` folosește `resourceApi.add()` |
+| `js/ui/games/Game2048.js` | `grantReward()` folosește `resourceApi.add()` |
+| `js/ui/BadgeManager.js` | `updateGuardiansBadge()` folosește `resourceApi.canAfford()` |
 
 ---
 

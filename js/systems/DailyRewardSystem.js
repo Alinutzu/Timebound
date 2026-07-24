@@ -6,6 +6,7 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import guardianSystem from './GuardianSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class DailyRewardSystem {
   constructor() {
@@ -167,17 +168,14 @@ class DailyRewardSystem {
     // Get reward for current day
     const dayReward = this.rewards[streak - 1];
     
-    // Give rewards
+    // Give rewards via ResourceAPI
     for (let [resource, amount] of Object.entries(dayReward.rewards)) {
       if (resource === 'guardian') {
         for (let i = 0; i < amount; i++) {
           guardianSystem.summon();
         }
       } else {
-        stateManager.dispatch({
-          type: 'ADD_RESOURCE',
-          payload: { resource, amount }
-        });
+        resourceApi.add(resource, amount);
         
         // Track gem earnings
         if (resource === 'gems') {

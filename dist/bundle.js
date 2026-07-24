@@ -10885,6 +10885,7 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
@@ -11062,7 +11063,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
       // Get reward for current day
       var dayReward = this.rewards[streak - 1];
 
-      // Give rewards
+      // Give rewards via ResourceAPI
       for (var _i = 0, _Object$entries = Object.entries(dayReward.rewards); _i < _Object$entries.length; _i++) {
         var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
           resource = _Object$entries$_i[0],
@@ -11072,13 +11073,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
             _GuardianSystem["default"].summon();
           }
         } else {
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: resource,
-              amount: amount
-            }
-          });
+          _ResourceAPI["default"].add(resource, amount);
 
           // Track gem earnings
           if (resource === 'gems') {
@@ -11260,7 +11255,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
 var dailyRewardSystem = new DailyRewardSystem();
 var _default = exports["default"] = dailyRewardSystem;
 
-},{"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./GuardianSystem.js":25}],25:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./GuardianSystem.js":25}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11273,6 +11268,7 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
@@ -11323,8 +11319,7 @@ var GuardianSystem = /*#__PURE__*/function () {
   }, {
     key: "canSummon",
     value: function canSummon() {
-      var state = _StateManager["default"].getState();
-      return state.resources.gems >= this.summonCost;
+      return _ResourceAPI["default"].canAfford('gems', this.summonCost);
     }
 
     /**
@@ -11854,9 +11849,8 @@ var GuardianSystem = /*#__PURE__*/function () {
     key: "summonBulk",
     value: function summonBulk() {
       var count = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
-      var state = _StateManager["default"].getState();
       var totalCost = this.summonCost * count;
-      if (state.resources.gems < totalCost) {
+      if (!_ResourceAPI["default"].canAfford('gems', totalCost)) {
         _EventBus["default"].emit('guardian:summon-failed', {
           reason: 'insufficient-gems'
         });
@@ -12077,7 +12071,7 @@ var GuardianSystem = /*#__PURE__*/function () {
 var guardianSystem = new GuardianSystem();
 var _default = exports["default"] = guardianSystem;
 
-},{"../config.js":2,"../core/StateManager.js":7,"../data/guardians.js":11,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./UpgradeSystem.js":35}],26:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../config.js":2,"../core/StateManager.js":7,"../data/guardians.js":11,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./UpgradeSystem.js":35}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13687,6 +13681,7 @@ var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
 var _guardians = require("../data/guardians.js");
 var _DailySpinGame = _interopRequireDefault(require("../ui/games/DailySpinGame.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -13761,16 +13756,10 @@ var ShopSystem = /*#__PURE__*/function () {
         return false;
       }
 
-      // Give gems
-      _StateManager["default"].dispatch({
-        type: 'ADD_RESOURCE',
-        payload: {
-          resource: 'gems',
-          amount: pkg.gems
-        }
-      });
+      // Give gems via ResourceAPI
+      _ResourceAPI["default"].add('gems', pkg.gems);
 
-      // Give bonuses
+      // Give bonuses via ResourceAPI
       if (pkg.bonus) {
         for (var _i = 0, _Object$entries = Object.entries(pkg.bonus); _i < _Object$entries.length; _i++) {
           var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
@@ -13781,16 +13770,9 @@ var ShopSystem = /*#__PURE__*/function () {
               _GuardianSystem["default"].summon();
             }
           } else if (resource === 'guaranteedLegendary') {
-            // Summon legendary guardian
             this.summonGuaranteedLegendary(amount);
           } else {
-            _StateManager["default"].dispatch({
-              type: 'ADD_RESOURCE',
-              payload: {
-                resource: resource,
-                amount: amount
-              }
-            });
+            _ResourceAPI["default"].add(resource, amount);
           }
         }
       }
@@ -13871,19 +13853,13 @@ var ShopSystem = /*#__PURE__*/function () {
         _DailySpinGame["default"].addPurchasedSpins(pkg.spins);
       }
 
-      // Give bonuses
+      // Give bonuses via ResourceAPI
       if (pkg.bonus) {
         for (var _i2 = 0, _Object$entries2 = Object.entries(pkg.bonus); _i2 < _Object$entries2.length; _i2++) {
           var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
             resource = _Object$entries2$_i[0],
             amount = _Object$entries2$_i[1];
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: resource,
-              amount: amount
-            }
-          });
+          _ResourceAPI["default"].add(resource, amount);
         }
       }
 
@@ -14127,22 +14103,15 @@ var ShopSystem = /*#__PURE__*/function () {
   }, {
     key: "completeAd",
     value: function completeAd(adType, ad) {
-      // Give reward
+      // Give reward via ResourceAPI
       for (var _i3 = 0, _Object$entries3 = Object.entries(ad.reward); _i3 < _Object$entries3.length; _i3++) {
         var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
           resource = _Object$entries3$_i[0],
           amount = _Object$entries3$_i[1];
         if (resource === 'multiplier') {
-          // Apply temporary multiplier
           this.applyTemporaryMultiplier(amount, ad.reward.duration);
         } else {
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: resource,
-              amount: amount
-            }
-          });
+          _ResourceAPI["default"].add(resource, amount);
         }
       }
 
@@ -14279,7 +14248,7 @@ var ShopSystem = /*#__PURE__*/function () {
 var shopSystem = new ShopSystem();
 var _default = exports["default"] = shopSystem;
 
-},{"../core/StateManager.js":7,"../data/guardians.js":11,"../data/shop.js":15,"../ui/games/DailySpinGame.js":57,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./GuardianSystem.js":25}],31:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/guardians.js":11,"../data/shop.js":15,"../ui/games/DailySpinGame.js":57,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./GuardianSystem.js":25}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18739,6 +18708,7 @@ exports["default"] = void 0;
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
@@ -18837,8 +18807,7 @@ var BadgeManager = /*#__PURE__*/function () {
   }, {
     key: "updateGuardiansBadge",
     value: function updateGuardiansBadge() {
-      var state = _StateManager["default"].getState();
-      var canSummon = state.resources.gems >= 100;
+      var canSummon = _ResourceAPI["default"].canAfford('gems', 100);
 
       // Show "!" if can summon guardian
       if (canSummon) {
@@ -18944,7 +18913,7 @@ var BadgeManager = /*#__PURE__*/function () {
 var badgeManager = new BadgeManager();
 var _default = exports["default"] = badgeManager;
 
-},{"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62}],40:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22471,6 +22440,7 @@ exports["default"] = void 0;
 var _StateManager = _interopRequireDefault(require("../../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../../utils/Logger.js"));
+var _ResourceAPI = _interopRequireDefault(require("../../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -22743,26 +22713,19 @@ var DailySpinGame = /*#__PURE__*/function () {
     value: function grantReward(segment) {
       var reward = segment.reward;
 
-      // Add rewards
+      // Grant rewards via ResourceAPI
       for (var _i = 0, _Object$entries = Object.entries(reward); _i < _Object$entries.length; _i++) {
         var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
           resource = _Object$entries$_i[0],
           amount = _Object$entries$_i[1];
         if (resource === 'guardian') {
-          // Trigger guardian summon
           _EventBus["default"].emit('guardian:summon', {
             amount: amount,
             source: 'daily-spin',
             guaranteed: true
           });
         } else {
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: resource,
-              amount: amount
-            }
-          });
+          _ResourceAPI["default"].add(resource, amount);
         }
       }
 
@@ -22888,7 +22851,7 @@ var DailySpinGame = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new DailySpinGame();
 
-},{"../../core/StateManager.js":7,"../../utils/EventBus.js":60,"../../utils/Logger.js":62}],58:[function(require,module,exports){
+},{"../../api/ResourceAPI.js":1,"../../core/StateManager.js":7,"../../utils/EventBus.js":60,"../../utils/Logger.js":62}],58:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22898,6 +22861,7 @@ exports["default"] = void 0;
 var _StateManager = _interopRequireDefault(require("../../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../../utils/Logger.js"));
+var _ResourceAPI = _interopRequireDefault(require("../../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -23121,13 +23085,7 @@ var Game2048 = /*#__PURE__*/function () {
             guaranteed: true
           });
         } else {
-          _StateManager["default"].dispatch({
-            type: 'ADD_RESOURCE',
-            payload: {
-              resource: resource,
-              amount: amount
-            }
-          });
+          _ResourceAPI["default"].add(resource, amount);
         }
       }
       _Logger["default"].info('Game2048', "Milestone ".concat(milestone, " reached!"), reward);
@@ -23228,7 +23186,7 @@ var Game2048 = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new Game2048();
 
-},{"../../core/StateManager.js":7,"../../utils/EventBus.js":60,"../../utils/Logger.js":62}],59:[function(require,module,exports){
+},{"../../api/ResourceAPI.js":1,"../../core/StateManager.js":7,"../../utils/EventBus.js":60,"../../utils/Logger.js":62}],59:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

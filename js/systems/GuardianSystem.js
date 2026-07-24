@@ -8,6 +8,7 @@ import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 import upgradeSystem from './UpgradeSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class GuardianSystem {
   constructor() {
@@ -38,8 +39,7 @@ class GuardianSystem {
    * Check if can summon
    */
   canSummon() {
-    const state = stateManager.getState();
-    return state.resources.gems >= this.summonCost;
+    return resourceApi.canAfford('gems', this.summonCost);
   }
   
   /**
@@ -437,9 +437,8 @@ class GuardianSystem {
    * Bulk summon — x10 with one guaranteed Rare+
    */
   summonBulk(count = 10) {
-    const state = stateManager.getState();
     const totalCost = this.summonCost * count;
-    if (state.resources.gems < totalCost) {
+    if (!resourceApi.canAfford('gems', totalCost)) {
       eventBus.emit('guardian:summon-failed', { reason: 'insufficient-gems' });
       return [];
     }

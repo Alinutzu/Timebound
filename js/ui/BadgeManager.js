@@ -5,6 +5,7 @@
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class BadgeManager {
   constructor() {
@@ -81,8 +82,7 @@ class BadgeManager {
   }
   
   updateGuardiansBadge() {
-    const state = stateManager.getState();
-    const canSummon = state.resources.gems >= 100;
+    const canSummon = resourceApi.canAfford('gems', 100);
     
     // Show "!" if can summon guardian
     if (canSummon) {

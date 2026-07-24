@@ -6,6 +6,7 @@
 import stateManager from '../../core/StateManager.js';
 import eventBus from '../../utils/EventBus.js';
 import logger from '../../utils/Logger.js';
+import resourceApi from '../../api/ResourceAPI.js';
 
 class DailySpinGame {
     constructor() {
@@ -188,20 +189,16 @@ class DailySpinGame {
   grantReward(segment) {
     const reward = segment.reward;
     
-    // Add rewards
+    // Grant rewards via ResourceAPI
     for (let [resource, amount] of Object.entries(reward)) {
       if (resource === 'guardian') {
-        // Trigger guardian summon
         eventBus.emit('guardian:summon', { 
           amount,
           source: 'daily-spin',
           guaranteed: true
         });
       } else {
-        stateManager.dispatch({
-          type: 'ADD_RESOURCE',
-          payload: { resource, amount }
-        });
+        resourceApi.add(resource, amount);
       }
     }
     

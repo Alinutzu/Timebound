@@ -5,6 +5,7 @@
 import stateManager from '../../core/StateManager.js';
 import eventBus from '../../utils/EventBus.js';
 import logger from '../../utils/Logger.js';
+import resourceApi from '../../api/ResourceAPI.js';
 
 class Game2048 {
   constructor() {
@@ -186,10 +187,7 @@ class Game2048 {
           guaranteed: true
         });
       } else {
-        stateManager.dispatch({
-          type: 'ADD_RESOURCE',
-          payload: { resource, amount }
-        });
+        resourceApi.add(resource, amount);
       }
     }
     

@@ -9,6 +9,7 @@ import logger from '../utils/Logger.js';
 import guardianSystem from './GuardianSystem.js';
 import { GUARDIAN_POOL, RARITIES } from '../data/guardians.js';
 import DailySpinGame from '../ui/games/DailySpinGame.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class ShopSystem {
   constructor() {
@@ -66,13 +67,10 @@ class ShopSystem {
       return false;
     }
     
-    // Give gems
-    stateManager.dispatch({
-      type: 'ADD_RESOURCE',
-      payload: { resource: 'gems', amount: pkg.gems }
-    });
+    // Give gems via ResourceAPI
+    resourceApi.add('gems', pkg.gems);
     
-    // Give bonuses
+    // Give bonuses via ResourceAPI
     if (pkg.bonus) {
       for (let [resource, amount] of Object.entries(pkg.bonus)) {
         if (resource === 'guardian') {
@@ -80,13 +78,9 @@ class ShopSystem {
             guardianSystem.summon();
           }
         } else if (resource === 'guaranteedLegendary') {
-          // Summon legendary guardian
           this.summonGuaranteedLegendary(amount);
         } else {
-          stateManager.dispatch({
-            type: 'ADD_RESOURCE',
-            payload: { resource, amount }
-          });
+          resourceApi.add(resource, amount);
         }
       }
     }
@@ -166,13 +160,10 @@ completeSpinPurchase(packageId) {
     DailySpinGame.addPurchasedSpins(pkg.spins);
   }
   
-  // Give bonuses
+  // Give bonuses via ResourceAPI
   if (pkg.bonus) {
     for (let [resource, amount] of Object.entries(pkg.bonus)) {
-      stateManager.dispatch({
-        type: 'ADD_RESOURCE',
-        payload: { resource, amount }
-      });
+      resourceApi.add(resource, amount);
     }
   }
   
@@ -405,18 +396,14 @@ completeSpinPurchase(packageId) {
    * Complete ad watch and give reward
    */
   completeAd(adType, ad) {
-    // Give reward
-    for (let [resource, amount] of Object.entries(ad.reward)) {
-      if (resource === 'multiplier') {
-        // Apply temporary multiplier
-        this.applyTemporaryMultiplier(amount, ad.reward.duration);
-      } else {
-        stateManager.dispatch({
-          type: 'ADD_RESOURCE',
-          payload: { resource, amount }
-        });
-      }
+  // Give reward via ResourceAPI
+  for (let [resource, amount] of Object.entries(ad.reward)) {
+    if (resource === 'multiplier') {
+      this.applyTemporaryMultiplier(amount, ad.reward.duration);
+    } else {
+      resourceApi.add(resource, amount);
     }
+  }
     
     // Track ad watch
     stateManager.dispatch({

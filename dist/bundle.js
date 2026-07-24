@@ -17432,7 +17432,7 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "renderDashboard",
     value: function renderDashboard() {
       var guest = isGuestToken();
-      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena ".concat(guest ? '<span class="arena-guest-badge">GUEST</span>' : '', "</h2>\n        <div class=\"arena-header-actions\">\n          <span id=\"arena-gems-display\" class=\"arena-gems\">\uD83D\uDC8E ").concat(this.gems.toLocaleString(), "</span>\n          <span id=\"arena-energy-display\" class=\"arena-energy\">\u26A1 ").concat(this.energy.toLocaleString(), "</span>\n          <span id=\"arena-username-display\"></span>\n          ").concat(guest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Login / Register</button>' : '<button class="btn btn-small btn-danger" id="arena-logout">Logout</button>', "\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-save-cloud\">\u2601\uFE0F Save</button>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-load-cloud\">\u2601\uFE0F Load</button>\n        </div>\n      </div>\n      ").concat(guest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : '', "\n      <div class=\"arena-dashboard\">\n        <div class=\"arena-section\" id=\"arena-guardians-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDEE1\uFE0F My Guardians</h3>\n            <button class=\"btn btn-primary\" id=\"arena-summon-btn\">\u2728 Summon (\uD83D\uDC8E").concat(ArenaUI.SUMMON_COST, ")</button>\n          </div>\n          ").concat(this.gems < ArenaUI.SUMMON_COST ? '<p class="arena-insufficient" id="arena-summon-warning">💎 Insufficient gems! Complete quests or win battles to earn more.</p>' : '', "\n          <div id=\"arena-guardians-list\" class=\"arena-guardians-list\">\n            <p class=\"arena-loading\">Loading guardians...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-battle-section\">\n          <div class=\"arena-section-header\">\n            <h3>\u2694\uFE0F Battle</h3>\n          </div>\n          <div class=\"arena-battle-actions\">\n            <button class=\"btn btn-success\" id=\"arena-pve-btn\">\u2694\uFE0F Train (PvE)</button>\n            <button class=\"btn btn-danger\" id=\"arena-pvp-btn\">\uD83D\uDD25 Find Opponent (PvP)</button>\n          </div>\n          <div id=\"arena-battle-result\"></div>\n          <div id=\"arena-opponents-list\"></div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-history-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDCDC Battle History</h3>\n            <button class=\"btn btn-small btn-secondary\" id=\"arena-history-toggle\">Show</button>\n          </div>\n          <div id=\"arena-history-list\" style=\"display:none\">\n            <p class=\"arena-loading\">Loading history...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-leaderboard-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83C\uDFC6 Leaderboard</h3>\n            <span id=\"arena-my-rank\"></span>\n          </div>\n          <div id=\"arena-leaderboard-list\" class=\"arena-leaderboard-list\">\n            <p class=\"arena-loading\">Loading leaderboard...</p>\n          </div>\n        </div>\n      </div>\n    ");
+      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena ".concat(guest ? '<span class="arena-guest-badge">GUEST</span>' : '', "</h2>\n        <div class=\"arena-header-actions\">\n          <span id=\"arena-gems-display\" class=\"arena-gems\">\uD83D\uDC8E ").concat(this.gems.toLocaleString(), "</span>\n          <span id=\"arena-energy-display\" class=\"arena-energy\">\u26A1 ").concat(this.energy.toLocaleString(), "</span>\n          <span id=\"arena-username-display\"></span>\n          ").concat(guest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">🔑 Login</button>' : '<button class="btn btn-small btn-danger" id="arena-logout">Logout</button>', "\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-save-cloud\">\u2601\uFE0F Save</button>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-load-cloud\">\u2601\uFE0F Load</button>\n        </div>\n      </div>\n      ").concat(guest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : '', "\n      <div class=\"arena-dashboard\">\n        <div class=\"arena-section\" id=\"arena-guardians-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDEE1\uFE0F My Guardians</h3>\n            <button class=\"btn btn-primary\" id=\"arena-summon-btn\">\u2728 Summon (\uD83D\uDC8E").concat(ArenaUI.SUMMON_COST, ")</button>\n          </div>\n          ").concat(this.gems < ArenaUI.SUMMON_COST ? '<p class="arena-insufficient" id="arena-summon-warning">💎 Insufficient gems! Complete quests or win battles to earn more.</p>' : '', "\n          <div id=\"arena-guardians-list\" class=\"arena-guardians-list\">\n            <p class=\"arena-loading\">Loading guardians...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-battle-section\">\n          <div class=\"arena-section-header\">\n            <h3>\u2694\uFE0F Battle</h3>\n          </div>\n          <div class=\"arena-battle-actions\">\n            <button class=\"btn btn-success\" id=\"arena-pve-btn\">\u2694\uFE0F Train (PvE)</button>\n            <button class=\"btn btn-danger\" id=\"arena-pvp-btn\">\uD83D\uDD25 Find Opponent (PvP)</button>\n          </div>\n          <div id=\"arena-battle-result\"></div>\n          <div id=\"arena-opponents-list\"></div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-history-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDCDC Battle History</h3>\n            <button class=\"btn btn-small btn-secondary\" id=\"arena-history-toggle\">Show</button>\n          </div>\n          <div id=\"arena-history-list\" style=\"display:none\">\n            <p class=\"arena-loading\">Loading history...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-leaderboard-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83C\uDFC6 Leaderboard</h3>\n            <span id=\"arena-my-rank\"></span>\n          </div>\n          <div id=\"arena-leaderboard-list\" class=\"arena-leaderboard-list\">\n            <p class=\"arena-loading\">Loading leaderboard...</p>\n          </div>\n        </div>\n      </div>\n    ");
     }
   }, {
     key: "bindEvents",
@@ -17534,7 +17534,9 @@ var ArenaUI = /*#__PURE__*/function () {
         _document$getElementB5,
         _document$getElementB6,
         _document$getElementB7,
-        _document$getElementB8;
+        _document$getElementB8,
+        _document$getElementB9,
+        _document$getElementB0;
       (_document$getElementB2 = document.getElementById('arena-logout')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', function () {
         _this6.stopAutoSave();
         _this6.disconnectSocket();
@@ -17547,12 +17549,23 @@ var ArenaUI = /*#__PURE__*/function () {
         _this6.connecting = false;
         _this6.render();
       });
-      var registerBtn = document.getElementById('arena-register-btn') || document.getElementById('arena-register-btn-banner');
-      registerBtn === null || registerBtn === void 0 || registerBtn.addEventListener('click', function () {
+      (_document$getElementB3 = document.getElementById('arena-register-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', function () {
+        _this6.stopAutoSave();
+        _this6.disconnectSocket();
+        if (_this6.cooldownTimer) {
+          clearInterval(_this6.cooldownTimer);
+          _this6.cooldownTimer = null;
+        }
+        _api["default"].clearToken();
+        _this6.isGuest = false;
+        _this6.connecting = false;
+        _this6.render();
+      });
+      (_document$getElementB4 = document.getElementById('arena-register-btn-banner')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', function () {
         return _this6.showRegisterForm();
       });
       this.updateSummonButton();
-      (_document$getElementB3 = document.getElementById('arena-summon-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+      (_document$getElementB5 = document.getElementById('arena-summon-btn')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
         var result, _t5;
         return _regenerator().w(function (_context5) {
           while (1) switch (_context5.p = _context5.n) {
@@ -17577,7 +17590,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee5, null, [[0, 2]]);
       })));
-      (_document$getElementB4 = document.getElementById('arena-pve-btn')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+      (_document$getElementB6 = document.getElementById('arena-pve-btn')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
         var selected, btn, result, _err$data, _t6;
         return _regenerator().w(function (_context6) {
           while (1) switch (_context6.p = _context6.n) {
@@ -17630,7 +17643,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee6, null, [[2, 4]]);
       })));
-      (_document$getElementB5 = document.getElementById('arena-pvp-btn')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+      (_document$getElementB7 = document.getElementById('arena-pvp-btn')) === null || _document$getElementB7 === void 0 || _document$getElementB7.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
         var selected, opponents, _t7;
         return _regenerator().w(function (_context7) {
           while (1) switch (_context7.p = _context7.n) {
@@ -17660,7 +17673,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee7, null, [[1, 3]]);
       })));
-      (_document$getElementB6 = document.getElementById('arena-history-toggle')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+      (_document$getElementB8 = document.getElementById('arena-history-toggle')) === null || _document$getElementB8 === void 0 || _document$getElementB8.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
         var list, btn;
         return _regenerator().w(function (_context8) {
           while (1) switch (_context8.n) {
@@ -17686,7 +17699,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee8);
       })));
-      (_document$getElementB7 = document.getElementById('arena-save-cloud')) === null || _document$getElementB7 === void 0 || _document$getElementB7.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+      (_document$getElementB9 = document.getElementById('arena-save-cloud')) === null || _document$getElementB9 === void 0 || _document$getElementB9.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
         var state, _t8;
         return _regenerator().w(function (_context9) {
           while (1) switch (_context9.p = _context9.n) {
@@ -17708,7 +17721,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee9, null, [[0, 2]]);
       })));
-      (_document$getElementB8 = document.getElementById('arena-load-cloud')) === null || _document$getElementB8 === void 0 || _document$getElementB8.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+      (_document$getElementB0 = document.getElementById('arena-load-cloud')) === null || _document$getElementB0 === void 0 || _document$getElementB0.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
         var data, _t9;
         return _regenerator().w(function (_context0) {
           while (1) switch (_context0.p = _context0.n) {
@@ -17859,8 +17872,8 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "renderGuardians",
     value: function renderGuardians() {
       var _this7 = this,
-        _document$getElementB9,
-        _document$getElementB0;
+        _document$getElementB1,
+        _document$getElementB10;
       var list = document.getElementById('arena-guardians-list');
       if (this.guardians.length === 0) {
         list.innerHTML = "<p class=\"arena-empty\">No guardians yet. Summon one!</p>";
@@ -17878,14 +17891,14 @@ var ArenaUI = /*#__PURE__*/function () {
         if (checked) _this7.selectedGuardianIds.add(g.id);
         return "\n      <div class=\"arena-guardian-card ".concat(g.rarity, "\" data-id=\"").concat(g.id, "\">\n        <div class=\"arena-guardian-info\">\n          <span class=\"arena-guardian-name guardian-details-trigger\" data-id=\"").concat(g.id, "\">").concat(safeName, "</span>\n          <span class=\"arena-guardian-rarity ").concat(g.rarity, "\">").concat(safeRarity, "</span>\n        </div>\n        <div class=\"arena-guardian-stats\">\n          <span>\u2764\uFE0F ").concat(g.hp, "/").concat(g.max_hp, "</span>\n          <span>\u2694\uFE0F ").concat(g.attack, "</span>\n          <span>\uD83D\uDEE1\uFE0F ").concat(g.defense, "</span>\n          <span>\u2B06\uFE0F Lv.").concat(g.level, "</span>\n        </div>\n        <div class=\"arena-guardian-actions\">\n          <input type=\"checkbox\" class=\"arena-guardian-select\" data-id=\"").concat(g.id, "\" ").concat(checked, ">\n          ").concat(maxLevel ? '<button class="btn btn-small btn-secondary" disabled>MAX</button>' : "<button class=\"btn btn-small btn-primary levelup-btn ".concat(canAfford ? '' : 'btn-disabled', "\" data-id=\"").concat(g.id, "\" ").concat(canAfford ? '' : 'disabled', ">\u26A1").concat(cost.toLocaleString(), "</button>"), "\n        </div>\n        <button class=\"btn btn-small btn-danger btn-release-row\" data-id=\"").concat(g.id, "\">\uD83D\uDDD1\uFE0F Release</button>\n      </div>\n    ");
       }).join('');
-      (_document$getElementB9 = document.getElementById('arena-select-all')) === null || _document$getElementB9 === void 0 || _document$getElementB9.addEventListener('click', function () {
+      (_document$getElementB1 = document.getElementById('arena-select-all')) === null || _document$getElementB1 === void 0 || _document$getElementB1.addEventListener('click', function () {
         list.querySelectorAll('.arena-guardian-select').forEach(function (cb) {
           cb.checked = true;
           _this7.selectedGuardianIds.add(parseInt(cb.dataset.id));
         });
         _this7.updateSelectCount();
       });
-      (_document$getElementB0 = document.getElementById('arena-select-clear')) === null || _document$getElementB0 === void 0 || _document$getElementB0.addEventListener('click', function () {
+      (_document$getElementB10 = document.getElementById('arena-select-clear')) === null || _document$getElementB10 === void 0 || _document$getElementB10.addEventListener('click', function () {
         list.querySelectorAll('.arena-guardian-select').forEach(function (cb) {
           cb.checked = false;
         });

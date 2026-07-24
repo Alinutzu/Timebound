@@ -276,7 +276,7 @@ class ArenaUI {
           <span id="arena-energy-display" class="arena-energy">⚡ ${this.energy.toLocaleString()}</span>
           <span id="arena-username-display"></span>
           ${guest
-            ? '<button class="btn btn-small btn-primary" id="arena-register-btn">📝 Login / Register</button>'
+            ? '<button class="btn btn-small btn-primary" id="arena-register-btn">🔑 Login</button>'
             : '<button class="btn btn-small btn-danger" id="arena-logout">Logout</button>'}
           <button class="btn btn-small btn-secondary" id="arena-save-cloud">☁️ Save</button>
           <button class="btn btn-small btn-secondary" id="arena-load-cloud">☁️ Load</button>
@@ -403,8 +403,20 @@ class ArenaUI {
       this.render();
     });
 
-    const registerBtn = document.getElementById('arena-register-btn') || document.getElementById('arena-register-btn-banner');
-    registerBtn?.addEventListener('click', () => this.showRegisterForm());
+    document.getElementById('arena-register-btn')?.addEventListener('click', () => {
+      this.stopAutoSave();
+      this.disconnectSocket();
+      if (this.cooldownTimer) {
+        clearInterval(this.cooldownTimer);
+        this.cooldownTimer = null;
+      }
+      api.clearToken();
+      this.isGuest = false;
+      this.connecting = false;
+      this.render();
+    });
+
+    document.getElementById('arena-register-btn-banner')?.addEventListener('click', () => this.showRegisterForm());
 
     this.updateSummonButton();
 

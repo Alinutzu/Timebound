@@ -6,6 +6,7 @@ import REALMS from '../data/realms.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 class RealmSystem {
   constructor() {
@@ -137,13 +138,13 @@ class RealmSystem {
     // Check cost
     if (realm.unlockCost) {
       for (let [resource, amount] of Object.entries(realm.unlockCost)) {
-        if (state.resources[resource] < amount) {
+        if (!resourceApi.canAfford(resource, amount)) {
           return {
             can: false,
             reason: 'insufficient-resources',
             resource,
             required: amount,
-            current: state.resources[resource]
+            current: resourceApi.get(resource)
           };
         }
       }

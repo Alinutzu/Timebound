@@ -3,6 +3,7 @@
  */
 
 import CONFIG from '../config.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 const REALMS = {
   forest: {
@@ -282,7 +283,7 @@ export function canUnlockRealm(realmId, state) {
   }
   
   // Check resources for cost
-  if (realm.unlockCost?.crystals && state.resources.crystals < realm.unlockCost.crystals) {
+  if (realm.unlockCost?.crystals && !resourceApi.canAfford('crystals', realm.unlockCost.crystals)) {
     return false;
   }
   

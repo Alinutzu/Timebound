@@ -6,6 +6,7 @@ import UPGRADES from '../data/upgrades.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import resourceApi from '../api/ResourceAPI.js';
 import upgradeQueueSystem from './UpgradeQueueSystem.js';
 
 class UpgradeSystem {
@@ -80,7 +81,7 @@ class UpgradeSystem {
     // Check resource requirements
     if (condition.resources) {
       for (let [resource, amount] of Object.entries(condition.resources)) {
-        if (state.resources[resource] < amount) {
+        if (!resourceApi.canAfford(resource, amount)) {
           return false;
         }
       }
@@ -207,7 +208,7 @@ class UpgradeSystem {
     const state = stateManager.getState();
     const costResource = upgrade.costResource;
     
-    return state.resources[costResource] >= cost;
+    return resourceApi.canAfford(costResource, cost);
   }
   
   /**

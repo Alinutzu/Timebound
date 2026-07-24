@@ -204,7 +204,7 @@ class StructuresUI {
           if (costEntry) {
             const costEl = document.createElement('span');
             costEl.className = 'requirement-line unlock-cost-line';
-            const canAfford = state.resources[costEntry[0]] >= costEntry[1];
+            const canAfford = resourceApi.canAfford(costEntry[0], costEntry[1]);
             costEl.textContent = `${canAfford ? '✅' : '💠'} ${costEntry[1]} ${costEntry[0]}`;
             reqSummary.appendChild(costEl);
           }
@@ -285,7 +285,7 @@ class StructuresUI {
     if (realm.unlockCost) {
       const costEntry = Object.entries(realm.unlockCost)[0];
       if (costEntry) {
-        const canAfford = state.resources[costEntry[0]] >= costEntry[1];
+        const canAfford = resourceApi.canAfford(costEntry[0], costEntry[1]);
         lines.push(`${canAfford ? '✅' : '❌'} ${costEntry[1]} ${costEntry[0]}`);
       }
     }

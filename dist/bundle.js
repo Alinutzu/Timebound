@@ -3070,6 +3070,7 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _StructureSystem = _interopRequireDefault(require("../systems/StructureSystem.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 /**
  * Achievement definitions
@@ -3769,7 +3770,7 @@ var ACHIEVEMENTS = {
     tier: 'platinum',
     condition: function condition() {
       var state = _StateManager["default"].getState();
-      return state.resources.pearls >= 100;
+      return _ResourceAPI["default"].get('pearls') >= 100;
     },
     reward: {
       gems: 150,
@@ -3828,7 +3829,7 @@ var ACHIEVEMENTS = {
     tier: 'gold',
     condition: function condition() {
       var state = _StateManager["default"].getState();
-      return state.resources.gems >= 2500;
+      return _ResourceAPI["default"].get('gems') >= 2500;
     },
     reward: {
       gems: 250
@@ -3872,7 +3873,7 @@ var ACHIEVEMENTS = {
 };
 var _default = exports["default"] = ACHIEVEMENTS;
 
-},{"../core/StateManager.js":7,"../systems/StructureSystem.js":32}],10:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../systems/StructureSystem.js":32}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5683,6 +5684,7 @@ exports["default"] = void 0;
 exports.getRealmById = getRealmById;
 exports.getUnlockedRealms = getUnlockedRealms;
 var _config = _interopRequireDefault(require("../config.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -5965,14 +5967,14 @@ function canUnlockRealm(realmId, state) {
   }
 
   // Check resources for cost
-  if ((_realm$unlockCost = realm.unlockCost) !== null && _realm$unlockCost !== void 0 && _realm$unlockCost.crystals && state.resources.crystals < realm.unlockCost.crystals) {
+  if ((_realm$unlockCost = realm.unlockCost) !== null && _realm$unlockCost !== void 0 && _realm$unlockCost.crystals && !_ResourceAPI["default"].canAfford('crystals', realm.unlockCost.crystals)) {
     return false;
   }
   return true;
 }
 var _default = exports["default"] = REALMS;
 
-},{"../config.js":2}],15:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../config.js":2}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12773,7 +12775,7 @@ var QuestSystem = /*#__PURE__*/function () {
               var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
                 resource = _Object$entries$_i[0],
                 amount = _Object$entries$_i[1];
-              if (state.resources[resource] < amount) {
+              if (!_ResourceAPI["default"].canAfford(resource, amount)) {
                 return false;
               }
             }
@@ -13277,6 +13279,7 @@ var _realms = _interopRequireDefault(require("../data/realms.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -13451,13 +13454,13 @@ var RealmSystem = /*#__PURE__*/function () {
           var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
             _resource = _Object$entries4$_i[0],
             _amount = _Object$entries4$_i[1];
-          if (state.resources[_resource] < _amount) {
+          if (!_ResourceAPI["default"].canAfford(_resource, _amount)) {
             return {
               can: false,
               reason: 'insufficient-resources',
               resource: _resource,
               required: _amount,
-              current: state.resources[_resource]
+              current: _ResourceAPI["default"].get(_resource)
             };
           }
         }
@@ -13618,7 +13621,7 @@ var RealmSystem = /*#__PURE__*/function () {
 var realmSystem = new RealmSystem();
 var _default = exports["default"] = realmSystem;
 
-},{"../core/StateManager.js":7,"../data/realms.js":14,"../utils/EventBus.js":61,"../utils/Logger.js":63}],30:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/realms.js":14,"../utils/EventBus.js":61,"../utils/Logger.js":63}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14726,6 +14729,7 @@ var _structures = _interopRequireDefault(require("../data/structures.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 var _RealmSystem = _interopRequireDefault(require("../systems/RealmSystem.js"));
 var _UpgradeSystem = _interopRequireDefault(require("./UpgradeSystem.js"));
 var _GuardianSystem = _interopRequireDefault(require("./GuardianSystem.js"));
@@ -14863,7 +14867,7 @@ var StructureSystem = /*#__PURE__*/function () {
           var _Object$entries$_i = _slicedToArray(_Object$entries[_i2], 2),
             resource = _Object$entries$_i[0],
             amount = _Object$entries$_i[1];
-          if (state.resources[resource] < amount) {
+          if (!_ResourceAPI["default"].canAfford(resource, amount)) {
             return false;
           }
         }
@@ -15046,7 +15050,7 @@ var StructureSystem = /*#__PURE__*/function () {
       var cost = this.getCost(structureKey);
       var state = _StateManager["default"].getState();
       var costResource = structure.costResource;
-      return state.resources[costResource] >= cost;
+      return _ResourceAPI["default"].canAfford(costResource, cost);
     }
 
     /**
@@ -15318,7 +15322,7 @@ var StructureSystem = /*#__PURE__*/function () {
 var structureSystem = new StructureSystem();
 var _default = exports["default"] = structureSystem;
 
-},{"../core/StateManager.js":7,"../data/structures.js":16,"../systems/RealmSystem.js":29,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25,"./UpgradeSystem.js":35}],33:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/structures.js":16,"../systems/RealmSystem.js":29,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25,"./UpgradeSystem.js":35}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16441,6 +16445,7 @@ var _upgrades = _interopRequireDefault(require("../data/upgrades.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+var _ResourceAPI = _interopRequireDefault(require("../api/ResourceAPI.js"));
 var _UpgradeQueueSystem = _interopRequireDefault(require("./UpgradeQueueSystem.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
@@ -16546,7 +16551,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
           var _Object$entries$_i = _slicedToArray(_Object$entries[_i2], 2),
             resource = _Object$entries$_i[0],
             amount = _Object$entries$_i[1];
-          if (state.resources[resource] < amount) {
+          if (!_ResourceAPI["default"].canAfford(resource, amount)) {
             return false;
           }
         }
@@ -16687,7 +16692,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
       var cost = this.getCost(upgradeKey);
       var state = _StateManager["default"].getState();
       var costResource = upgrade.costResource;
-      return state.resources[costResource] >= cost;
+      return _ResourceAPI["default"].canAfford(costResource, cost);
     }
 
     /**
@@ -17057,7 +17062,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
 var upgradeSystem = new UpgradeSystem();
 var _default = exports["default"] = upgradeSystem;
 
-},{"../core/StateManager.js":7,"../data/upgrades.js":17,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeQueueSystem.js":34}],36:[function(require,module,exports){
+},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/upgrades.js":17,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeQueueSystem.js":34}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21326,7 +21331,7 @@ var StructuresUI = /*#__PURE__*/function () {
             if (costEntry) {
               var costEl = document.createElement('span');
               costEl.className = 'requirement-line unlock-cost-line';
-              var canAfford = state.resources[costEntry[0]] >= costEntry[1];
+              var canAfford = _ResourceAPI["default"].canAfford(costEntry[0], costEntry[1]);
               costEl.textContent = "".concat(canAfford ? '✅' : '💠', " ").concat(costEntry[1], " ").concat(costEntry[0]);
               reqSummary.appendChild(costEl);
             }
@@ -21412,7 +21417,7 @@ var StructuresUI = /*#__PURE__*/function () {
       if (realm.unlockCost) {
         var costEntry = Object.entries(realm.unlockCost)[0];
         if (costEntry) {
-          var canAfford = state.resources[costEntry[0]] >= costEntry[1];
+          var canAfford = _ResourceAPI["default"].canAfford(costEntry[0], costEntry[1]);
           lines.push("".concat(canAfford ? '✅' : '❌', " ").concat(costEntry[1], " ").concat(costEntry[0]));
         }
       }

@@ -6,6 +6,7 @@ import STRUCTURES from '../data/structures.js';
 import stateManager from '../core/StateManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
+import resourceApi from '../api/ResourceAPI.js';
 import realmSystem from '../systems/RealmSystem.js';
 import upgradeSystem from './UpgradeSystem.js';
 import guardianSystem from './GuardianSystem.js';
@@ -113,7 +114,7 @@ class StructureSystem {
     // Check resource requirements
     if (condition.resources) {
       for (let [resource, amount] of Object.entries(condition.resources)) {
-        if (state.resources[resource] < amount) {
+        if (!resourceApi.canAfford(resource, amount)) {
           return false;
         }
       }
@@ -290,7 +291,7 @@ class StructureSystem {
     const state = stateManager.getState();
     const costResource = structure.costResource;
     
-    return state.resources[costResource] >= cost;
+    return resourceApi.canAfford(costResource, cost);
   }
   
   /**

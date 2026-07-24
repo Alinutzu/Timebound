@@ -5,6 +5,7 @@
 
 import StateManager from '../core/StateManager.js';
 import StructureSystem from '../systems/StructureSystem.js';
+import resourceApi from '../api/ResourceAPI.js';
 
 const ACHIEVEMENTS = {
   // ===== TUTORIAL & FIRST STEPS =====
@@ -832,7 +833,7 @@ const ACHIEVEMENTS = {
     tier: 'platinum',
     condition: () => {
       const state = StateManager.getState();
-      return state.resources.pearls >= 100;
+      return resourceApi.get('pearls') >= 100;
     },
     reward: { 
       gems: 150, 
@@ -895,7 +896,7 @@ const ACHIEVEMENTS = {
     
     condition: () => {
       const state = StateManager.getState();
-      return state.resources.gems >= 2500;
+      return resourceApi.get('gems') >= 2500;
     },
     
     reward: {

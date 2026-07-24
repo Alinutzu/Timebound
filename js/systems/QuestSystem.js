@@ -151,7 +151,7 @@ class QuestSystem {
         // Resources
         if (condition.resources) {
           for (let [resource, amount] of Object.entries(condition.resources)) {
-            if (state.resources[resource] < amount) {
+            if (!resourceApi.canAfford(resource, amount)) {
               return false;
             }
           }

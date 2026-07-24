@@ -18,7 +18,7 @@
 
 ### Faza 1: ResourceAPI Centralizat
 
-**Status: ÎN DESFĂȘURARE**
+**Status: COMPLET 100%**
 
 | Pas | Descriere | Status |
 |-----|-----------|--------|
@@ -45,8 +45,32 @@
 | 21 | Migrat `GuardiansUI.js` | ✅ Complet |
 | 22 | Migrat `StatisticsSystem.js` | ✅ Complet |
 | 23 | Creat `CheatMenu.js` (in-game UI) | ✅ Complet |
-| 14 | Migrat `ArenaUI.js` (partial — resource reads) | 🔜 Singurul rămas |
-| 15 | Eliminat `this.energy` / `this.gems` din ArenaUI | 🔜 În Faza 5 (decompoziție) |
+| 24 | Audit findings: fix 11 remaining state.resources | ✅ Complet |
+| 25 | Migrat `ArenaUI.js` (partial — resource reads) | 🔜 În Faza 5 (decompoziție) |
+
+### Faza 2: AuthManager cu State Machine
+
+**Status: COMPLET**
+
+| Pas | Descriere | Status |
+|-----|-----------|--------|
+| 1 | Creat `js/api/AuthManager.js` cu state machine | ✅ Complet |
+| 2 | Expus `request()` din api.js | ✅ Complet |
+| 3 | Migrat ArenaUI: toate auth calls → authManager | ✅ Complet |
+| 4 | Curățat api.js: auth methods eliminate | ✅ Complet |
+| 5 | Build verificat, 34 teste trec | ✅ Complet |
+
+**AuthManager states:** `UNAUTHENTICATED | GUEST | AUTHENTICATED`
+
+**API:**
+- `authManager.guest()` → GUEST
+- `authManager.login(username, password)` → AUTHENTICATED
+- `authManager.register(username, email, password)` → AUTHENTICATED
+- `authManager.convert(username, email, password)` → AUTHENTICATED
+- `authManager.logout()` → UNAUTHENTICATED
+- `authManager.isGuest()`, `authManager.getToken()`, `authManager.getUser()`, `authManager.getState()`
+
+**Events:** `auth:stateChanged` (emitted on every state transition)
 
 ---
 
@@ -56,6 +80,8 @@
 |--------|-------|------|
 | `js/api/ResourceAPI.js` | 165 | API centralizat pentru resurse: get/add/spend/set/canAfford/spendMultiple |
 | `tests/ResourceAPI.test.js` | 310 | 34 unit tests (node:test) |
+| `js/api/AuthManager.js` | 95 | State machine auth: UNAUTHENTICATED | GUEST | AUTHENTICATED |
+| `js/ui/CheatMenu.js` | — | Panel de cheat în joc (SET/ADD/MAX/RESET/Spin) |
 
 ## Fișiere Modificate
 
@@ -80,16 +106,18 @@
 | `js/ui/GuardiansUI.js` | Summon x10 gems check folosește `resourceApi.canAfford()` |
 | `js/systems/StatisticsSystem.js` | Gem tracking și export folosesc `resourceApi.get()` |
 | `js/ui/CheatMenu.js` | **NOU** — panel de cheat în joc (SET/ADD/MAX/RESET/Spin) |
+| `js/services/api.js` | Expus `request()`, eliminate auth methods (login/register/guest/convert), rămâne pure HTTP client |
+| `js/ui/ArenaUI.js` | Importă `authManager` în loc de api auth methods; `isGuestToken()` eliminat; `session:expired` → `auth:stateChanged` listener; logout/register-btn simplificate |
 
 ---
 
 ## Planul Complet de Refactorizare (din REFACTORING.md)
 
-### Faza 1: ResourceAPI — **ACUM**
+### Faza 1: ResourceAPI — **COMPLET**
 Centralizează accesul la energy/gems/mana/crystals/etc. printr-un singur punct.
 
-### Faza 2: AuthManager cu State Machine
-Flow-ul auth e haotic (api.js + ArenaUI.js). Necesită AuthManager cu states: UNAUTHENTICATED | GUEST | AUTHENTICATED | CONVERTING.
+### Faza 2: AuthManager cu State Machine — **COMPLET**
+Flow auth extras din ArenaUI în AuthManager cu states: UNAUTHENTICATED | GUEST | AUTHENTICATED.
 
 ### Faza 3: DB Migration Refactor
 Schema versioning, column DEFAULT corect, migration runner.
@@ -109,7 +137,7 @@ Teste pentru ResourceAPI, AuthManager, DailyRewardSystem. Vitest sau node:test.
 
 | Bug | Cauza | Fix |
 |-----|-------|-----|
-| EventBus blochează al 2-lea listener pentru `notification:show` | Hack în EventBus.js:27-33 | De rezolvat înainte de Faza 2 |
+| EventBus blochează al 2-lea listener pentru `notification:show` | Hack în EventBus.js:27-33 | Rezolvat: listener pe `auth:stateChanged` în loc de `session:expired` |
 | `window.claimAchievement` definit de 2 ori | AchievementsUI + AchievementSystem | De consolidat |
 | `ResourceManager.js` e denumit greșit | Track-uiește timer-e, nu resurse | De redenumit `TimerManager.js` |
 | `MiniGamesHub.js` nu e folosit | PuzzleUI importă direct jocurile | De evaluat: delete sau integrat |

@@ -121,6 +121,7 @@ class ArenaUI {
       const data = await api.loadCloud();
       if (data.state) {
         stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: data.state } });
+        eventBus.emit('cloud:loaded');
         this.showNotification('☁️ Cloud save loaded', 'info');
       }
     } catch (e) {}
@@ -210,6 +211,10 @@ class ArenaUI {
       const data = await api.guest();
       api.setToken(data.token);
       this.isGuest = data.isGuest;
+      if (data.user) {
+        this.energy = data.user.energy || 0;
+        this.gems = data.user.gems || 0;
+      }
       this.connecting = false;
       this.connectSocket();
       this.render();
@@ -371,6 +376,10 @@ class ArenaUI {
         }
         api.setToken(data.token);
         this.isGuest = false;
+        if (data.user) {
+          this.energy = data.user.energy || 0;
+          this.gems = data.user.gems || 0;
+        }
         this.connectSocket();
         this.render();
         await this.autoLoadCloud();

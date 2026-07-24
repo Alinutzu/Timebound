@@ -412,6 +412,15 @@ stateManager.dispatch({
         this.save();
       }
     }, CONFIG.AUTO_SAVE_INTERVAL);
+
+    if (!this._beforeUnloadBound) {
+      this._beforeUnloadBound = true;
+      window.addEventListener('beforeunload', () => {
+        if (this.autoSaveEnabled) {
+          this.save();
+        }
+      });
+    }
     
     logger.info('SaveManager', `Auto-save started (every ${CONFIG.AUTO_SAVE_INTERVAL / 1000}s)`);
   }

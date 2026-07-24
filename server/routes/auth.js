@@ -66,7 +66,9 @@ router.post('/register', authRateLimit, (req, res) => {
 
     db.prepare('INSERT INTO leaderboard (user_id, username) VALUES (?, ?)').run(user.id, username);
 
-    res.status(201).json({ token, user: { id: user.id, username } });
+    const created = db.prepare('SELECT id, username, energy, gems FROM users WHERE id = ?').get(user.id);
+
+    res.status(201).json({ token, user: { id: created.id, username: created.username, energy: created.energy, gems: created.gems } });
   } catch (err) {
     console.error('Register error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -112,7 +114,9 @@ router.post('/guest', authRateLimit, (req, res) => {
 
     db.prepare('INSERT INTO leaderboard (user_id, username) VALUES (?, ?)').run(user.id, username);
 
-    res.status(201).json({ token, user: { id: user.id, username }, isGuest: true });
+    const created = db.prepare('SELECT id, username, energy, gems FROM users WHERE id = ?').get(user.id);
+
+    res.status(201).json({ token, user: { id: created.id, username: created.username, energy: created.energy, gems: created.gems }, isGuest: true });
   } catch (err) {
     console.error('Guest error:', err);
     res.status(500).json({ error: 'Server error' });

@@ -14,6 +14,10 @@ class DailyRewardSystem {
     eventBus.on('game:initialized', () => {
       this.checkDailyReward();
     });
+
+    eventBus.on('cloud:loaded', () => {
+      this.checkDailyReward();
+    });
     
     logger.info('DailyRewardSystem', 'Initialized');
   }

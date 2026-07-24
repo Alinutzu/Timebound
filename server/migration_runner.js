@@ -3,10 +3,11 @@ const path = require('path');
 const crypto = require('crypto');
 
 const MIGRATIONS_DIR = path.join(__dirname, 'migrations');
+const FILE_PATTERN = /^(\d+)_(.+)\.js$/;
 
 function getMigrationFiles() {
   return fs.readdirSync(MIGRATIONS_DIR)
-    .filter(f => f.endsWith('.js'))
+    .filter(f => FILE_PATTERN.test(f))
     .sort();
 }
 
@@ -43,27 +44,37 @@ function runMigrations(db) {
   let ran = 0;
 
   for (const file of migrationFiles) {
-    const version = parseInt(file.split('_')[0], 10);
-    const name = file.replace(/^\d+_/, '').replace('.js', '');
+    const match = file.match(FILE_PATTERN);
+    if (!match) continue;
+
+    const version = parseInt(match[1], 10);
+    const name = match[2];
     const filePath = path.join(MIGRATIONS_DIR, file);
     const fileChecksum = checksum(filePath);
 
     if (appliedVersions.has(version)) {
       const existing = applied.find(m => m.version === version);
       if (existing && existing.checksum !== fileChecksum) {
-        console.error(`[Migration] CHECKSUM MISMATCH v${version}: ${name}`);
-        console.error(`  Applied: ${existing.checksum}`);
-        console.error(`  Current: ${fileChecksum}`);
-        console.error('  Migration file was modified after being applied!');
+        throw new Error(
+          `[Migration] CHECKSUM MISMATCH v${version}: ${name}\n` +
+          `  Applied: ${existing.checksum}\n` +
+          `  Current: ${fileChecksum}\n` +
+          `  Migration file was modified after being applied!`
+        );
       }
       continue;
     }
 
     console.log(`[Migration] Applying v${version}: ${name}`);
     const migration = require(filePath);
-    migration.up(db);
 
-    db.prepare("INSERT INTO schema_version (version, name, checksum) VALUES (?, ?, ?)").run(version, name, fileChecksum);
+    const applyAndRecord = db.transaction(() => {
+      migration.up(db);
+      db.prepare("INSERT OR IGNORE INTO schema_version (version, name, checksum) VALUES (?, ?, ?)")
+        .run(version, name, fileChecksum);
+    });
+    applyAndRecord();
+
     ran++;
   }
 

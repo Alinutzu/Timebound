@@ -85,6 +85,11 @@ if (!userCols.includes('gems')) {
   db.exec("ALTER TABLE users ADD COLUMN gems INTEGER DEFAULT 60");
 }
 db.exec("UPDATE users SET gems = 60 WHERE gems IS NULL");
+
+const gemsCol = db.prepare("PRAGMA table_info(users)").all().find(c => c.name === 'gems');
+if (gemsCol && gemsCol.dflt_value !== '60') {
+  db.exec("UPDATE users SET gems = 60 WHERE gems = " + gemsCol.dflt_value);
+}
 if (!userCols.includes('gems_won')) {
   db.exec("ALTER TABLE users ADD COLUMN gems_won INTEGER DEFAULT 0");
 }

@@ -1189,6 +1189,14 @@ var SaveManager = /*#__PURE__*/function () {
           _this.save();
         }
       }, _config["default"].AUTO_SAVE_INTERVAL);
+      if (!this._beforeUnloadBound) {
+        this._beforeUnloadBound = true;
+        window.addEventListener('beforeunload', function () {
+          if (_this.autoSaveEnabled) {
+            _this.save();
+          }
+        });
+      }
       _Logger["default"].info('SaveManager', "Auto-save started (every ".concat(_config["default"].AUTO_SAVE_INTERVAL / 1000, "s)"));
     }
 
@@ -10609,6 +10617,9 @@ var DailyRewardSystem = /*#__PURE__*/function () {
     _EventBus["default"].on('game:initialized', function () {
       _this.checkDailyReward();
     });
+    _EventBus["default"].on('cloud:loaded', function () {
+      _this.checkDailyReward();
+    });
     _Logger["default"].info('DailyRewardSystem', 'Initialized');
   }
 
@@ -17235,6 +17246,7 @@ var ArenaUI = /*#__PURE__*/function () {
                     state: data.state
                   }
                 });
+                _EventBus["default"].emit('cloud:loaded');
                 this.showNotification('☁️ Cloud save loaded', 'info');
               }
               _context.n = 3;
@@ -17378,6 +17390,10 @@ var ArenaUI = /*#__PURE__*/function () {
               data = _context3.v;
               _api["default"].setToken(data.token);
               this.isGuest = data.isGuest;
+              if (data.user) {
+                this.energy = data.user.energy || 0;
+                this.gems = data.user.gems || 0;
+              }
               this.connecting = false;
               this.connectSocket();
               this.render();
@@ -17483,6 +17499,10 @@ var ArenaUI = /*#__PURE__*/function () {
               case 5:
                 _api["default"].setToken(data.token);
                 _this5.isGuest = false;
+                if (data.user) {
+                  _this5.energy = data.user.energy || 0;
+                  _this5.gems = data.user.gems || 0;
+                }
                 _this5.connectSocket();
                 _this5.render();
                 _context4.n = 6;

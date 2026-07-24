@@ -59,16 +59,14 @@ router.post('/register', authRateLimit, (req, res) => {
     }
 
     const hash = bcrypt.hashSync(password, 10);
-    const result = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)').run(username, email, hash);
+    const result = db.prepare('INSERT INTO users (username, email, password, energy, gems) VALUES (?, ?, ?, 100000, 60)').run(username, email, hash);
 
     const user = { id: result.lastInsertRowid, username };
     const token = generateToken(user);
 
     db.prepare('INSERT INTO leaderboard (user_id, username) VALUES (?, ?)').run(user.id, username);
 
-    const created = db.prepare('SELECT id, username, energy, gems FROM users WHERE id = ?').get(user.id);
-
-    res.status(201).json({ token, user: { id: created.id, username: created.username, energy: created.energy, gems: created.gems } });
+    res.status(201).json({ token, user: { id: user.id, username, energy: 100000, gems: 60 } });
   } catch (err) {
     console.error('Register error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -92,7 +90,7 @@ router.post('/login', authRateLimit, (req, res) => {
 
     const token = generateToken({ id: user.id, username: user.username });
 
-    res.json({ token, user: { id: user.id, username: user.username, energy: user.energy || 100000 } });
+    res.json({ token, user: { id: user.id, username: user.username, energy: user.energy || 100000, gems: user.gems || 60 } });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -107,16 +105,14 @@ router.post('/guest', authRateLimit, (req, res) => {
     const password = Math.random().toString(36).slice(2, 18);
 
     const hash = bcrypt.hashSync(password, 10);
-    const result = db.prepare('INSERT INTO users (username, email, password) VALUES (?, ?, ?)').run(username, email, hash);
+    const result = db.prepare('INSERT INTO users (username, email, password, energy, gems) VALUES (?, ?, ?, 100000, 60)').run(username, email, hash);
 
     const user = { id: result.lastInsertRowid, username };
     const token = generateToken(user);
 
     db.prepare('INSERT INTO leaderboard (user_id, username) VALUES (?, ?)').run(user.id, username);
 
-    const created = db.prepare('SELECT id, username, energy, gems FROM users WHERE id = ?').get(user.id);
-
-    res.status(201).json({ token, user: { id: created.id, username: created.username, energy: created.energy, gems: created.gems }, isGuest: true });
+    res.status(201).json({ token, user: { id: user.id, username, energy: 100000, gems: 60 }, isGuest: true });
   } catch (err) {
     console.error('Guest error:', err);
     res.status(500).json({ error: 'Server error' });

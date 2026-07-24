@@ -11,6 +11,7 @@ import notificationHelper from './utils/NotificationHelper.js';
 import './systems/NotificationManager.js'; // Inițializează
 import logger from './utils/Logger.js';
 import stateManager from './core/StateManager.js';
+import resourceApi from './api/ResourceAPI.js';
 import Formatters from './utils/Formatters.js';
 import miniGameAchievementSystem from './systems/MiniGameAchievementSystem.js'; // ✅ ADĂUGAT
 
@@ -452,35 +453,46 @@ if (document.readyState === 'loading') {
     initApp();
 }
 
-// Make game available globally in debug mode
-if (CONFIG.DEBUG_MODE) {
+// Make game available globally in debug/cheat mode
+if (CONFIG.DEBUG_MODE || CONFIG.ENABLE_CHEATS) {
     window.game = game;
     window.eventBus = eventBus;
     window.stateManager = stateManager;
     window.logger = logger;
     
-    // Debug commands
+    // Cheat commands — uses ResourceAPI
     window.cheat = {
-        addEnergy: (amount) => {
-            stateManager.dispatch({
-                type: 'ADD_RESOURCE',
-                payload: { resource: 'energy', amount }
-            });
+        addEnergy: (amount = 1000000) => {
+            resourceApi.add('energy', amount);
+            console.log(`⚡ +${amount} energy`);
         },
-        addGems: (amount) => {
-            stateManager.dispatch({
-                type: 'ADD_RESOURCE',
-                payload: { resource: 'gems', amount }
-            });
+        addGems: (amount = 10000) => {
+            resourceApi.add('gems', amount);
+            console.log(`💎 +${amount} gems`);
         },
-        addCrystals: (amount) => {
+        addCrystals: (amount = 100) => {
+            resourceApi.add('crystals', amount);
+            console.log(`💠 +${amount} crystals`);
+        },
+        addMana: (amount = 5000) => {
+            resourceApi.add('mana', amount);
+            console.log(`✨ +${amount} mana`);
+        },
+        maxResources: () => {
+            resourceApi.add('energy', 10000000);
+            resourceApi.add('gems', 100000);
+            resourceApi.add('crystals', 10000);
+            resourceApi.add('mana', 100000);
+            console.log('🎮 All resources maxed!');
+        },
+        freeSpins: () => {
             stateManager.dispatch({
-                type: 'ADD_RESOURCE',
-                payload: { resource: 'crystals', amount }
+                type: 'UPDATE_MINI_GAME',
+                payload: { game: 'dailySpin', data: { lastSpinDate: '' } }
             });
+            console.log('🎡 Spin reset — free spin available!');
         },
         unlockAll: () => {
-            // Unlock all features
             console.log('Unlocking all features...');
         },
         ascend: () => {
@@ -491,14 +503,13 @@ if (CONFIG.DEBUG_MODE) {
     
     console.log('%c🎮 Debug Mode Active', 'font-size: 20px; font-weight: bold; color: #10b981;');
     console.log('%cAvailable commands:', 'font-size: 14px; color: #3b82f6;');
-    console.log('  window.game - Game instance');
-    console.log('  window.stateManager - State manager');
-    console.log('  window.eventBus - Event bus');
-    console.log('  window.cheat - Cheat commands');
-    console.log('    cheat.addEnergy(1000000)');
-    console.log('    cheat.addGems(10000)');
-    console.log('    cheat.addCrystals(100)');
-    console.log('    cheat.ascend()');
+    console.log('  cheat.addEnergy(1000000)');
+    console.log('  cheat.addGems(10000)');
+    console.log('  cheat.addCrystals(100)');
+    console.log('  cheat.addMana(5000)');
+    console.log('  cheat.maxResources() — all at once');
+    console.log('  cheat.freeSpins() — reset daily spin');
+    console.log('  cheat.ascend()');
 }
 
 // ===== MOBILE SWIPE GESTURES (OPȚIONAL) =====

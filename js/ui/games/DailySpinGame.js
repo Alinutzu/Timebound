@@ -15,14 +15,14 @@ class DailySpinGame {
     
     // ✅ SEGMENTE CORECTE: ID-urile trebuie să fie 0, 1, 2... 7 (nu 1-8)
     this.segments = [
-      { id: 0, label: '50💎',      reward: { gems: 20 },      color: '#8B5CF6', weight: 20 },
+      { id: 0, label: '20💎',      reward: { gems: 20 },      color: '#8B5CF6', weight: 20 },
       { id: 1, label: '5K⚡',      reward: { energy: 5000 },  color: '#3B82F6', weight: 25 },
-      { id: 2, label: '100💎',     reward: { gems: 40 },     color: '#8B5CF6', weight: 15 },
+      { id: 2, label: '40💎',     reward: { gems: 40 },     color: '#8B5CF6', weight: 15 },
       { id: 3, label: '5💠',       reward: { crystals: 5 },   color: '#10B981', weight: 10 },
-      { id: 4, label: '200💎',     reward: { gems: 80 },     color: '#8B5CF6', weight: 10 },
+      { id: 4, label: '80💎',     reward: { gems: 80 },     color: '#8B5CF6', weight: 10 },
       { id: 5, label: '10K⚡',     reward: { energy: 10000 }, color: '#3B82F6', weight: 12 },
       { id: 6, label: '🛡️Guardian',reward: { guardian: 1 },   color: '#F59E0B', weight: 5 },
-      { id: 7, label: '500💎',     reward: { gems: 200 },     color: '#8B5CF6', weight: 3 }
+      { id: 7, label: '200💎',     reward: { gems: 200 },     color: '#8B5CF6', weight: 3 }
     ];
     
     this.segmentAngle = 360 / this.segments.length;

@@ -8075,6 +8075,7 @@ var _NotificationHelper = _interopRequireDefault(require("./utils/NotificationHe
 require("./systems/NotificationManager.js");
 var _Logger = _interopRequireDefault(require("./utils/Logger.js"));
 var _StateManager = _interopRequireDefault(require("./core/StateManager.js"));
+var _ResourceAPI = _interopRequireDefault(require("./api/ResourceAPI.js"));
 var _Formatters = _interopRequireDefault(require("./utils/Formatters.js"));
 var _MiniGameAchievementSystem = _interopRequireDefault(require("./systems/MiniGameAchievementSystem.js"));
 var _ResourceDisplay = _interopRequireDefault(require("./ui/components/ResourceDisplay.js"));
@@ -8563,44 +8564,55 @@ if (document.readyState === 'loading') {
   initApp();
 }
 
-// Make game available globally in debug mode
-if (_config["default"].DEBUG_MODE) {
+// Make game available globally in debug/cheat mode
+if (_config["default"].DEBUG_MODE || _config["default"].ENABLE_CHEATS) {
   window.game = _Game["default"];
   window.eventBus = _EventBus["default"];
   window.stateManager = _StateManager["default"];
   window.logger = _Logger["default"];
 
-  // Debug commands
+  // Cheat commands — uses ResourceAPI
   window.cheat = {
-    addEnergy: function addEnergy(amount) {
-      _StateManager["default"].dispatch({
-        type: 'ADD_RESOURCE',
-        payload: {
-          resource: 'energy',
-          amount: amount
-        }
-      });
+    addEnergy: function addEnergy() {
+      var amount = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1000000;
+      _ResourceAPI["default"].add('energy', amount);
+      console.log("\u26A1 +".concat(amount, " energy"));
     },
-    addGems: function addGems(amount) {
-      _StateManager["default"].dispatch({
-        type: 'ADD_RESOURCE',
-        payload: {
-          resource: 'gems',
-          amount: amount
-        }
-      });
+    addGems: function addGems() {
+      var amount = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10000;
+      _ResourceAPI["default"].add('gems', amount);
+      console.log("\uD83D\uDC8E +".concat(amount, " gems"));
     },
-    addCrystals: function addCrystals(amount) {
+    addCrystals: function addCrystals() {
+      var amount = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 100;
+      _ResourceAPI["default"].add('crystals', amount);
+      console.log("\uD83D\uDCA0 +".concat(amount, " crystals"));
+    },
+    addMana: function addMana() {
+      var amount = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 5000;
+      _ResourceAPI["default"].add('mana', amount);
+      console.log("\u2728 +".concat(amount, " mana"));
+    },
+    maxResources: function maxResources() {
+      _ResourceAPI["default"].add('energy', 10000000);
+      _ResourceAPI["default"].add('gems', 100000);
+      _ResourceAPI["default"].add('crystals', 10000);
+      _ResourceAPI["default"].add('mana', 100000);
+      console.log('🎮 All resources maxed!');
+    },
+    freeSpins: function freeSpins() {
       _StateManager["default"].dispatch({
-        type: 'ADD_RESOURCE',
+        type: 'UPDATE_MINI_GAME',
         payload: {
-          resource: 'crystals',
-          amount: amount
+          game: 'dailySpin',
+          data: {
+            lastSpinDate: ''
+          }
         }
       });
+      console.log('🎡 Spin reset — free spin available!');
     },
     unlockAll: function unlockAll() {
-      // Unlock all features
       console.log('Unlocking all features...');
     },
     ascend: function ascend() {
@@ -8610,14 +8622,13 @@ if (_config["default"].DEBUG_MODE) {
   };
   console.log('%c🎮 Debug Mode Active', 'font-size: 20px; font-weight: bold; color: #10b981;');
   console.log('%cAvailable commands:', 'font-size: 14px; color: #3b82f6;');
-  console.log('  window.game - Game instance');
-  console.log('  window.stateManager - State manager');
-  console.log('  window.eventBus - Event bus');
-  console.log('  window.cheat - Cheat commands');
-  console.log('    cheat.addEnergy(1000000)');
-  console.log('    cheat.addGems(10000)');
-  console.log('    cheat.addCrystals(100)');
-  console.log('    cheat.ascend()');
+  console.log('  cheat.addEnergy(1000000)');
+  console.log('  cheat.addGems(10000)');
+  console.log('  cheat.addCrystals(100)');
+  console.log('  cheat.addMana(5000)');
+  console.log('  cheat.maxResources() — all at once');
+  console.log('  cheat.freeSpins() — reset daily spin');
+  console.log('  cheat.ascend()');
 }
 
 // ===== MOBILE SWIPE GESTURES (OPȚIONAL) =====
@@ -8667,7 +8678,7 @@ document.addEventListener('click', function (e) {
 });
 // ===== SFÂRȘIT HAPTIC FEEDBACK =====
 
-},{"./config.js":2,"./core/Game.js":4,"./core/StateManager.js":7,"./systems/MiniGameAchievementSystem.js":26,"./systems/NotificationManager.js":27,"./ui/AchievementsUI.js":36,"./ui/ArenaUI.js":37,"./ui/AutomationUI.js":38,"./ui/BadgeManager.js":39,"./ui/BossesUI.js":40,"./ui/ConfirmModal.js":41,"./ui/DailyRewardUI.js":42,"./ui/GuardiansUI.js":43,"./ui/ModalManager.js":45,"./ui/NotificationManager.js":46,"./ui/PuzzleUI.js":47,"./ui/QuestsUI.js":48,"./ui/ShopUI.js":49,"./ui/StatisticsUI.js":50,"./ui/StructuresUI.js":51,"./ui/TabManager.js":52,"./ui/UpgradesUI.js":53,"./ui/components/ResourceDisplay.js":54,"./utils/EventBus.js":60,"./utils/Formatters.js":61,"./utils/Logger.js":62,"./utils/NotificationHelper.js":63}],19:[function(require,module,exports){
+},{"./api/ResourceAPI.js":1,"./config.js":2,"./core/Game.js":4,"./core/StateManager.js":7,"./systems/MiniGameAchievementSystem.js":26,"./systems/NotificationManager.js":27,"./ui/AchievementsUI.js":36,"./ui/ArenaUI.js":37,"./ui/AutomationUI.js":38,"./ui/BadgeManager.js":39,"./ui/BossesUI.js":40,"./ui/ConfirmModal.js":41,"./ui/DailyRewardUI.js":42,"./ui/GuardiansUI.js":43,"./ui/ModalManager.js":45,"./ui/NotificationManager.js":46,"./ui/PuzzleUI.js":47,"./ui/QuestsUI.js":48,"./ui/ShopUI.js":49,"./ui/StatisticsUI.js":50,"./ui/StructuresUI.js":51,"./ui/TabManager.js":52,"./ui/UpgradesUI.js":53,"./ui/components/ResourceDisplay.js":54,"./utils/EventBus.js":60,"./utils/Formatters.js":61,"./utils/Logger.js":62,"./utils/NotificationHelper.js":63}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22467,7 +22478,7 @@ var DailySpinGame = /*#__PURE__*/function () {
     // ✅ SEGMENTE CORECTE: ID-urile trebuie să fie 0, 1, 2... 7 (nu 1-8)
     this.segments = [{
       id: 0,
-      label: '50💎',
+      label: '20💎',
       reward: {
         gems: 20
       },
@@ -22483,7 +22494,7 @@ var DailySpinGame = /*#__PURE__*/function () {
       weight: 25
     }, {
       id: 2,
-      label: '100💎',
+      label: '40💎',
       reward: {
         gems: 40
       },
@@ -22499,7 +22510,7 @@ var DailySpinGame = /*#__PURE__*/function () {
       weight: 10
     }, {
       id: 4,
-      label: '200💎',
+      label: '80💎',
       reward: {
         gems: 80
       },
@@ -22523,7 +22534,7 @@ var DailySpinGame = /*#__PURE__*/function () {
       weight: 5
     }, {
       id: 7,
-      label: '500💎',
+      label: '200💎',
       reward: {
         gems: 200
       },

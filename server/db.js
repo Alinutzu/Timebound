@@ -76,6 +76,11 @@ if (!userCols.includes('energy')) {
 }
 db.exec("UPDATE users SET energy = 100000 WHERE energy IS NULL");
 
+const energyCol = db.prepare("PRAGMA table_info(users)").all().find(c => c.name === 'energy');
+if (energyCol && energyCol.dflt_value !== '100000') {
+  db.exec("UPDATE users SET energy = 100000 WHERE energy = " + energyCol.dflt_value);
+}
+
 if (!userCols.includes('gems')) {
   db.exec("ALTER TABLE users ADD COLUMN gems INTEGER DEFAULT 60");
 }

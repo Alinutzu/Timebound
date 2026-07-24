@@ -56,24 +56,9 @@ export default {
   getToken,
   setToken,
   clearToken,
+  request,
 
   // Auth
-  register(username, email, password) {
-    return request('POST', '/auth/register', { username, email, password });
-  },
-
-  guest() {
-    return request('POST', '/auth/guest');
-  },
-
-  convertGuest(username, email, password) {
-    return request('POST', '/auth/convert', { username, email, password });
-  },
-
-  login(username, password) {
-    return request('POST', '/auth/login', { username, password });
-  },
-
   getUser() {
     return request('GET', '/auth/me');
   },

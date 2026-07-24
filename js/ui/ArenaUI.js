@@ -3,15 +3,7 @@ import eventBus from '../utils/EventBus.js';
 import stateManager from '../core/StateManager.js';
 import Formatters from '../utils/Formatters.js';
 import { io } from 'socket.io-client';
-
-function isGuestToken() {
-  try {
-    const token = api.getToken();
-    if (!token) return false;
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.username && payload.username.startsWith('guest_');
-  } catch { return false; }
-}
+import authManager from '../api/AuthManager.js';
 
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -32,7 +24,6 @@ class ArenaUI {
     }
     this.guardians = [];
     this.opponents = [];
-    this.isGuest = false;
     this.connecting = false;
     this.energy = 0;
     this.gems = 0;
@@ -45,17 +36,17 @@ class ArenaUI {
     this.guardianDetails = null;
     this.loginOnly = false;
 
-    eventBus.on('session:expired', () => {
-      this.stopAutoSave();
-      this.disconnectSocket();
-      if (this.cooldownTimer) {
-        clearInterval(this.cooldownTimer);
-        this.cooldownTimer = null;
+    eventBus.on('auth:stateChanged', ({ state }) => {
+      if (state === 'UNAUTHENTICATED') {
+        this.stopAutoSave();
+        this.disconnectSocket();
+        if (this.cooldownTimer) {
+          clearInterval(this.cooldownTimer);
+          this.cooldownTimer = null;
+        }
+        this.connecting = false;
+        this.render();
       }
-      this.isGuest = false;
-      this.connecting = false;
-      if (api.getToken()) api.clearToken();
-      this.render();
     });
 
     this.render();
@@ -63,7 +54,7 @@ class ArenaUI {
 
   connectSocket() {
     if (this.socket?.connected) return;
-    const token = api.getToken();
+    const token = authManager.getToken();
     if (!token) return;
     this.socket = io(SOCKET_URL, {
       transports: ['websocket', 'polling'],
@@ -96,8 +87,7 @@ class ArenaUI {
       }
     });
     this.socket.on('auth_error', () => {
-      api.clearToken();
-      this.render();
+      authManager.logout();
     });
     this.socket.on('disconnect', () => {});
   }
@@ -129,7 +119,7 @@ class ArenaUI {
   }
 
   async autoSave() {
-    if (!api.getToken()) return;
+    if (!authManager.getToken()) return;
     try {
       const state = stateManager.getState();
       const payload = JSON.stringify(state);
@@ -189,7 +179,7 @@ class ArenaUI {
   }
 
   render() {
-    const token = api.getToken();
+    const token = authManager.getToken();
     this.container.innerHTML = `
       <div class="arena-container">
         ${this.connecting ? this.renderConnecting() : (token ? this.renderDashboard() : this.renderLogin(this.loginOnly))}
@@ -209,9 +199,7 @@ class ArenaUI {
       </div>
     `;
     try {
-      const data = await api.guest();
-      api.setToken(data.token);
-      this.isGuest = data.isGuest;
+      const data = await authManager.guest();
       if (data.user) {
         this.energy = data.user.energy || 0;
         this.gems = data.user.gems || 0;
@@ -272,7 +260,7 @@ class ArenaUI {
   }
 
   renderDashboard() {
-    const guest = isGuestToken();
+    const guest = authManager.isGuest();
     return `
       <div class="arena-header">
         <h2>⚔️ Arena ${guest ? '<span class="arena-guest-badge">GUEST</span>' : ''}</h2>
@@ -333,7 +321,7 @@ class ArenaUI {
   }
 
   bindEvents() {
-    const token = api.getToken();
+    const token = authManager.getToken();
 
     if (!token) {
       this.bindAuthEvents();
@@ -365,7 +353,7 @@ class ArenaUI {
       this.render();
     });
 
-    const tokenFromStorage = api.getToken();
+    const tokenFromStorage = authManager.getToken();
     if (tokenFromStorage) {
       this.connectSocket();
     }
@@ -381,12 +369,10 @@ class ArenaUI {
         let data;
         if (active && active.dataset.auth === 'register') {
           const email = document.getElementById('arena-email').value;
-          data = await api.register(username, email, password);
+          data = await authManager.register(username, email, password);
         } else {
-          data = await api.login(username, password);
+          data = await authManager.login(username, password);
         }
-        api.setToken(data.token);
-        this.isGuest = false;
         this.loginOnly = false;
         if (data.user) {
           this.energy = data.user.energy || 0;
@@ -403,28 +389,11 @@ class ArenaUI {
 
   bindDashboardEvents() {
     document.getElementById('arena-logout')?.addEventListener('click', () => {
-      this.stopAutoSave();
-      this.disconnectSocket();
-      if (this.cooldownTimer) {
-        clearInterval(this.cooldownTimer);
-        this.cooldownTimer = null;
-      }
-      api.clearToken();
-      this.isGuest = false;
-      this.connecting = false;
-      this.render();
+      authManager.logout();
     });
 
     document.getElementById('arena-register-btn')?.addEventListener('click', () => {
-      this.stopAutoSave();
-      this.disconnectSocket();
-      if (this.cooldownTimer) {
-        clearInterval(this.cooldownTimer);
-        this.cooldownTimer = null;
-      }
-      api.clearToken();
-      this.isGuest = false;
-      this.connecting = false;
+      authManager.logout();
       this.loginOnly = true;
       this.render();
     });
@@ -534,14 +503,12 @@ class ArenaUI {
     this.connectSocket();
     this.startAutoSave();
     try {
-      const payload = JSON.parse(atob(api.getToken().split('.')[1]));
-      this.isGuest = isGuestToken();
-      document.getElementById('arena-username-display').textContent = `👤 ${payload.username}`;
+      const user = authManager.getUser();
+      if (user) {
+        document.getElementById('arena-username-display').textContent = `👤 ${user.username}`;
+      }
     } catch {
-      this.stopAutoSave();
-      this.disconnectSocket();
-      api.clearToken();
-      this.render();
+      authManager.logout();
       return;
     }
     try {
@@ -551,10 +518,7 @@ class ArenaUI {
       this.updateResourceDisplay();
     } catch (e) {
       if (e.status === 401) {
-        this.stopAutoSave();
-        this.disconnectSocket();
-        api.clearToken();
-        this.render();
+        authManager.logout();
         return;
       }
     }
@@ -966,10 +930,8 @@ class ArenaUI {
       const errorEl = document.getElementById('arena-convert-error');
 
       try {
-        const data = await api.convertGuest(username, email, password);
+        const data = await authManager.convert(username, email, password);
         this.disconnectSocket();
-        api.setToken(data.token);
-        this.isGuest = false;
         overlay.remove();
         this.render();
         await this.autoLoadCloud();

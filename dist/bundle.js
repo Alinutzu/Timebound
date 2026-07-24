@@ -4,6 +4,236 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports["default"] = exports.STATES = void 0;
+var _api = _interopRequireDefault(require("../services/api.js"));
+var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
+var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i["return"]) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
+var STATES = exports.STATES = {
+  UNAUTHENTICATED: 'UNAUTHENTICATED',
+  GUEST: 'GUEST',
+  AUTHENTICATED: 'AUTHENTICATED'
+};
+var AuthManager = /*#__PURE__*/function () {
+  function AuthManager() {
+    var _this = this;
+    _classCallCheck(this, AuthManager);
+    this.state = STATES.UNAUTHENTICATED;
+    this.user = null;
+    this._restoreFromToken();
+    _EventBus["default"].on('session:expired', function () {
+      _this._setState(STATES.UNAUTHENTICATED, {
+        user: null
+      });
+    });
+  }
+  return _createClass(AuthManager, [{
+    key: "_restoreFromToken",
+    value: function _restoreFromToken() {
+      var token = _api["default"].getToken();
+      if (!token) {
+        this.state = STATES.UNAUTHENTICATED;
+        return;
+      }
+      try {
+        var _payload$username;
+        var payload = JSON.parse(atob(token.split('.')[1]));
+        this.user = {
+          username: payload.username,
+          id: payload.id
+        };
+        this.state = (_payload$username = payload.username) !== null && _payload$username !== void 0 && _payload$username.startsWith('guest_') ? STATES.GUEST : STATES.AUTHENTICATED;
+      } catch (_unused) {
+        this.state = STATES.UNAUTHENTICATED;
+        this.user = null;
+      }
+    }
+  }, {
+    key: "_setState",
+    value: function _setState(newState) {
+      var _this$user;
+      var extra = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      this.state = newState;
+      if (extra.user) this.user = extra.user;
+      _EventBus["default"].emit('auth:stateChanged', _objectSpread({
+        state: this.state,
+        user: this.user
+      }, extra));
+      _Logger["default"].info('[AuthManager]', this.state, ((_this$user = this.user) === null || _this$user === void 0 ? void 0 : _this$user.username) || '');
+    }
+  }, {
+    key: "guest",
+    value: function () {
+      var _guest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
+        var data;
+        return _regenerator().w(function (_context) {
+          while (1) switch (_context.n) {
+            case 0:
+              _context.n = 1;
+              return _api["default"].request('POST', '/auth/guest');
+            case 1:
+              data = _context.v;
+              _api["default"].setToken(data.token);
+              this._setState(STATES.GUEST, {
+                user: data.user,
+                isGuest: true
+              });
+              return _context.a(2, data);
+          }
+        }, _callee, this);
+      }));
+      function guest() {
+        return _guest.apply(this, arguments);
+      }
+      return guest;
+    }()
+  }, {
+    key: "login",
+    value: function () {
+      var _login = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(username, password) {
+        var data;
+        return _regenerator().w(function (_context2) {
+          while (1) switch (_context2.n) {
+            case 0:
+              _context2.n = 1;
+              return _api["default"].request('POST', '/auth/login', {
+                username: username,
+                password: password
+              });
+            case 1:
+              data = _context2.v;
+              _api["default"].setToken(data.token);
+              this._setState(STATES.AUTHENTICATED, {
+                user: data.user,
+                isGuest: false
+              });
+              return _context2.a(2, data);
+          }
+        }, _callee2, this);
+      }));
+      function login(_x, _x2) {
+        return _login.apply(this, arguments);
+      }
+      return login;
+    }()
+  }, {
+    key: "register",
+    value: function () {
+      var _register = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(username, email, password) {
+        var data;
+        return _regenerator().w(function (_context3) {
+          while (1) switch (_context3.n) {
+            case 0:
+              _context3.n = 1;
+              return _api["default"].request('POST', '/auth/register', {
+                username: username,
+                email: email,
+                password: password
+              });
+            case 1:
+              data = _context3.v;
+              _api["default"].setToken(data.token);
+              this._setState(STATES.AUTHENTICATED, {
+                user: data.user,
+                isGuest: false
+              });
+              return _context3.a(2, data);
+          }
+        }, _callee3, this);
+      }));
+      function register(_x3, _x4, _x5) {
+        return _register.apply(this, arguments);
+      }
+      return register;
+    }()
+  }, {
+    key: "convert",
+    value: function () {
+      var _convert = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(username, email, password) {
+        var data;
+        return _regenerator().w(function (_context4) {
+          while (1) switch (_context4.n) {
+            case 0:
+              _context4.n = 1;
+              return _api["default"].request('POST', '/auth/convert', {
+                username: username,
+                email: email,
+                password: password
+              });
+            case 1:
+              data = _context4.v;
+              _api["default"].setToken(data.token);
+              this._setState(STATES.AUTHENTICATED, {
+                user: data.user,
+                isGuest: false
+              });
+              return _context4.a(2, data);
+          }
+        }, _callee4, this);
+      }));
+      function convert(_x6, _x7, _x8) {
+        return _convert.apply(this, arguments);
+      }
+      return convert;
+    }()
+  }, {
+    key: "logout",
+    value: function logout() {
+      _api["default"].clearToken();
+      this._setState(STATES.UNAUTHENTICATED, {
+        user: null
+      });
+    }
+  }, {
+    key: "getToken",
+    value: function getToken() {
+      return _api["default"].getToken();
+    }
+  }, {
+    key: "isGuest",
+    value: function isGuest() {
+      return this.state === STATES.GUEST;
+    }
+  }, {
+    key: "isAuthenticated",
+    value: function isAuthenticated() {
+      this._restoreFromToken();
+      return this.state === STATES.AUTHENTICATED;
+    }
+  }, {
+    key: "getState",
+    value: function getState() {
+      return this.state;
+    }
+  }, {
+    key: "getUser",
+    value: function getUser() {
+      return this.user;
+    }
+  }]);
+}();
+var authManager = new AuthManager();
+var _default = exports["default"] = authManager;
+
+},{"../services/api.js":20,"../utils/EventBus.js":62,"../utils/Logger.js":64}],2:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports["default"] = void 0;
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
@@ -292,7 +522,7 @@ var ResourceAPI = /*#__PURE__*/function () {
 var resourceApi = new ResourceAPI();
 var _default = exports["default"] = resourceApi;
 
-},{"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63}],2:[function(require,module,exports){
+},{"../core/StateManager.js":8,"../utils/EventBus.js":62,"../utils/Logger.js":64}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -414,7 +644,7 @@ Object.freeze(CONFIG.BALANCING);
 Object.freeze(CONFIG.FEATURES);
 var _default = exports["default"] = CONFIG;
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -517,7 +747,7 @@ function shouldShowNotification(notificationType) {
   return true;
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -725,7 +955,7 @@ if (_config["default"].DEBUG_MODE) {
 }
 var _default = exports["default"] = game;
 
-},{"../config.js":2,"../systems/AchievementSystem.js":20,"../systems/AscensionSystem.js":21,"../systems/AutomationSystem.js":22,"../systems/BossSystem.js":23,"../systems/DailyRewardSystem.js":24,"../systems/GuardianSystem.js":25,"../systems/QuestSystem.js":28,"../systems/RealmSystem.js":29,"../systems/ShopSystem.js":30,"../systems/StatisticsSystem.js":31,"../systems/StructureSystem.js":32,"../systems/TutorialSystem.js":33,"../systems/UpgradeQueueSystem.js":34,"../systems/UpgradeSystem.js":35,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./SaveManager.js":6,"./StateManager.js":7,"./TickManager.js":8}],5:[function(require,module,exports){
+},{"../config.js":3,"../systems/AchievementSystem.js":21,"../systems/AscensionSystem.js":22,"../systems/AutomationSystem.js":23,"../systems/BossSystem.js":24,"../systems/DailyRewardSystem.js":25,"../systems/GuardianSystem.js":26,"../systems/QuestSystem.js":29,"../systems/RealmSystem.js":30,"../systems/ShopSystem.js":31,"../systems/StatisticsSystem.js":32,"../systems/StructureSystem.js":33,"../systems/TutorialSystem.js":34,"../systems/UpgradeQueueSystem.js":35,"../systems/UpgradeSystem.js":36,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./SaveManager.js":7,"./StateManager.js":8,"./TickManager.js":9}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1006,7 +1236,7 @@ var ResourceManager = /*#__PURE__*/function () {
 var resourceManager = new ResourceManager();
 var _default = exports["default"] = resourceManager;
 
-},{"../utils/Logger.js":63}],6:[function(require,module,exports){
+},{"../utils/Logger.js":64}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1525,7 +1755,7 @@ var SaveManager = /*#__PURE__*/function () {
 var saveManager = new SaveManager();
 var _default = exports["default"] = saveManager;
 
-},{"../config.js":2,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./StateManager.js":7}],7:[function(require,module,exports){
+},{"../config.js":3,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./StateManager.js":8}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2534,7 +2764,7 @@ var StateManager = /*#__PURE__*/function () {
 var stateManager = new StateManager();
 var _default = exports["default"] = stateManager;
 
-},{"../config.js":2,"../utils/EventBus.js":61,"../utils/Logger.js":63}],8:[function(require,module,exports){
+},{"../config.js":3,"../utils/EventBus.js":62,"../utils/Logger.js":64}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3061,7 +3291,7 @@ var TickManager = /*#__PURE__*/function () {
 var tickManager = new TickManager();
 var _default = exports["default"] = tickManager;
 
-},{"../config.js":2,"../systems/GuardianSystem.js":25,"../systems/RealmSystem.js":29,"../systems/UpgradeSystem.js":35,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./ResourceManager.js":5,"./StateManager.js":7}],9:[function(require,module,exports){
+},{"../config.js":3,"../systems/GuardianSystem.js":26,"../systems/RealmSystem.js":30,"../systems/UpgradeSystem.js":36,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./ResourceManager.js":6,"./StateManager.js":8}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3873,7 +4103,7 @@ var ACHIEVEMENTS = {
 };
 var _default = exports["default"] = ACHIEVEMENTS;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../systems/StructureSystem.js":32}],10:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../systems/StructureSystem.js":33}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4260,7 +4490,7 @@ var BOSSES = {
 };
 var _default = exports["default"] = BOSSES;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4533,7 +4763,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
 var RARITIES = exports.RARITIES = _config["default"].BALANCING.GUARDIAN_RARITIES;
 var _default = exports["default"] = GUARDIAN_POOL;
 
-},{"../config.js":2}],12:[function(require,module,exports){
+},{"../config.js":3}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5192,7 +5422,7 @@ function getAllMiniGameAchievements() {
   return Object.values(MINI_GAME_ACHIEVEMENTS).flat();
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5673,7 +5903,7 @@ var QUEST_TEMPLATES = {
 };
 var _default = exports["default"] = QUEST_TEMPLATES;
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5974,7 +6204,7 @@ function canUnlockRealm(realmId, state) {
 }
 var _default = exports["default"] = REALMS;
 
-},{"../api/ResourceAPI.js":1,"../config.js":2}],15:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../config.js":3}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6478,7 +6708,7 @@ function isOfferAvailable(offer, playerState) {
 }
 var _default = exports["default"] = SHOP_ITEMS;
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7350,7 +7580,7 @@ var STRUCTURES = {
 };
 var _default = exports["default"] = STRUCTURES;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8067,7 +8297,7 @@ var UPGRADES = {
 };
 var _default = exports["default"] = UPGRADES;
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 
 var _config = _interopRequireDefault(require("./config.js"));
@@ -8684,7 +8914,7 @@ document.addEventListener('click', function (e) {
 });
 // ===== SFÂRȘIT HAPTIC FEEDBACK =====
 
-},{"./api/ResourceAPI.js":1,"./config.js":2,"./core/Game.js":4,"./core/StateManager.js":7,"./systems/MiniGameAchievementSystem.js":26,"./systems/NotificationManager.js":27,"./ui/AchievementsUI.js":36,"./ui/ArenaUI.js":37,"./ui/AutomationUI.js":38,"./ui/BadgeManager.js":39,"./ui/BossesUI.js":40,"./ui/CheatMenu.js":41,"./ui/ConfirmModal.js":42,"./ui/DailyRewardUI.js":43,"./ui/GuardiansUI.js":44,"./ui/ModalManager.js":46,"./ui/NotificationManager.js":47,"./ui/PuzzleUI.js":48,"./ui/QuestsUI.js":49,"./ui/ShopUI.js":50,"./ui/StatisticsUI.js":51,"./ui/StructuresUI.js":52,"./ui/TabManager.js":53,"./ui/UpgradesUI.js":54,"./ui/components/ResourceDisplay.js":55,"./utils/EventBus.js":61,"./utils/Formatters.js":62,"./utils/Logger.js":63,"./utils/NotificationHelper.js":64}],19:[function(require,module,exports){
+},{"./api/ResourceAPI.js":2,"./config.js":3,"./core/Game.js":5,"./core/StateManager.js":8,"./systems/MiniGameAchievementSystem.js":27,"./systems/NotificationManager.js":28,"./ui/AchievementsUI.js":37,"./ui/ArenaUI.js":38,"./ui/AutomationUI.js":39,"./ui/BadgeManager.js":40,"./ui/BossesUI.js":41,"./ui/CheatMenu.js":42,"./ui/ConfirmModal.js":43,"./ui/DailyRewardUI.js":44,"./ui/GuardiansUI.js":45,"./ui/ModalManager.js":47,"./ui/NotificationManager.js":48,"./ui/PuzzleUI.js":49,"./ui/QuestsUI.js":50,"./ui/ShopUI.js":51,"./ui/StatisticsUI.js":52,"./ui/StructuresUI.js":53,"./ui/TabManager.js":54,"./ui/UpgradesUI.js":55,"./ui/components/ResourceDisplay.js":56,"./utils/EventBus.js":62,"./utils/Formatters.js":63,"./utils/Logger.js":64,"./utils/NotificationHelper.js":65}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8777,30 +9007,8 @@ var _default = exports["default"] = {
   getToken: getToken,
   setToken: setToken,
   clearToken: clearToken,
+  request: request,
   // Auth
-  register: function register(username, email, password) {
-    return request('POST', '/auth/register', {
-      username: username,
-      email: email,
-      password: password
-    });
-  },
-  guest: function guest() {
-    return request('POST', '/auth/guest');
-  },
-  convertGuest: function convertGuest(username, email, password) {
-    return request('POST', '/auth/convert', {
-      username: username,
-      email: email,
-      password: password
-    });
-  },
-  login: function login(username, password) {
-    return request('POST', '/auth/login', {
-      username: username,
-      password: password
-    });
-  },
   getUser: function getUser() {
     return request('GET', '/auth/me');
   },
@@ -8856,7 +9064,7 @@ var _default = exports["default"] = {
   }
 };
 
-},{"../utils/EventBus.js":61}],20:[function(require,module,exports){
+},{"../utils/EventBus.js":62}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9361,7 +9569,7 @@ window.claimAchievement = function (achievementKey) {
 };
 var _default = exports["default"] = achievementSystem;
 
-},{"../api/ResourceAPI.js":1,"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../data/achievements.js":9,"../utils/EventBus.js":61,"../utils/Logger.js":63}],21:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/ResourceManager.js":6,"../core/StateManager.js":8,"../data/achievements.js":10,"../utils/EventBus.js":62,"../utils/Logger.js":64}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9707,7 +9915,7 @@ var AscensionSystem = /*#__PURE__*/function () {
 var ascensionSystem = new AscensionSystem();
 var _default = exports["default"] = ascensionSystem;
 
-},{"../api/ResourceAPI.js":1,"../config.js":2,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],22:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../config.js":3,"../core/StateManager.js":8,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./UpgradeSystem.js":36}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10225,7 +10433,7 @@ var AutomationSystem = /*#__PURE__*/function () {
 var automationSystem = new AutomationSystem();
 var _default = exports["default"] = automationSystem;
 
-},{"../api/ResourceAPI.js":1,"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25,"./QuestSystem.js":28,"./StructureSystem.js":32,"./UpgradeQueueSystem.js":34,"./UpgradeSystem.js":35}],23:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/ResourceManager.js":6,"../core/StateManager.js":8,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./GuardianSystem.js":26,"./QuestSystem.js":29,"./StructureSystem.js":33,"./UpgradeQueueSystem.js":35,"./UpgradeSystem.js":36}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10838,7 +11046,7 @@ var BossSystem = /*#__PURE__*/function () {
 var bossSystem = new BossSystem();
 var _default = exports["default"] = bossSystem;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/bosses.js":10,"../data/guardians.js":11,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25,"./StructureSystem.js":32}],24:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../data/bosses.js":11,"../data/guardians.js":12,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./GuardianSystem.js":26,"./StructureSystem.js":33}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11219,7 +11427,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
 var dailyRewardSystem = new DailyRewardSystem();
 var _default = exports["default"] = dailyRewardSystem;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25}],25:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./GuardianSystem.js":26}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12035,7 +12243,7 @@ var GuardianSystem = /*#__PURE__*/function () {
 var guardianSystem = new GuardianSystem();
 var _default = exports["default"] = guardianSystem;
 
-},{"../api/ResourceAPI.js":1,"../config.js":2,"../core/StateManager.js":7,"../data/guardians.js":11,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],26:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../config.js":3,"../core/StateManager.js":8,"../data/guardians.js":12,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./UpgradeSystem.js":36}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12388,7 +12596,7 @@ var MiniGameAchievementSystem = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameAchievementSystem();
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/miniGameAchievements.js":12,"../utils/EventBus.js":61,"../utils/Logger.js":63}],27:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../data/miniGameAchievements.js":13,"../utils/EventBus.js":62,"../utils/Logger.js":64}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12585,7 +12793,7 @@ var NotificationManager = /*#__PURE__*/function () {
 var notificationManager = new NotificationManager();
 var _default = exports["default"] = notificationManager;
 
-},{"../utils/EventBus.js":61,"../utils/Logger.js":63}],28:[function(require,module,exports){
+},{"../utils/EventBus.js":62,"../utils/Logger.js":64}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13268,7 +13476,7 @@ var QuestSystem = /*#__PURE__*/function () {
 var questSystem = new QuestSystem();
 var _default = exports["default"] = questSystem;
 
-},{"../api/ResourceAPI.js":1,"../config.js":2,"../core/StateManager.js":7,"../data/quests.js":13,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],29:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../config.js":3,"../core/StateManager.js":8,"../data/quests.js":14,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./UpgradeSystem.js":36}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13621,7 +13829,7 @@ var RealmSystem = /*#__PURE__*/function () {
 var realmSystem = new RealmSystem();
 var _default = exports["default"] = realmSystem;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/realms.js":14,"../utils/EventBus.js":61,"../utils/Logger.js":63}],30:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../data/realms.js":15,"../utils/EventBus.js":62,"../utils/Logger.js":64}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14202,7 +14410,7 @@ var ShopSystem = /*#__PURE__*/function () {
 var shopSystem = new ShopSystem();
 var _default = exports["default"] = shopSystem;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/guardians.js":11,"../data/shop.js":15,"../ui/games/DailySpinGame.js":58,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25}],31:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../data/guardians.js":12,"../data/shop.js":16,"../ui/games/DailySpinGame.js":59,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./GuardianSystem.js":26}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14718,7 +14926,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
 var statisticsSystem = new StatisticsSystem();
 var _default = exports["default"] = statisticsSystem;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"../utils/Logger.js":63,"./AchievementSystem.js":20,"./BossSystem.js":23,"./GuardianSystem.js":25,"./StructureSystem.js":32,"./UpgradeSystem.js":35}],32:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../utils/EventBus.js":62,"../utils/Formatters.js":63,"../utils/Logger.js":64,"./AchievementSystem.js":21,"./BossSystem.js":24,"./GuardianSystem.js":26,"./StructureSystem.js":33,"./UpgradeSystem.js":36}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15322,7 +15530,7 @@ var StructureSystem = /*#__PURE__*/function () {
 var structureSystem = new StructureSystem();
 var _default = exports["default"] = structureSystem;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/structures.js":16,"../systems/RealmSystem.js":29,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./GuardianSystem.js":25,"./UpgradeSystem.js":35}],33:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../data/structures.js":17,"../systems/RealmSystem.js":30,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./GuardianSystem.js":26,"./UpgradeSystem.js":36}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15901,7 +16109,7 @@ var TutorialSystem = /*#__PURE__*/function () {
 var tutorialSystem = new TutorialSystem();
 var _default = exports["default"] = tutorialSystem;
 
-},{"../api/ResourceAPI.js":1,"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],34:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/ResourceManager.js":6,"../core/StateManager.js":8,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./UpgradeSystem.js":36}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16434,7 +16642,7 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
 var upgradeQueueSystem = new UpgradeQueueSystem();
 var _default = exports["default"] = upgradeQueueSystem;
 
-},{"../api/ResourceAPI.js":1,"../config.js":2,"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeSystem.js":35}],35:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../config.js":3,"../core/ResourceManager.js":6,"../core/StateManager.js":8,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./UpgradeSystem.js":36}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17062,7 +17270,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
 var upgradeSystem = new UpgradeSystem();
 var _default = exports["default"] = upgradeSystem;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../data/upgrades.js":17,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./UpgradeQueueSystem.js":34}],36:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../data/upgrades.js":18,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./UpgradeQueueSystem.js":35}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17273,7 +17481,7 @@ window.claimAchievement = function (key) {
 };
 var _default = exports["default"] = AchievementsUI;
 
-},{"../core/StateManager.js":7,"../data/achievements.js":9,"../systems/AchievementSystem.js":20,"../utils/EventBus.js":61,"./MiniGameStatsUI.js":45}],37:[function(require,module,exports){
+},{"../core/StateManager.js":8,"../data/achievements.js":10,"../systems/AchievementSystem.js":21,"../utils/EventBus.js":62,"./MiniGameStatsUI.js":46}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17285,6 +17493,7 @@ var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
 var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
 var _socket = require("socket.io-client");
+var _AuthManager = _interopRequireDefault(require("../api/AuthManager.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -17303,16 +17512,6 @@ function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), 
 function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function isGuestToken() {
-  try {
-    var token = _api["default"].getToken();
-    if (!token) return false;
-    var payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.username && payload.username.startsWith('guest_');
-  } catch (_unused) {
-    return false;
-  }
-}
 function escapeHtml(str) {
   var div = document.createElement('div');
   div.textContent = str;
@@ -17330,7 +17529,6 @@ var ArenaUI = /*#__PURE__*/function () {
     }
     this.guardians = [];
     this.opponents = [];
-    this.isGuest = false;
     this.connecting = false;
     this.energy = 0;
     this.gems = 0;
@@ -17342,17 +17540,18 @@ var ArenaUI = /*#__PURE__*/function () {
     this.selectedGuardianIds = new Set();
     this.guardianDetails = null;
     this.loginOnly = false;
-    _EventBus["default"].on('session:expired', function () {
-      _this.stopAutoSave();
-      _this.disconnectSocket();
-      if (_this.cooldownTimer) {
-        clearInterval(_this.cooldownTimer);
-        _this.cooldownTimer = null;
+    _EventBus["default"].on('auth:stateChanged', function (_ref) {
+      var state = _ref.state;
+      if (state === 'UNAUTHENTICATED') {
+        _this.stopAutoSave();
+        _this.disconnectSocket();
+        if (_this.cooldownTimer) {
+          clearInterval(_this.cooldownTimer);
+          _this.cooldownTimer = null;
+        }
+        _this.connecting = false;
+        _this.render();
       }
-      _this.isGuest = false;
-      _this.connecting = false;
-      if (_api["default"].getToken()) _api["default"].clearToken();
-      _this.render();
     });
     this.render();
   }
@@ -17362,7 +17561,7 @@ var ArenaUI = /*#__PURE__*/function () {
       var _this$socket,
         _this2 = this;
       if ((_this$socket = this.socket) !== null && _this$socket !== void 0 && _this$socket.connected) return;
-      var token = _api["default"].getToken();
+      var token = _AuthManager["default"].getToken();
       if (!token) return;
       this.socket = (0, _socket.io)(SOCKET_URL, {
         transports: ['websocket', 'polling'],
@@ -17397,8 +17596,7 @@ var ArenaUI = /*#__PURE__*/function () {
         }
       });
       this.socket.on('auth_error', function () {
-        _api["default"].clearToken();
-        _this2.render();
+        _AuthManager["default"].logout();
       });
       this.socket.on('disconnect', function () {});
     }
@@ -17456,7 +17654,7 @@ var ArenaUI = /*#__PURE__*/function () {
         return _regenerator().w(function (_context2) {
           while (1) switch (_context2.p = _context2.n) {
             case 0:
-              if (_api["default"].getToken()) {
+              if (_AuthManager["default"].getToken()) {
                 _context2.n = 1;
                 break;
               }
@@ -17553,7 +17751,7 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "render",
     value: function render() {
-      var token = _api["default"].getToken();
+      var token = _AuthManager["default"].getToken();
       this.container.innerHTML = "\n      <div class=\"arena-container\">\n        ".concat(this.connecting ? this.renderConnecting() : token ? this.renderDashboard() : this.renderLogin(this.loginOnly), "\n      </div>\n    ");
       this.bindEvents();
     }
@@ -17569,11 +17767,9 @@ var ArenaUI = /*#__PURE__*/function () {
               this.container.innerHTML = "\n      <div class=\"arena-container\">\n        <div class=\"arena-connecting\">\n          <div class=\"loading-spinner\"></div>\n          <p>Connecting to Arena...</p>\n        </div>\n      </div>\n    ";
               _context3.p = 1;
               _context3.n = 2;
-              return _api["default"].guest();
+              return _AuthManager["default"].guest();
             case 2:
               data = _context3.v;
-              _api["default"].setToken(data.token);
-              this.isGuest = data.isGuest;
               if (data.user) {
                 this.energy = data.user.energy || 0;
                 this.gems = data.user.gems || 0;
@@ -17616,13 +17812,13 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "renderDashboard",
     value: function renderDashboard() {
-      var guest = isGuestToken();
+      var guest = _AuthManager["default"].isGuest();
       return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena ".concat(guest ? '<span class="arena-guest-badge">GUEST</span>' : '', "</h2>\n        <div class=\"arena-header-actions\">\n          <span id=\"arena-gems-display\" class=\"arena-gems\">\uD83D\uDC8E ").concat(this.gems.toLocaleString(), "</span>\n          <span id=\"arena-energy-display\" class=\"arena-energy\">\u26A1 ").concat(this.energy.toLocaleString(), "</span>\n          <span id=\"arena-username-display\"></span>\n          ").concat(guest ? '<button class="btn btn-small btn-primary" id="arena-register-btn">🔑 Login</button>' : '<button class="btn btn-small btn-danger" id="arena-logout">Logout</button>', "\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-save-cloud\">\u2601\uFE0F Save</button>\n          <button class=\"btn btn-small btn-secondary\" id=\"arena-load-cloud\">\u2601\uFE0F Load</button>\n        </div>\n      </div>\n      ").concat(guest ? '<div class="arena-guest-banner">🔓 Guest mode — <button class="btn btn-small btn-primary" id="arena-register-btn-banner">Register</button> to save your progress permanently!</div>' : '', "\n      <div class=\"arena-dashboard\">\n        <div class=\"arena-section\" id=\"arena-guardians-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDEE1\uFE0F My Guardians</h3>\n            <button class=\"btn btn-primary\" id=\"arena-summon-btn\">\u2728 Summon (\uD83D\uDC8E").concat(ArenaUI.SUMMON_COST, ")</button>\n          </div>\n          ").concat(this.gems < ArenaUI.SUMMON_COST ? '<p class="arena-insufficient" id="arena-summon-warning">💎 Insufficient gems! Complete quests or win battles to earn more.</p>' : '', "\n          <div id=\"arena-guardians-list\" class=\"arena-guardians-list\">\n            <p class=\"arena-loading\">Loading guardians...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-battle-section\">\n          <div class=\"arena-section-header\">\n            <h3>\u2694\uFE0F Battle</h3>\n          </div>\n          <div class=\"arena-battle-actions\">\n            <button class=\"btn btn-success\" id=\"arena-pve-btn\">\u2694\uFE0F Train (PvE)</button>\n            <button class=\"btn btn-danger\" id=\"arena-pvp-btn\">\uD83D\uDD25 Find Opponent (PvP)</button>\n          </div>\n          <div id=\"arena-battle-result\"></div>\n          <div id=\"arena-opponents-list\"></div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-history-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83D\uDCDC Battle History</h3>\n            <button class=\"btn btn-small btn-secondary\" id=\"arena-history-toggle\">Show</button>\n          </div>\n          <div id=\"arena-history-list\" style=\"display:none\">\n            <p class=\"arena-loading\">Loading history...</p>\n          </div>\n        </div>\n        <div class=\"arena-section\" id=\"arena-leaderboard-section\">\n          <div class=\"arena-section-header\">\n            <h3>\uD83C\uDFC6 Leaderboard</h3>\n            <span id=\"arena-my-rank\"></span>\n          </div>\n          <div id=\"arena-leaderboard-list\" class=\"arena-leaderboard-list\">\n            <p class=\"arena-loading\">Loading leaderboard...</p>\n          </div>\n        </div>\n      </div>\n    ");
     }
   }, {
     key: "bindEvents",
     value: function bindEvents() {
-      var token = _api["default"].getToken();
+      var token = _AuthManager["default"].getToken();
       if (!token) {
         this.bindAuthEvents();
       } else {
@@ -17655,12 +17851,12 @@ var ArenaUI = /*#__PURE__*/function () {
         _this5.loginOnly = false;
         _this5.render();
       });
-      var tokenFromStorage = _api["default"].getToken();
+      var tokenFromStorage = _AuthManager["default"].getToken();
       if (tokenFromStorage) {
         this.connectSocket();
       }
       document.getElementById('arena-auth-form').addEventListener('submit', /*#__PURE__*/function () {
-        var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(e) {
+        var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(e) {
           var username, password, errorEl, active, data, email, _t4;
           return _regenerator().w(function (_context4) {
             while (1) switch (_context4.p = _context4.n) {
@@ -17677,19 +17873,17 @@ var ArenaUI = /*#__PURE__*/function () {
                 }
                 email = document.getElementById('arena-email').value;
                 _context4.n = 2;
-                return _api["default"].register(username, email, password);
+                return _AuthManager["default"].register(username, email, password);
               case 2:
                 data = _context4.v;
                 _context4.n = 5;
                 break;
               case 3:
                 _context4.n = 4;
-                return _api["default"].login(username, password);
+                return _AuthManager["default"].login(username, password);
               case 4:
                 data = _context4.v;
               case 5:
-                _api["default"].setToken(data.token);
-                _this5.isGuest = false;
                 _this5.loginOnly = false;
                 if (data.user) {
                   _this5.energy = data.user.energy || 0;
@@ -17712,7 +17906,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }, _callee4, null, [[1, 7]]);
         }));
         return function (_x) {
-          return _ref.apply(this, arguments);
+          return _ref2.apply(this, arguments);
         };
       }());
     }
@@ -17720,8 +17914,8 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "bindDashboardEvents",
     value: function bindDashboardEvents() {
       var _document$getElementB3,
-        _this6 = this,
         _document$getElementB4,
+        _this6 = this,
         _document$getElementB5,
         _document$getElementB6,
         _document$getElementB7,
@@ -17730,27 +17924,10 @@ var ArenaUI = /*#__PURE__*/function () {
         _document$getElementB0,
         _document$getElementB1;
       (_document$getElementB3 = document.getElementById('arena-logout')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', function () {
-        _this6.stopAutoSave();
-        _this6.disconnectSocket();
-        if (_this6.cooldownTimer) {
-          clearInterval(_this6.cooldownTimer);
-          _this6.cooldownTimer = null;
-        }
-        _api["default"].clearToken();
-        _this6.isGuest = false;
-        _this6.connecting = false;
-        _this6.render();
+        _AuthManager["default"].logout();
       });
       (_document$getElementB4 = document.getElementById('arena-register-btn')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', function () {
-        _this6.stopAutoSave();
-        _this6.disconnectSocket();
-        if (_this6.cooldownTimer) {
-          clearInterval(_this6.cooldownTimer);
-          _this6.cooldownTimer = null;
-        }
-        _api["default"].clearToken();
-        _this6.isGuest = false;
-        _this6.connecting = false;
+        _AuthManager["default"].logout();
         _this6.loginOnly = true;
         _this6.render();
       });
@@ -17949,34 +18126,32 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "loadDashboard",
     value: function () {
       var _loadDashboard = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1() {
-        var payload, user, _t0, _t1;
+        var user, _user, _t0, _t1;
         return _regenerator().w(function (_context1) {
           while (1) switch (_context1.p = _context1.n) {
             case 0:
               this.connectSocket();
               this.startAutoSave();
               _context1.p = 1;
-              payload = JSON.parse(atob(_api["default"].getToken().split('.')[1]));
-              this.isGuest = isGuestToken();
-              document.getElementById('arena-username-display').textContent = "\uD83D\uDC64 ".concat(payload.username);
+              user = _AuthManager["default"].getUser();
+              if (user) {
+                document.getElementById('arena-username-display').textContent = "\uD83D\uDC64 ".concat(user.username);
+              }
               _context1.n = 3;
               break;
             case 2:
               _context1.p = 2;
               _t0 = _context1.v;
-              this.stopAutoSave();
-              this.disconnectSocket();
-              _api["default"].clearToken();
-              this.render();
+              _AuthManager["default"].logout();
               return _context1.a(2);
             case 3:
               _context1.p = 3;
               _context1.n = 4;
               return _api["default"].getUser();
             case 4:
-              user = _context1.v;
-              this.energy = user.energy || 0;
-              this.gems = user.gems || 0;
+              _user = _context1.v;
+              this.energy = _user.energy || 0;
+              this.gems = _user.gems || 0;
               this.updateResourceDisplay();
               _context1.n = 6;
               break;
@@ -17987,10 +18162,7 @@ var ArenaUI = /*#__PURE__*/function () {
                 _context1.n = 6;
                 break;
               }
-              this.stopAutoSave();
-              this.disconnectSocket();
-              _api["default"].clearToken();
-              this.render();
+              _AuthManager["default"].logout();
               return _context1.a(2);
             case 6:
               _context1.n = 7;
@@ -18145,7 +18317,7 @@ var ArenaUI = /*#__PURE__*/function () {
       });
       list.querySelectorAll('.btn-release-row').forEach(function (btn) {
         btn.addEventListener('click', /*#__PURE__*/function () {
-          var _ref9 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(e) {
+          var _ref0 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(e) {
             var guardian, name, rarity, rarities, rarityName, warnings, confirmed, _t12;
             return _regenerator().w(function (_context12) {
               while (1) switch (_context12.p = _context12.n) {
@@ -18199,7 +18371,7 @@ var ArenaUI = /*#__PURE__*/function () {
             }, _callee12, null, [[2, 4]]);
           }));
           return function (_x2) {
-            return _ref9.apply(this, arguments);
+            return _ref0.apply(this, arguments);
           };
         }());
       });
@@ -18441,7 +18613,7 @@ var ArenaUI = /*#__PURE__*/function () {
         return overlay.remove();
       });
       overlay.querySelector('#arena-convert-form').addEventListener('submit', /*#__PURE__*/function () {
-        var _ref1 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(e) {
+        var _ref10 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(e) {
           var username, email, password, errorEl, data, _t16;
           return _regenerator().w(function (_context16) {
             while (1) switch (_context16.p = _context16.n) {
@@ -18453,12 +18625,10 @@ var ArenaUI = /*#__PURE__*/function () {
                 errorEl = document.getElementById('arena-convert-error');
                 _context16.p = 1;
                 _context16.n = 2;
-                return _api["default"].convertGuest(username, email, password);
+                return _AuthManager["default"].convert(username, email, password);
               case 2:
                 data = _context16.v;
                 _this9.disconnectSocket();
-                _api["default"].setToken(data.token);
-                _this9.isGuest = false;
                 overlay.remove();
                 _this9.render();
                 _context16.n = 3;
@@ -18477,7 +18647,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }, _callee16, null, [[1, 4]]);
         }));
         return function (_x3) {
-          return _ref1.apply(this, arguments);
+          return _ref10.apply(this, arguments);
         };
       }());
     }
@@ -18547,7 +18717,7 @@ _defineProperty(ArenaUI, "LEVELUP_BASE_COST", 10000);
 _defineProperty(ArenaUI, "LEVELUP_COST_MULTIPLIER", 1.5);
 var _default = exports["default"] = ArenaUI;
 
-},{"../core/StateManager.js":7,"../services/api.js":19,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"socket.io-client":90}],38:[function(require,module,exports){
+},{"../api/AuthManager.js":1,"../core/StateManager.js":8,"../services/api.js":20,"../utils/EventBus.js":62,"../utils/Formatters.js":63,"socket.io-client":91}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18618,7 +18788,7 @@ window.toggleAutomation = function (featureKey) {
 new AutomationUI();
 var _default = exports["default"] = AutomationUI;
 
-},{"../systems/AutomationSystem.js":22,"../utils/EventBus.js":61}],39:[function(require,module,exports){
+},{"../systems/AutomationSystem.js":23,"../utils/EventBus.js":62}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18833,7 +19003,7 @@ var BadgeManager = /*#__PURE__*/function () {
 var badgeManager = new BadgeManager();
 var _default = exports["default"] = badgeManager;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63}],40:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../utils/EventBus.js":62,"../utils/Logger.js":64}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18995,7 +19165,7 @@ window.challengeBoss = function (bossKey) {
 };
 var _default = exports["default"] = BossesUI;
 
-},{"../core/StateManager.js":7,"../systems/BossSystem.js":23,"../utils/EventBus.js":61,"../utils/Formatters.js":62}],41:[function(require,module,exports){
+},{"../core/StateManager.js":8,"../systems/BossSystem.js":24,"../utils/EventBus.js":62,"../utils/Formatters.js":63}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19233,7 +19403,7 @@ var CheatMenu = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = CheatMenu;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../utils/EventBus.js":61}],42:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../utils/EventBus.js":62}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19313,7 +19483,7 @@ var ConfirmModal = /*#__PURE__*/function () {
 var confirmModal = new ConfirmModal();
 var _default = exports["default"] = confirmModal;
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19401,7 +19571,7 @@ var DailyRewardUI = /*#__PURE__*/function () {
 new DailyRewardUI();
 var _default = exports["default"] = DailyRewardUI;
 
-},{"../systems/DailyRewardSystem.js":24,"../utils/EventBus.js":61}],44:[function(require,module,exports){
+},{"../systems/DailyRewardSystem.js":25,"../utils/EventBus.js":62}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19738,7 +19908,7 @@ var GuardiansUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = GuardiansUI;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../systems/GuardianSystem.js":25,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"./ConfirmModal.js":42}],45:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../systems/GuardianSystem.js":26,"../utils/EventBus.js":62,"../utils/Formatters.js":63,"./ConfirmModal.js":43}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19869,7 +20039,7 @@ var MiniGameStatsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameStatsUI();
 
-},{"../data/miniGameAchievements.js":12,"../systems/MiniGameAchievementSystem.js":26,"../utils/Formatters.js":62}],46:[function(require,module,exports){
+},{"../data/miniGameAchievements.js":13,"../systems/MiniGameAchievementSystem.js":27,"../utils/Formatters.js":63}],47:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19988,7 +20158,7 @@ var ModalManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ModalManager;
 
-},{"../utils/EventBus.js":61,"../utils/Logger.js":63}],47:[function(require,module,exports){
+},{"../utils/EventBus.js":62,"../utils/Logger.js":64}],48:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20113,7 +20283,7 @@ var NotificationManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = NotificationManager;
 
-},{"../utils/EventBus.js":61,"../utils/Logger.js":63}],48:[function(require,module,exports){
+},{"../utils/EventBus.js":62,"../utils/Logger.js":64}],49:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20681,7 +20851,7 @@ var PuzzleUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = PuzzleUI;
 
-},{"../core/StateManager.js":7,"../utils/EventBus.js":61,"../utils/Logger.js":63,"./games/DailySpinGame.js":58,"./games/Game2048.js":59,"./games/Match3Game.js":60}],49:[function(require,module,exports){
+},{"../core/StateManager.js":8,"../utils/EventBus.js":62,"../utils/Logger.js":64,"./games/DailySpinGame.js":59,"./games/Game2048.js":60,"./games/Match3Game.js":61}],50:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20843,7 +21013,7 @@ window.claimQuest = function (questId) {
 };
 var _default = exports["default"] = QuestsUI;
 
-},{"../core/StateManager.js":7,"../systems/QuestSystem.js":28,"../utils/EventBus.js":61,"../utils/Formatters.js":62}],50:[function(require,module,exports){
+},{"../core/StateManager.js":8,"../systems/QuestSystem.js":29,"../utils/EventBus.js":62,"../utils/Formatters.js":63}],51:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20975,7 +21145,7 @@ window.watchAd = function (adType) {
 };
 var _default = exports["default"] = ShopUI;
 
-},{"../systems/ShopSystem.js":30,"../utils/EventBus.js":61,"../utils/Formatters.js":62}],51:[function(require,module,exports){
+},{"../systems/ShopSystem.js":31,"../utils/EventBus.js":62,"../utils/Formatters.js":63}],52:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21092,7 +21262,7 @@ var StatisticsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StatisticsUI;
 
-},{"../systems/StatisticsSystem.js":31,"../utils/EventBus.js":61,"./MiniGameStatsUI.js":45}],52:[function(require,module,exports){
+},{"../systems/StatisticsSystem.js":32,"../utils/EventBus.js":62,"./MiniGameStatsUI.js":46}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21536,7 +21706,7 @@ var StructuresUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructuresUI;
 
-},{"../api/ResourceAPI.js":1,"../core/StateManager.js":7,"../systems/RealmSystem.js":29,"../systems/StructureSystem.js":32,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"./components/StructureCard.js":56}],53:[function(require,module,exports){
+},{"../api/ResourceAPI.js":2,"../core/StateManager.js":8,"../systems/RealmSystem.js":30,"../systems/StructureSystem.js":33,"../utils/EventBus.js":62,"../utils/Formatters.js":63,"./components/StructureCard.js":57}],54:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21733,7 +21903,7 @@ var TabManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = TabManager;
 
-},{"../utils/EventBus.js":61,"../utils/Logger.js":63}],54:[function(require,module,exports){
+},{"../utils/EventBus.js":62,"../utils/Logger.js":64}],55:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21991,7 +22161,7 @@ var UpgradesUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = UpgradesUI;
 
-},{"../systems/UpgradeQueueSystem.js":34,"../systems/UpgradeSystem.js":35,"../utils/EventBus.js":61,"../utils/Formatters.js":62,"./components/UpgradeQueueDisplay.js":57}],55:[function(require,module,exports){
+},{"../systems/UpgradeQueueSystem.js":35,"../systems/UpgradeSystem.js":36,"../utils/EventBus.js":62,"../utils/Formatters.js":63,"./components/UpgradeQueueDisplay.js":58}],56:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22151,7 +22321,7 @@ var ResourceDisplay = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ResourceDisplay;
 
-},{"../../api/ResourceAPI.js":1,"../../core/StateManager.js":7,"../../utils/EventBus.js":61,"../../utils/Formatters.js":62}],56:[function(require,module,exports){
+},{"../../api/ResourceAPI.js":2,"../../core/StateManager.js":8,"../../utils/EventBus.js":62,"../../utils/Formatters.js":63}],57:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22441,7 +22611,7 @@ var StructureCard = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructureCard;
 
-},{"../../core/StateManager.js":7,"../../systems/StructureSystem.js":32,"../../utils/EventBus.js":61,"../../utils/Formatters.js":62}],57:[function(require,module,exports){
+},{"../../core/StateManager.js":8,"../../systems/StructureSystem.js":33,"../../utils/EventBus.js":62,"../../utils/Formatters.js":63}],58:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22590,7 +22760,7 @@ window.cancelQueuedUpgrade = function (upgradeKey) {
 };
 var _default = exports["default"] = UpgradeQueueDisplay;
 
-},{"../../systems/UpgradeQueueSystem.js":34,"../../systems/UpgradeSystem.js":35,"../../utils/EventBus.js":61,"../../utils/Formatters.js":62}],58:[function(require,module,exports){
+},{"../../systems/UpgradeQueueSystem.js":35,"../../systems/UpgradeSystem.js":36,"../../utils/EventBus.js":62,"../../utils/Formatters.js":63}],59:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -23011,7 +23181,7 @@ var DailySpinGame = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new DailySpinGame();
 
-},{"../../api/ResourceAPI.js":1,"../../core/StateManager.js":7,"../../utils/EventBus.js":61,"../../utils/Logger.js":63}],59:[function(require,module,exports){
+},{"../../api/ResourceAPI.js":2,"../../core/StateManager.js":8,"../../utils/EventBus.js":62,"../../utils/Logger.js":64}],60:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -23346,7 +23516,7 @@ var Game2048 = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new Game2048();
 
-},{"../../api/ResourceAPI.js":1,"../../core/StateManager.js":7,"../../utils/EventBus.js":61,"../../utils/Logger.js":63}],60:[function(require,module,exports){
+},{"../../api/ResourceAPI.js":2,"../../core/StateManager.js":8,"../../utils/EventBus.js":62,"../../utils/Logger.js":64}],61:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -24162,7 +24332,7 @@ var Match3Game = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Match3Game;
 
-},{"../../utils/EventBus.js":61,"../../utils/Logger.js":63}],61:[function(require,module,exports){
+},{"../../utils/EventBus.js":62,"../../utils/Logger.js":64}],62:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -24335,7 +24505,7 @@ var EventBus = /*#__PURE__*/function () {
 var eventBus = new EventBus();
 var _default = exports["default"] = eventBus;
 
-},{"../config.js":2}],62:[function(require,module,exports){
+},{"../config.js":3}],63:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -24523,7 +24693,7 @@ var Formatters = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Formatters;
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -24706,7 +24876,7 @@ var Logger = /*#__PURE__*/function () {
 var logger = new Logger();
 var _default = exports["default"] = logger;
 
-},{"../config.js":2}],64:[function(require,module,exports){
+},{"../config.js":3}],65:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -24748,7 +24918,7 @@ var _default = exports["default"] = {
   }
 };
 
-},{"../config/NotificationConfig.js":3,"../systems/NotificationManager.js":27}],65:[function(require,module,exports){
+},{"../config/NotificationConfig.js":4,"../systems/NotificationManager.js":28}],66:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -24926,7 +25096,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hasCORS = void 0;
@@ -24942,7 +25112,7 @@ catch (err) {
 }
 exports.hasCORS = value;
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 "use strict";
 // imported from https://github.com/galkn/querystring
 /**
@@ -24982,7 +25152,7 @@ function decode(qs) {
     return qry;
 }
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parse = parse;
@@ -25051,7 +25221,7 @@ function queryKey(uri, query) {
     return data;
 }
 
-},{}],69:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defaultBinaryType = exports.globalThisShim = exports.nextTick = void 0;
@@ -25079,7 +25249,7 @@ exports.globalThisShim = (() => {
 exports.defaultBinaryType = "arraybuffer";
 function createCookieJar() { }
 
-},{}],70:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebTransport = exports.WebSocket = exports.NodeWebSocket = exports.XHR = exports.NodeXHR = exports.Fetch = exports.nextTick = exports.parse = exports.installTimerFunctions = exports.transports = exports.TransportError = exports.Transport = exports.protocol = exports.SocketWithUpgrade = exports.SocketWithoutUpgrade = exports.Socket = void 0;
@@ -25113,7 +25283,7 @@ Object.defineProperty(exports, "WebSocket", { enumerable: true, get: function ()
 var webtransport_js_1 = require("./transports/webtransport.js");
 Object.defineProperty(exports, "WebTransport", { enumerable: true, get: function () { return webtransport_js_1.WT; } });
 
-},{"./contrib/parseuri.js":68,"./globals.node.js":69,"./socket.js":71,"./transport.js":72,"./transports/index.js":73,"./transports/polling-fetch.js":74,"./transports/polling-xhr.js":75,"./transports/polling-xhr.node.js":75,"./transports/websocket.js":77,"./transports/websocket.node.js":77,"./transports/webtransport.js":78,"./util.js":79}],71:[function(require,module,exports){
+},{"./contrib/parseuri.js":69,"./globals.node.js":70,"./socket.js":72,"./transport.js":73,"./transports/index.js":74,"./transports/polling-fetch.js":75,"./transports/polling-xhr.js":76,"./transports/polling-xhr.node.js":76,"./transports/websocket.js":78,"./transports/websocket.node.js":78,"./transports/webtransport.js":79,"./util.js":80}],72:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -25881,7 +26051,7 @@ class Socket extends SocketWithUpgrade {
 }
 exports.Socket = Socket;
 
-},{"./contrib/parseqs.js":67,"./contrib/parseuri.js":68,"./globals.node.js":69,"./transports/index.js":73,"./util.js":79,"@socket.io/component-emitter":65,"debug":80,"engine.io-parser":87}],72:[function(require,module,exports){
+},{"./contrib/parseqs.js":68,"./contrib/parseuri.js":69,"./globals.node.js":70,"./transports/index.js":74,"./util.js":80,"@socket.io/component-emitter":66,"debug":81,"engine.io-parser":88}],73:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -26036,7 +26206,7 @@ class Transport extends component_emitter_1.Emitter {
 }
 exports.Transport = Transport;
 
-},{"./contrib/parseqs.js":67,"./util.js":79,"@socket.io/component-emitter":65,"debug":80,"engine.io-parser":87}],73:[function(require,module,exports){
+},{"./contrib/parseqs.js":68,"./util.js":80,"@socket.io/component-emitter":66,"debug":81,"engine.io-parser":88}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transports = void 0;
@@ -26049,7 +26219,7 @@ exports.transports = {
     polling: polling_xhr_node_js_1.XHR,
 };
 
-},{"./polling-xhr.node.js":75,"./websocket.node.js":77,"./webtransport.js":78}],74:[function(require,module,exports){
+},{"./polling-xhr.node.js":76,"./websocket.node.js":78,"./webtransport.js":79}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Fetch = void 0;
@@ -26111,7 +26281,7 @@ class Fetch extends polling_js_1.Polling {
 }
 exports.Fetch = Fetch;
 
-},{"./polling.js":76}],75:[function(require,module,exports){
+},{"./polling.js":77}],76:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -26398,7 +26568,7 @@ function newRequest(opts) {
     }
 }
 
-},{"../contrib/has-cors.js":66,"../globals.node.js":69,"../util.js":79,"./polling.js":76,"@socket.io/component-emitter":65,"debug":80}],76:[function(require,module,exports){
+},{"../contrib/has-cors.js":67,"../globals.node.js":70,"../util.js":80,"./polling.js":77,"@socket.io/component-emitter":66,"debug":81}],77:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -26565,7 +26735,7 @@ class Polling extends transport_js_1.Transport {
 }
 exports.Polling = Polling;
 
-},{"../transport.js":72,"../util.js":79,"debug":80,"engine.io-parser":87}],77:[function(require,module,exports){
+},{"../transport.js":73,"../util.js":80,"debug":81,"engine.io-parser":88}],78:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -26703,7 +26873,7 @@ class WS extends BaseWS {
 }
 exports.WS = WS;
 
-},{"../globals.node.js":69,"../transport.js":72,"../util.js":79,"debug":80,"engine.io-parser":87}],78:[function(require,module,exports){
+},{"../globals.node.js":70,"../transport.js":73,"../util.js":80,"debug":81,"engine.io-parser":88}],79:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -26799,7 +26969,7 @@ class WT extends transport_js_1.Transport {
 }
 exports.WT = WT;
 
-},{"../globals.node.js":69,"../transport.js":72,"debug":80,"engine.io-parser":87}],79:[function(require,module,exports){
+},{"../globals.node.js":70,"../transport.js":73,"debug":81,"engine.io-parser":88}],80:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pick = pick;
@@ -26866,7 +27036,7 @@ function randomString() {
         Math.random().toString(36).substring(2, 5));
 }
 
-},{"./globals.node.js":69}],80:[function(require,module,exports){
+},{"./globals.node.js":70}],81:[function(require,module,exports){
 (function (process){(function (){
 /* eslint-env browser */
 
@@ -27142,7 +27312,7 @@ formatters.j = function (v) {
 };
 
 }).call(this)}).call(this,require('_process'))
-},{"./common":81,"_process":88}],81:[function(require,module,exports){
+},{"./common":82,"_process":89}],82:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -27436,7 +27606,7 @@ function setup(env) {
 
 module.exports = setup;
 
-},{"ms":82}],82:[function(require,module,exports){
+},{"ms":83}],83:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -27600,7 +27770,7 @@ function plural(ms, msAbs, n, name) {
   return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
 }
 
-},{}],83:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ERROR_PACKET = exports.PACKET_TYPES_REVERSE = exports.PACKET_TYPES = void 0;
@@ -27621,7 +27791,7 @@ Object.keys(PACKET_TYPES).forEach((key) => {
 const ERROR_PACKET = { type: "error", data: "parser error" };
 exports.ERROR_PACKET = ERROR_PACKET;
 
-},{}],84:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decode = exports.encode = void 0;
@@ -27671,7 +27841,7 @@ const decode = (base64) => {
 };
 exports.decode = decode;
 
-},{}],85:[function(require,module,exports){
+},{}],86:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodePacket = void 0;
@@ -27739,7 +27909,7 @@ const mapBinary = (data, binaryType) => {
     }
 };
 
-},{"./commons.js":83,"./contrib/base64-arraybuffer.js":84}],86:[function(require,module,exports){
+},{"./commons.js":84,"./contrib/base64-arraybuffer.js":85}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.encodePacket = void 0;
@@ -27813,7 +27983,7 @@ function encodePacketToBinary(packet, callback) {
     });
 }
 
-},{"./commons.js":83}],87:[function(require,module,exports){
+},{"./commons.js":84}],88:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodePayload = exports.decodePacket = exports.encodePayload = exports.encodePacket = exports.protocol = void 0;
@@ -27979,7 +28149,7 @@ function createPacketDecoderStream(maxPayload, binaryType) {
 }
 exports.protocol = 4;
 
-},{"./commons.js":83,"./decodePacket.js":85,"./encodePacket.js":86}],88:[function(require,module,exports){
+},{"./commons.js":84,"./decodePacket.js":86,"./encodePacket.js":87}],89:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -28165,7 +28335,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],89:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 "use strict";
 /**
  * Initialize backoff timer with `opts`.
@@ -28236,7 +28406,7 @@ Backoff.prototype.setJitter = function (jitter) {
     this.jitter = jitter;
 };
 
-},{}],90:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -28314,7 +28484,7 @@ Object.defineProperty(exports, "WebTransport", { enumerable: true, get: function
 
 module.exports = lookup;
 
-},{"./manager.js":91,"./socket.js":93,"./url.js":94,"debug":95,"engine.io-client":70,"socket.io-parser":99}],91:[function(require,module,exports){
+},{"./manager.js":92,"./socket.js":94,"./url.js":95,"debug":96,"engine.io-client":71,"socket.io-parser":100}],92:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -28732,7 +28902,7 @@ class Manager extends component_emitter_1.Emitter {
 }
 exports.Manager = Manager;
 
-},{"./contrib/backo2.js":89,"./on.js":92,"./socket.js":93,"@socket.io/component-emitter":65,"debug":95,"engine.io-client":70,"socket.io-parser":99}],92:[function(require,module,exports){
+},{"./contrib/backo2.js":90,"./on.js":93,"./socket.js":94,"@socket.io/component-emitter":66,"debug":96,"engine.io-client":71,"socket.io-parser":100}],93:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.on = on;
@@ -28743,7 +28913,7 @@ function on(obj, ev, fn) {
     };
 }
 
-},{}],93:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -29654,7 +29824,7 @@ class Socket extends component_emitter_1.Emitter {
 }
 exports.Socket = Socket;
 
-},{"./on.js":92,"@socket.io/component-emitter":65,"debug":95,"socket.io-parser":99}],94:[function(require,module,exports){
+},{"./on.js":93,"@socket.io/component-emitter":66,"debug":96,"socket.io-parser":100}],95:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -29725,13 +29895,13 @@ function url(uri, path = "", loc) {
     return obj;
 }
 
-},{"debug":95,"engine.io-client":70}],95:[function(require,module,exports){
-arguments[4][80][0].apply(exports,arguments)
-},{"./common":96,"_process":88,"dup":80}],96:[function(require,module,exports){
+},{"debug":96,"engine.io-client":71}],96:[function(require,module,exports){
 arguments[4][81][0].apply(exports,arguments)
-},{"dup":81,"ms":97}],97:[function(require,module,exports){
+},{"./common":97,"_process":89,"dup":81}],97:[function(require,module,exports){
 arguments[4][82][0].apply(exports,arguments)
-},{"dup":82}],98:[function(require,module,exports){
+},{"dup":82,"ms":98}],98:[function(require,module,exports){
+arguments[4][83][0].apply(exports,arguments)
+},{"dup":83}],99:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deconstructPacket = deconstructPacket;
@@ -29823,7 +29993,7 @@ function _reconstructPacket(data, buffers) {
     return data;
 }
 
-},{"./is-binary.js":100}],99:[function(require,module,exports){
+},{"./is-binary.js":101}],100:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -30191,7 +30361,7 @@ function isPacketValid(packet) {
         isDataValid(packet.type, packet.data));
 }
 
-},{"./binary.js":98,"./is-binary.js":100,"@socket.io/component-emitter":65,"debug":101}],100:[function(require,module,exports){
+},{"./binary.js":99,"./is-binary.js":101,"@socket.io/component-emitter":66,"debug":102}],101:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isBinary = isBinary;
@@ -30247,10 +30417,10 @@ function hasBinary(obj, toJSON) {
     return false;
 }
 
-},{}],101:[function(require,module,exports){
-arguments[4][80][0].apply(exports,arguments)
-},{"./common":102,"_process":88,"dup":80}],102:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 arguments[4][81][0].apply(exports,arguments)
-},{"dup":81,"ms":103}],103:[function(require,module,exports){
+},{"./common":103,"_process":89,"dup":81}],103:[function(require,module,exports){
 arguments[4][82][0].apply(exports,arguments)
-},{"dup":82}]},{},[18]);
+},{"dup":82,"ms":104}],104:[function(require,module,exports){
+arguments[4][83][0].apply(exports,arguments)
+},{"dup":83}]},{},[19]);

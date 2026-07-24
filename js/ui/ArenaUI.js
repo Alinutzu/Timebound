@@ -4,6 +4,7 @@ import stateManager from '../core/StateManager.js';
 import Formatters from '../utils/Formatters.js';
 import { io } from 'socket.io-client';
 import authManager from '../api/AuthManager.js';
+import logger from '../utils/Logger.js';
 
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -54,8 +55,7 @@ class ArenaUI {
 
   connectSocket() {
     if (this.socket?.connected) return;
-    const token = authManager.getToken();
-    if (!token) return;
+    if (!authManager.getToken()) return;
     this.socket = io(SOCKET_URL, {
       transports: ['websocket', 'polling'],
       reconnection: true,
@@ -63,7 +63,12 @@ class ArenaUI {
       reconnectionAttempts: 10
     });
     this.socket.on('connect', () => {
-      this.socket.emit('auth', { token });
+      const freshToken = authManager.getToken();
+      if (!freshToken) {
+        this.socket.disconnect();
+        return;
+      }
+      this.socket.emit('auth', { token: freshToken });
     });
     this.socket.on('challenge_received', (data) => {
       eventBus.emit('notification:show', {
@@ -115,7 +120,9 @@ class ArenaUI {
         eventBus.emit('cloud:loaded');
         this.showNotification('☁️ Cloud save loaded', 'info');
       }
-    } catch (e) {}
+    } catch (e) {
+      logger.warn('[ArenaUI] autoLoadCloud failed:', e.message);
+    }
   }
 
   async autoSave() {
@@ -129,7 +136,9 @@ class ArenaUI {
       } else {
         await api.saveCloud(state);
       }
-    } catch (e) {}
+    } catch (e) {
+      if (e.status !== 401) logger.warn('[ArenaUI] autoSave failed:', e.message);
+    }
   }
 
   startAutoSave() {
@@ -352,11 +361,6 @@ class ArenaUI {
       this.loginOnly = false;
       this.render();
     });
-
-    const tokenFromStorage = authManager.getToken();
-    if (tokenFromStorage) {
-      this.connectSocket();
-    }
 
     document.getElementById('arena-auth-form').addEventListener('submit', async (e) => {
       e.preventDefault();

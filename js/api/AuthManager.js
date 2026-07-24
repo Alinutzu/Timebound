@@ -29,7 +29,8 @@ class AuthManager {
       const payload = JSON.parse(atob(token.split('.')[1]));
       this.user = { username: payload.username, id: payload.id };
       this.state = payload.username?.startsWith('guest_') ? STATES.GUEST : STATES.AUTHENTICATED;
-    } catch {
+    } catch (e) {
+      logger.warn('[AuthManager] Token decode failed:', e.message);
       this.state = STATES.UNAUTHENTICATED;
       this.user = null;
     }
@@ -84,8 +85,12 @@ class AuthManager {
   }
 
   isAuthenticated() {
-    this._restoreFromToken();
     return this.state === STATES.AUTHENTICATED;
+  }
+
+  restore() {
+    this._restoreFromToken();
+    return this.state;
   }
 
   getState() {

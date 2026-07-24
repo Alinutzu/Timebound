@@ -56,7 +56,8 @@ var AuthManager = /*#__PURE__*/function () {
           id: payload.id
         };
         this.state = (_payload$username = payload.username) !== null && _payload$username !== void 0 && _payload$username.startsWith('guest_') ? STATES.GUEST : STATES.AUTHENTICATED;
-      } catch (_unused) {
+      } catch (e) {
+        _Logger["default"].warn('[AuthManager] Token decode failed:', e.message);
         this.state = STATES.UNAUTHENTICATED;
         this.user = null;
       }
@@ -210,8 +211,13 @@ var AuthManager = /*#__PURE__*/function () {
   }, {
     key: "isAuthenticated",
     value: function isAuthenticated() {
-      this._restoreFromToken();
       return this.state === STATES.AUTHENTICATED;
+    }
+  }, {
+    key: "restore",
+    value: function restore() {
+      this._restoreFromToken();
+      return this.state;
     }
   }, {
     key: "getState",
@@ -17494,6 +17500,7 @@ var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
 var _Formatters = _interopRequireDefault(require("../utils/Formatters.js"));
 var _socket = require("socket.io-client");
 var _AuthManager = _interopRequireDefault(require("../api/AuthManager.js"));
+var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
@@ -17561,8 +17568,7 @@ var ArenaUI = /*#__PURE__*/function () {
       var _this$socket,
         _this2 = this;
       if ((_this$socket = this.socket) !== null && _this$socket !== void 0 && _this$socket.connected) return;
-      var token = _AuthManager["default"].getToken();
-      if (!token) return;
+      if (!_AuthManager["default"].getToken()) return;
       this.socket = (0, _socket.io)(SOCKET_URL, {
         transports: ['websocket', 'polling'],
         reconnection: true,
@@ -17570,8 +17576,13 @@ var ArenaUI = /*#__PURE__*/function () {
         reconnectionAttempts: 10
       });
       this.socket.on('connect', function () {
+        var freshToken = _AuthManager["default"].getToken();
+        if (!freshToken) {
+          _this2.socket.disconnect();
+          return;
+        }
         _this2.socket.emit('auth', {
-          token: token
+          token: freshToken
         });
       });
       this.socket.on('challenge_received', function (data) {
@@ -17636,6 +17647,7 @@ var ArenaUI = /*#__PURE__*/function () {
             case 2:
               _context.p = 2;
               _t = _context.v;
+              _Logger["default"].warn('[ArenaUI] autoLoadCloud failed:', _t.message);
             case 3:
               return _context.a(2);
           }
@@ -17688,6 +17700,7 @@ var ArenaUI = /*#__PURE__*/function () {
             case 5:
               _context2.p = 5;
               _t2 = _context2.v;
+              if (_t2.status !== 401) _Logger["default"].warn('[ArenaUI] autoSave failed:', _t2.message);
             case 6:
               return _context2.a(2);
           }
@@ -17851,10 +17864,6 @@ var ArenaUI = /*#__PURE__*/function () {
         _this5.loginOnly = false;
         _this5.render();
       });
-      var tokenFromStorage = _AuthManager["default"].getToken();
-      if (tokenFromStorage) {
-        this.connectSocket();
-      }
       document.getElementById('arena-auth-form').addEventListener('submit', /*#__PURE__*/function () {
         var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(e) {
           var username, password, errorEl, active, data, email, _t4;
@@ -18717,7 +18726,7 @@ _defineProperty(ArenaUI, "LEVELUP_BASE_COST", 10000);
 _defineProperty(ArenaUI, "LEVELUP_COST_MULTIPLIER", 1.5);
 var _default = exports["default"] = ArenaUI;
 
-},{"../api/AuthManager.js":1,"../core/StateManager.js":8,"../services/api.js":20,"../utils/EventBus.js":62,"../utils/Formatters.js":63,"socket.io-client":91}],39:[function(require,module,exports){
+},{"../api/AuthManager.js":1,"../core/StateManager.js":8,"../services/api.js":20,"../utils/EventBus.js":62,"../utils/Formatters.js":63,"../utils/Logger.js":64,"socket.io-client":91}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

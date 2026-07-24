@@ -1,9 +1,14 @@
 import CONFIG from '../config.js';
 import stateManager from './StateManager.js';
+import saveManager from './SaveManager.js';
 import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 
 const SAVE_KEY = CONFIG.SAVE_KEY;
+
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? '/api'
+  : 'https://familyhub.go.ro/api';
 
 class PersistenceManager {
   constructor() {
@@ -11,16 +16,16 @@ class PersistenceManager {
     this.autoSaveEnabled = true;
     this.cloudSaveEnabled = false;
     this._listenersBound = false;
+
+    eventBus.on('auth:stateChanged', ({ state }) => {
+      this.cloudSaveEnabled = (state === 'GUEST' || state === 'AUTHENTICATED');
+    });
   }
 
   saveLocal() {
     try {
       const state = stateManager.getState();
-      const saveData = {
-        version: CONFIG.VERSION,
-        timestamp: Date.now(),
-        state
-      };
+      const saveData = { version: CONFIG.VERSION, timestamp: Date.now(), state };
       localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
       stateManager.dispatch({ type: 'SAVE_GAME', payload: {} });
       eventBus.emit('game:saved', { timestamp: saveData.timestamp });
@@ -35,8 +40,8 @@ class PersistenceManager {
   async saveCloud() {
     if (!this.cloudSaveEnabled) return false;
     try {
-      const state = stateManager.getState();
       const { default: api } = await import('../services/api.js');
+      const state = stateManager.getState();
       const payload = JSON.stringify(state);
       if (payload.length > 900000) {
         const trimmed = { resources: state.resources, stats: state.stats, structures: state.structures, upgrades: state.upgrades, guardians: state.guardians };
@@ -54,6 +59,19 @@ class PersistenceManager {
     }
   }
 
+  saveCloudBeacon() {
+    if (!this.cloudSaveEnabled) return;
+    try {
+      const token = localStorage.getItem('arena_token');
+      if (!token) return;
+      const state = stateManager.getState();
+      const payload = JSON.stringify({ state });
+      navigator.sendBeacon(`${API_BASE}/save`, payload);
+    } catch (error) {
+      logger.warn('[PersistenceManager] saveCloudBeacon failed:', error.message);
+    }
+  }
+
   async saveAll() {
     this.saveLocal();
     await this.saveCloud();
@@ -64,9 +82,9 @@ class PersistenceManager {
       const savedData = localStorage.getItem(SAVE_KEY);
       if (!savedData) return null;
       const saveData = JSON.parse(savedData);
-      if (!saveData || !saveData.version || !saveData.state) return null;
-      if (!saveData.state.resources || !saveData.state.structures || !saveData.state.upgrades) return null;
-      return saveData;
+      if (!saveManager.validateSave(saveData)) return null;
+      const migrated = saveManager.migrate(saveData);
+      return migrated;
     } catch (error) {
       logger.error('[PersistenceManager] loadLocal failed:', error.message);
       return null;
@@ -92,7 +110,7 @@ class PersistenceManager {
   onVisibilityChange() {
     if (document.visibilityState === 'hidden') {
       this.saveLocal();
-      if (this.cloudSaveEnabled) this.saveCloud();
+      if (this.cloudSaveEnabled) this.saveCloudBeacon();
     }
   }
 
@@ -126,10 +144,6 @@ class PersistenceManager {
     }
   }
 
-  setCloudEnabled(enabled) {
-    this.cloudSaveEnabled = enabled;
-  }
-
   exportSave() {
     try {
       const state = stateManager.getState();
@@ -155,8 +169,9 @@ class PersistenceManager {
     try {
       const text = await file.text();
       const importData = JSON.parse(text);
-      if (!importData || !importData.version || !importData.state) throw new Error('Invalid save file');
-      stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: importData.state } });
+      if (!saveManager.validateSave(importData)) throw new Error('Invalid save file');
+      const migrated = saveManager.migrate(importData);
+      stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: migrated.state } });
       this.saveLocal();
       eventBus.emit('game:imported');
       return true;

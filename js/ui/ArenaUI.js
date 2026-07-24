@@ -117,10 +117,6 @@ class ArenaUI {
     if (ok) this.showNotification('☁️ Cloud save loaded', 'info');
   }
 
-  startAutoSave() {
-    persistenceManager.setCloudEnabled(true);
-  }
-
   startCooldownTimer() {
     if (this.cooldownTimer) clearInterval(this.cooldownTimer);
     this.cooldownTimer = setInterval(() => {
@@ -450,8 +446,7 @@ class ArenaUI {
 
     document.getElementById('arena-save-cloud')?.addEventListener('click', async () => {
       try {
-        const state = stateManager.getState();
-        await api.saveCloud(state);
+        await persistenceManager.saveCloud();
         this.showNotification('Game saved to cloud!', 'success');
       } catch (err) {
         this.showNotification(err.message, 'warning');
@@ -460,11 +455,8 @@ class ArenaUI {
 
     document.getElementById('arena-load-cloud')?.addEventListener('click', async () => {
       try {
-        const data = await api.loadCloud();
-        if (data.state) {
-          stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: data.state } });
-          this.showNotification('Game loaded from cloud!', 'success');
-        }
+        const ok = await persistenceManager.loadCloud();
+        if (ok) this.showNotification('Game loaded from cloud!', 'success');
       } catch (err) {
         this.showNotification(err.message, 'warning');
       }
@@ -473,7 +465,6 @@ class ArenaUI {
 
   async loadDashboard() {
     this.connectSocket();
-    this.startAutoSave();
     try {
       const user = authManager.getUser();
       if (user) {

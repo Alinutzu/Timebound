@@ -1,46 +1,7 @@
 import CONFIG from '../config.js';
-import stateManager from './StateManager.js';
-import eventBus from '../utils/EventBus.js';
 import logger from '../utils/Logger.js';
 
 class SaveManager {
-  constructor() {
-    this.saveKey = CONFIG.SAVE_KEY;
-    this.compressionEnabled = true;
-    logger.info('[SaveManager] Initialized');
-  }
-
-  save() {
-    try {
-      const state = stateManager.getState();
-      const saveData = { version: CONFIG.VERSION, timestamp: Date.now(), state };
-      localStorage.setItem(this.saveKey, JSON.stringify(saveData));
-      stateManager.dispatch({ type: 'SAVE_GAME', payload: {} });
-      eventBus.emit('game:saved', { timestamp: saveData.timestamp });
-      return true;
-    } catch (error) {
-      logger.error('[SaveManager] save failed:', error.message);
-      eventBus.emit('game:save-failed', { error: error.message });
-      return false;
-    }
-  }
-
-  load() {
-    try {
-      const savedData = localStorage.getItem(this.saveKey);
-      if (!savedData) return null;
-      const saveData = JSON.parse(savedData);
-      if (!this.validateSave(saveData)) return null;
-      const migrated = this.migrate(saveData);
-      stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: migrated.state } });
-      eventBus.emit('game:loaded', { saveData: migrated });
-      return migrated;
-    } catch (error) {
-      logger.error('[SaveManager] load failed:', error.message);
-      return null;
-    }
-  }
-
   validateSave(saveData) {
     if (!saveData || typeof saveData !== 'object') return false;
     if (!saveData.version || !saveData.state) return false;
@@ -116,69 +77,6 @@ class SaveManager {
       if (p1[i] < p2[i]) return -1;
     }
     return 0;
-  }
-
-  exportSave() {
-    try {
-      const state = stateManager.getState();
-      const exportData = { version: CONFIG.VERSION, timestamp: Date.now(), state };
-      const json = JSON.stringify(exportData, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `idle_game_save_${Date.now()}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      return true;
-    } catch (error) {
-      logger.error('[SaveManager] export failed:', error.message);
-      return false;
-    }
-  }
-
-  async importSave(file) {
-    try {
-      const text = await file.text();
-      const importData = JSON.parse(text);
-      if (!this.validateSave(importData)) throw new Error('Invalid save file');
-      const migrated = this.migrate(importData);
-      stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: migrated.state } });
-      this.save();
-      eventBus.emit('game:imported');
-      return true;
-    } catch (error) {
-      logger.error('[SaveManager] import failed:', error.message);
-      return false;
-    }
-  }
-
-  deleteSave() {
-    try {
-      localStorage.removeItem(this.saveKey);
-      eventBus.emit('game:save-deleted');
-      return true;
-    } catch (error) {
-      logger.error('[SaveManager] deleteSave failed:', error.message);
-      return false;
-    }
-  }
-
-  hasSave() {
-    return localStorage.getItem(this.saveKey) !== null;
-  }
-
-  getSaveInfo() {
-    try {
-      const savedData = localStorage.getItem(this.saveKey);
-      if (!savedData) return null;
-      const saveData = JSON.parse(savedData);
-      return { version: saveData.version, timestamp: saveData.timestamp, size: new Blob([savedData]).size };
-    } catch {
-      return null;
-    }
   }
 }
 

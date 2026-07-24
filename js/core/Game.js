@@ -5,7 +5,6 @@
 
 import CONFIG from '../config.js';
 import stateManager from './StateManager.js';
-import saveManager from './SaveManager.js';
 import persistenceManager from './PersistenceManager.js';
 import tickManager from './TickManager.js';
 import eventBus from '../utils/EventBus.js';
@@ -63,9 +62,10 @@ class Game {
     
     try {
       // Load save
-      const saveData = saveManager.load();
+      const saveData = persistenceManager.loadLocal();
       
       if (saveData) {
+        stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: saveData.state } });
         logger.info('Game', 'Save loaded successfully');
         
         // Calculate offline progress

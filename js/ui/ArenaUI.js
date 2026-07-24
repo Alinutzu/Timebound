@@ -910,7 +910,8 @@ class ArenaUI {
   }
 
   showRegisterForm() {
-    if (document.querySelector('.modal-overlay')) return;
+    const existingOverlay = document.querySelector('.modal-overlay');
+    if (existingOverlay) existingOverlay.remove();
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
     overlay.innerHTML = `

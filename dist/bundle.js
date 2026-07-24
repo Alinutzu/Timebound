@@ -18225,7 +18225,8 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "showRegisterForm",
     value: function showRegisterForm() {
       var _this9 = this;
-      if (document.querySelector('.modal-overlay')) return;
+      var existingOverlay = document.querySelector('.modal-overlay');
+      if (existingOverlay) existingOverlay.remove();
       var overlay = document.createElement('div');
       overlay.className = 'modal-overlay';
       overlay.innerHTML = "\n      <div class=\"modal-content arena-register-modal\">\n        <h2>\uD83D\uDCDD Register Your Account</h2>\n        <p>Convert your guest progress to a permanent account!</p>\n        <form id=\"arena-convert-form\">\n          <input type=\"text\" id=\"arena-convert-username\" placeholder=\"Username\" required>\n          <input type=\"email\" id=\"arena-convert-email\" placeholder=\"Email\" required>\n          <input type=\"password\" id=\"arena-convert-password\" placeholder=\"Password (min 6 chars)\" required>\n          <div class=\"arena-convert-actions\">\n            <button type=\"submit\" class=\"btn btn-primary\">Register</button>\n            <button type=\"button\" class=\"btn btn-secondary\" id=\"arena-convert-cancel\">Cancel</button>\n          </div>\n        </form>\n        <p class=\"arena-error\" id=\"arena-convert-error\"></p>\n      </div>\n    ";

@@ -43,6 +43,7 @@ class ArenaUI {
     this.socket = null;
     this.selectedGuardianIds = new Set();
     this.guardianDetails = null;
+    this.loginOnly = false;
 
     eventBus.on('session:expired', () => {
       this.stopAutoSave();
@@ -191,7 +192,7 @@ class ArenaUI {
     const token = api.getToken();
     this.container.innerHTML = `
       <div class="arena-container">
-        ${this.connecting ? this.renderConnecting() : (token ? this.renderDashboard() : this.renderLogin())}
+        ${this.connecting ? this.renderConnecting() : (token ? this.renderDashboard() : this.renderLogin(this.loginOnly))}
       </div>
     `;
     this.bindEvents();
@@ -240,28 +241,32 @@ class ArenaUI {
     `;
   }
 
-  renderLogin() {
+  renderLogin(loginOnly = false) {
     return `
       <div class="arena-header">
         <h2>⚔️ Arena</h2>
         <p>Battle other players with your guardians!</p>
       </div>
       <div class="arena-login">
+        ${!loginOnly ? `
         <div class="arena-login-tabs">
           <button class="arena-auth-btn active" data-auth="login">Login</button>
           <button class="arena-auth-btn" data-auth="register">Register</button>
         </div>
+        ` : ''}
         <form id="arena-auth-form">
           <input type="text" id="arena-username" placeholder="Username" required autocomplete="username">
-          <input type="email" id="arena-email" placeholder="Email (only for register)" style="display:none" autocomplete="email">
+          <input type="email" id="arena-email" placeholder="Email (only for register)" style="display:${loginOnly ? 'none' : 'none'}" autocomplete="email">
           <input type="password" id="arena-password" placeholder="Password" required autocomplete="current-password">
           <button type="submit" class="btn btn-primary btn-large">Connect</button>
         </form>
         <p class="arena-error" id="arena-error"></p>
+        ${!loginOnly ? `
         <div class="arena-guest-option">
           <hr style="border-color:#30363d;margin:16px 0">
           <button class="btn btn-secondary btn-large" id="arena-guest-btn">👤 Continue as Guest</button>
         </div>
+        ` : '<p style="margin-top:16px;text-align:center"><button class="btn btn-secondary" id="arena-back-to-guest">← Back</button></p>'}
       </div>
     `;
   }
@@ -351,7 +356,13 @@ class ArenaUI {
     });
 
     document.getElementById('arena-guest-btn')?.addEventListener('click', () => {
+      this.loginOnly = false;
       this.autoGuest();
+    });
+
+    document.getElementById('arena-back-to-guest')?.addEventListener('click', () => {
+      this.loginOnly = false;
+      this.render();
     });
 
     const tokenFromStorage = api.getToken();
@@ -368,7 +379,7 @@ class ArenaUI {
 
       try {
         let data;
-        if (active.dataset.auth === 'register') {
+        if (active && active.dataset.auth === 'register') {
           const email = document.getElementById('arena-email').value;
           data = await api.register(username, email, password);
         } else {
@@ -376,6 +387,7 @@ class ArenaUI {
         }
         api.setToken(data.token);
         this.isGuest = false;
+        this.loginOnly = false;
         if (data.user) {
           this.energy = data.user.energy || 0;
           this.gems = data.user.gems || 0;
@@ -413,6 +425,7 @@ class ArenaUI {
       api.clearToken();
       this.isGuest = false;
       this.connecting = false;
+      this.loginOnly = true;
       this.render();
     });
 

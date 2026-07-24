@@ -17158,6 +17158,7 @@ var ArenaUI = /*#__PURE__*/function () {
     this.socket = null;
     this.selectedGuardianIds = new Set();
     this.guardianDetails = null;
+    this.loginOnly = false;
     _EventBus["default"].on('session:expired', function () {
       _this.stopAutoSave();
       _this.disconnectSocket();
@@ -17370,7 +17371,7 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "render",
     value: function render() {
       var token = _api["default"].getToken();
-      this.container.innerHTML = "\n      <div class=\"arena-container\">\n        ".concat(this.connecting ? this.renderConnecting() : token ? this.renderDashboard() : this.renderLogin(), "\n      </div>\n    ");
+      this.container.innerHTML = "\n      <div class=\"arena-container\">\n        ".concat(this.connecting ? this.renderConnecting() : token ? this.renderDashboard() : this.renderLogin(this.loginOnly), "\n      </div>\n    ");
       this.bindEvents();
     }
   }, {
@@ -17426,7 +17427,8 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "renderLogin",
     value: function renderLogin() {
-      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena</h2>\n        <p>Battle other players with your guardians!</p>\n      </div>\n      <div class=\"arena-login\">\n        <div class=\"arena-login-tabs\">\n          <button class=\"arena-auth-btn active\" data-auth=\"login\">Login</button>\n          <button class=\"arena-auth-btn\" data-auth=\"register\">Register</button>\n        </div>\n        <form id=\"arena-auth-form\">\n          <input type=\"text\" id=\"arena-username\" placeholder=\"Username\" required autocomplete=\"username\">\n          <input type=\"email\" id=\"arena-email\" placeholder=\"Email (only for register)\" style=\"display:none\" autocomplete=\"email\">\n          <input type=\"password\" id=\"arena-password\" placeholder=\"Password\" required autocomplete=\"current-password\">\n          <button type=\"submit\" class=\"btn btn-primary btn-large\">Connect</button>\n        </form>\n        <p class=\"arena-error\" id=\"arena-error\"></p>\n        <div class=\"arena-guest-option\">\n          <hr style=\"border-color:#30363d;margin:16px 0\">\n          <button class=\"btn btn-secondary btn-large\" id=\"arena-guest-btn\">\uD83D\uDC64 Continue as Guest</button>\n        </div>\n      </div>\n    ";
+      var loginOnly = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      return "\n      <div class=\"arena-header\">\n        <h2>\u2694\uFE0F Arena</h2>\n        <p>Battle other players with your guardians!</p>\n      </div>\n      <div class=\"arena-login\">\n        ".concat(!loginOnly ? "\n        <div class=\"arena-login-tabs\">\n          <button class=\"arena-auth-btn active\" data-auth=\"login\">Login</button>\n          <button class=\"arena-auth-btn\" data-auth=\"register\">Register</button>\n        </div>\n        " : '', "\n        <form id=\"arena-auth-form\">\n          <input type=\"text\" id=\"arena-username\" placeholder=\"Username\" required autocomplete=\"username\">\n          <input type=\"email\" id=\"arena-email\" placeholder=\"Email (only for register)\" style=\"display:").concat(loginOnly ? 'none' : 'none', "\" autocomplete=\"email\">\n          <input type=\"password\" id=\"arena-password\" placeholder=\"Password\" required autocomplete=\"current-password\">\n          <button type=\"submit\" class=\"btn btn-primary btn-large\">Connect</button>\n        </form>\n        <p class=\"arena-error\" id=\"arena-error\"></p>\n        ").concat(!loginOnly ? "\n        <div class=\"arena-guest-option\">\n          <hr style=\"border-color:#30363d;margin:16px 0\">\n          <button class=\"btn btn-secondary btn-large\" id=\"arena-guest-btn\">\uD83D\uDC64 Continue as Guest</button>\n        </div>\n        " : '<p style="margin-top:16px;text-align:center"><button class="btn btn-secondary" id="arena-back-to-guest">← Back</button></p>', "\n      </div>\n    ");
     }
   }, {
     key: "renderDashboard",
@@ -17449,7 +17451,8 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "bindAuthEvents",
     value: function bindAuthEvents() {
       var _document$getElementB,
-        _this5 = this;
+        _this5 = this,
+        _document$getElementB2;
       var tabs = this.container.querySelectorAll('.arena-auth-btn');
       var emailField = document.getElementById('arena-email');
       tabs.forEach(function (tab) {
@@ -17462,7 +17465,12 @@ var ArenaUI = /*#__PURE__*/function () {
         });
       });
       (_document$getElementB = document.getElementById('arena-guest-btn')) === null || _document$getElementB === void 0 || _document$getElementB.addEventListener('click', function () {
+        _this5.loginOnly = false;
         _this5.autoGuest();
+      });
+      (_document$getElementB2 = document.getElementById('arena-back-to-guest')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', function () {
+        _this5.loginOnly = false;
+        _this5.render();
       });
       var tokenFromStorage = _api["default"].getToken();
       if (tokenFromStorage) {
@@ -17480,7 +17488,7 @@ var ArenaUI = /*#__PURE__*/function () {
                 errorEl = document.getElementById('arena-error');
                 active = _this5.container.querySelector('.arena-auth-btn.active');
                 _context4.p = 1;
-                if (!(active.dataset.auth === 'register')) {
+                if (!(active && active.dataset.auth === 'register')) {
                   _context4.n = 3;
                   break;
                 }
@@ -17499,6 +17507,7 @@ var ArenaUI = /*#__PURE__*/function () {
               case 5:
                 _api["default"].setToken(data.token);
                 _this5.isGuest = false;
+                _this5.loginOnly = false;
                 if (data.user) {
                   _this5.energy = data.user.energy || 0;
                   _this5.gems = data.user.gems || 0;
@@ -17527,17 +17536,17 @@ var ArenaUI = /*#__PURE__*/function () {
   }, {
     key: "bindDashboardEvents",
     value: function bindDashboardEvents() {
-      var _document$getElementB2,
+      var _document$getElementB3,
         _this6 = this,
-        _document$getElementB3,
         _document$getElementB4,
         _document$getElementB5,
         _document$getElementB6,
         _document$getElementB7,
         _document$getElementB8,
         _document$getElementB9,
-        _document$getElementB0;
-      (_document$getElementB2 = document.getElementById('arena-logout')) === null || _document$getElementB2 === void 0 || _document$getElementB2.addEventListener('click', function () {
+        _document$getElementB0,
+        _document$getElementB1;
+      (_document$getElementB3 = document.getElementById('arena-logout')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', function () {
         _this6.stopAutoSave();
         _this6.disconnectSocket();
         if (_this6.cooldownTimer) {
@@ -17549,7 +17558,7 @@ var ArenaUI = /*#__PURE__*/function () {
         _this6.connecting = false;
         _this6.render();
       });
-      (_document$getElementB3 = document.getElementById('arena-register-btn')) === null || _document$getElementB3 === void 0 || _document$getElementB3.addEventListener('click', function () {
+      (_document$getElementB4 = document.getElementById('arena-register-btn')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', function () {
         _this6.stopAutoSave();
         _this6.disconnectSocket();
         if (_this6.cooldownTimer) {
@@ -17559,13 +17568,14 @@ var ArenaUI = /*#__PURE__*/function () {
         _api["default"].clearToken();
         _this6.isGuest = false;
         _this6.connecting = false;
+        _this6.loginOnly = true;
         _this6.render();
       });
-      (_document$getElementB4 = document.getElementById('arena-register-btn-banner')) === null || _document$getElementB4 === void 0 || _document$getElementB4.addEventListener('click', function () {
+      (_document$getElementB5 = document.getElementById('arena-register-btn-banner')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', function () {
         return _this6.showRegisterForm();
       });
       this.updateSummonButton();
-      (_document$getElementB5 = document.getElementById('arena-summon-btn')) === null || _document$getElementB5 === void 0 || _document$getElementB5.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
+      (_document$getElementB6 = document.getElementById('arena-summon-btn')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
         var result, _t5;
         return _regenerator().w(function (_context5) {
           while (1) switch (_context5.p = _context5.n) {
@@ -17590,7 +17600,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee5, null, [[0, 2]]);
       })));
-      (_document$getElementB6 = document.getElementById('arena-pve-btn')) === null || _document$getElementB6 === void 0 || _document$getElementB6.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
+      (_document$getElementB7 = document.getElementById('arena-pve-btn')) === null || _document$getElementB7 === void 0 || _document$getElementB7.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
         var selected, btn, result, _err$data, _t6;
         return _regenerator().w(function (_context6) {
           while (1) switch (_context6.p = _context6.n) {
@@ -17643,7 +17653,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee6, null, [[2, 4]]);
       })));
-      (_document$getElementB7 = document.getElementById('arena-pvp-btn')) === null || _document$getElementB7 === void 0 || _document$getElementB7.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+      (_document$getElementB8 = document.getElementById('arena-pvp-btn')) === null || _document$getElementB8 === void 0 || _document$getElementB8.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
         var selected, opponents, _t7;
         return _regenerator().w(function (_context7) {
           while (1) switch (_context7.p = _context7.n) {
@@ -17673,7 +17683,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee7, null, [[1, 3]]);
       })));
-      (_document$getElementB8 = document.getElementById('arena-history-toggle')) === null || _document$getElementB8 === void 0 || _document$getElementB8.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
+      (_document$getElementB9 = document.getElementById('arena-history-toggle')) === null || _document$getElementB9 === void 0 || _document$getElementB9.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8() {
         var list, btn;
         return _regenerator().w(function (_context8) {
           while (1) switch (_context8.n) {
@@ -17699,7 +17709,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee8);
       })));
-      (_document$getElementB9 = document.getElementById('arena-save-cloud')) === null || _document$getElementB9 === void 0 || _document$getElementB9.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
+      (_document$getElementB0 = document.getElementById('arena-save-cloud')) === null || _document$getElementB0 === void 0 || _document$getElementB0.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9() {
         var state, _t8;
         return _regenerator().w(function (_context9) {
           while (1) switch (_context9.p = _context9.n) {
@@ -17721,7 +17731,7 @@ var ArenaUI = /*#__PURE__*/function () {
           }
         }, _callee9, null, [[0, 2]]);
       })));
-      (_document$getElementB0 = document.getElementById('arena-load-cloud')) === null || _document$getElementB0 === void 0 || _document$getElementB0.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
+      (_document$getElementB1 = document.getElementById('arena-load-cloud')) === null || _document$getElementB1 === void 0 || _document$getElementB1.addEventListener('click', /*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0() {
         var data, _t9;
         return _regenerator().w(function (_context0) {
           while (1) switch (_context0.p = _context0.n) {
@@ -17872,8 +17882,8 @@ var ArenaUI = /*#__PURE__*/function () {
     key: "renderGuardians",
     value: function renderGuardians() {
       var _this7 = this,
-        _document$getElementB1,
-        _document$getElementB10;
+        _document$getElementB10,
+        _document$getElementB11;
       var list = document.getElementById('arena-guardians-list');
       if (this.guardians.length === 0) {
         list.innerHTML = "<p class=\"arena-empty\">No guardians yet. Summon one!</p>";
@@ -17891,14 +17901,14 @@ var ArenaUI = /*#__PURE__*/function () {
         if (checked) _this7.selectedGuardianIds.add(g.id);
         return "\n      <div class=\"arena-guardian-card ".concat(g.rarity, "\" data-id=\"").concat(g.id, "\">\n        <div class=\"arena-guardian-info\">\n          <span class=\"arena-guardian-name guardian-details-trigger\" data-id=\"").concat(g.id, "\">").concat(safeName, "</span>\n          <span class=\"arena-guardian-rarity ").concat(g.rarity, "\">").concat(safeRarity, "</span>\n        </div>\n        <div class=\"arena-guardian-stats\">\n          <span>\u2764\uFE0F ").concat(g.hp, "/").concat(g.max_hp, "</span>\n          <span>\u2694\uFE0F ").concat(g.attack, "</span>\n          <span>\uD83D\uDEE1\uFE0F ").concat(g.defense, "</span>\n          <span>\u2B06\uFE0F Lv.").concat(g.level, "</span>\n        </div>\n        <div class=\"arena-guardian-actions\">\n          <input type=\"checkbox\" class=\"arena-guardian-select\" data-id=\"").concat(g.id, "\" ").concat(checked, ">\n          ").concat(maxLevel ? '<button class="btn btn-small btn-secondary" disabled>MAX</button>' : "<button class=\"btn btn-small btn-primary levelup-btn ".concat(canAfford ? '' : 'btn-disabled', "\" data-id=\"").concat(g.id, "\" ").concat(canAfford ? '' : 'disabled', ">\u26A1").concat(cost.toLocaleString(), "</button>"), "\n        </div>\n        <button class=\"btn btn-small btn-danger btn-release-row\" data-id=\"").concat(g.id, "\">\uD83D\uDDD1\uFE0F Release</button>\n      </div>\n    ");
       }).join('');
-      (_document$getElementB1 = document.getElementById('arena-select-all')) === null || _document$getElementB1 === void 0 || _document$getElementB1.addEventListener('click', function () {
+      (_document$getElementB10 = document.getElementById('arena-select-all')) === null || _document$getElementB10 === void 0 || _document$getElementB10.addEventListener('click', function () {
         list.querySelectorAll('.arena-guardian-select').forEach(function (cb) {
           cb.checked = true;
           _this7.selectedGuardianIds.add(parseInt(cb.dataset.id));
         });
         _this7.updateSelectCount();
       });
-      (_document$getElementB10 = document.getElementById('arena-select-clear')) === null || _document$getElementB10 === void 0 || _document$getElementB10.addEventListener('click', function () {
+      (_document$getElementB11 = document.getElementById('arena-select-clear')) === null || _document$getElementB11 === void 0 || _document$getElementB11.addEventListener('click', function () {
         list.querySelectorAll('.arena-guardian-select').forEach(function (cb) {
           cb.checked = false;
         });

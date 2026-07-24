@@ -5,6 +5,300 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
+var _StateManager = _interopRequireDefault(require("../core/StateManager.js"));
+var _EventBus = _interopRequireDefault(require("../utils/EventBus.js"));
+var _Logger = _interopRequireDefault(require("../utils/Logger.js"));
+function _interopRequireDefault(e) { return e && e.__esModule ? e : { "default": e }; }
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _classCallCheck(a, n) { if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function"); }
+function _defineProperties(e, r) { for (var t = 0; t < r.length; t++) { var o = r[t]; o.enumerable = o.enumerable || !1, o.configurable = !0, "value" in o && (o.writable = !0), Object.defineProperty(e, _toPropertyKey(o.key), o); } }
+function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), t && _defineProperties(e, t), Object.defineProperty(e, "prototype", { writable: !1 }), e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
+ * ResourceAPI - Centralized access point for all game resources
+ *
+ * Every module that needs to read or modify resources MUST go through this API.
+ * This replaces direct access to state.resources.* scattered across 15+ files.
+ *
+ * Usage:
+ *   import resourceApi from '../api/ResourceAPI.js';
+ *   resourceApi.add('energy', 100);
+ *   resourceApi.spend('gems', 50);
+ *   const gems = resourceApi.get('gems');
+ */
+var VALID_RESOURCES = ['energy', 'mana', 'gems', 'crystals', 'volcanicEnergy', 'tidalEnergy', 'solarEssence', 'cryoEnergy', 'cosmicEnergy', 'pearls'];
+var ResourceAPI = /*#__PURE__*/function () {
+  function ResourceAPI() {
+    _classCallCheck(this, ResourceAPI);
+    this._listeners = [];
+    this._setupListeners();
+  }
+  return _createClass(ResourceAPI, [{
+    key: "_setupListeners",
+    value: function _setupListeners() {
+      // Relay state changes as resource:changed events for easier consumption
+      var unsub1 = _StateManager["default"].subscribe('ADD_RESOURCE', function (state) {
+        _EventBus["default"].emit('resource:changed', {
+          state: state
+        });
+      });
+      var unsub2 = _StateManager["default"].subscribe('REMOVE_RESOURCE', function (state) {
+        _EventBus["default"].emit('resource:changed', {
+          state: state
+        });
+      });
+      var unsub3 = _StateManager["default"].subscribe('SET_RESOURCE', function (state) {
+        _EventBus["default"].emit('resource:changed', {
+          state: state
+        });
+      });
+      this._listeners.push(unsub1, unsub2, unsub3);
+    }
+
+    /**
+     * Validate resource name
+     */
+  }, {
+    key: "_validate",
+    value: function _validate(resource) {
+      if (!VALID_RESOURCES.includes(resource)) {
+        _Logger["default"].warn('ResourceAPI', "Invalid resource: \"".concat(resource, "\""));
+        return false;
+      }
+      return true;
+    }
+
+    /**
+     * Get current amount of a resource
+     * @param {string} resource - Resource name
+     * @returns {number} Current amount (0 if invalid resource)
+     */
+  }, {
+    key: "get",
+    value: function get(resource) {
+      if (!this._validate(resource)) return 0;
+      var state = _StateManager["default"].getState();
+      return state.resources[resource] || 0;
+    }
+
+    /**
+     * Get all resources at once
+     * @returns {object} Copy of all resources { energy, mana, gems, ... }
+     */
+  }, {
+    key: "getAll",
+    value: function getAll() {
+      var state = _StateManager["default"].getState();
+      return _objectSpread({}, state.resources);
+    }
+
+    /**
+     * Get the cap for a resource
+     * @param {string} resource
+     * @returns {number|Infinity}
+     */
+  }, {
+    key: "getCap",
+    value: function getCap(resource) {
+      var _state$caps$resource;
+      if (!this._validate(resource)) return Infinity;
+      var state = _StateManager["default"].getState();
+      return (_state$caps$resource = state.caps[resource]) !== null && _state$caps$resource !== void 0 ? _state$caps$resource : Infinity;
+    }
+
+    /**
+     * Get production rate for a resource
+     * @param {string} resource
+     * @returns {number}
+     */
+  }, {
+    key: "getRate",
+    value: function getRate(resource) {
+      if (!this._validate(resource)) return 0;
+      var state = _StateManager["default"].getState();
+      return state.production[resource] || 0;
+    }
+
+    /**
+     * Add resources (respects caps)
+     * @param {string} resource
+     * @param {number} amount - Must be positive
+     * @returns {boolean} Success
+     */
+  }, {
+    key: "add",
+    value: function add(resource, amount) {
+      if (!this._validate(resource)) return false;
+      if (typeof amount !== 'number' || amount <= 0 || !isFinite(amount)) {
+        _Logger["default"].warn('ResourceAPI', "Invalid amount for add: ".concat(amount));
+        return false;
+      }
+      _StateManager["default"].dispatch({
+        type: 'ADD_RESOURCE',
+        payload: {
+          resource: resource,
+          amount: amount
+        }
+      });
+      return true;
+    }
+
+    /**
+     * Spend resources (cannot go below 0)
+     * @param {string} resource
+     * @param {number} amount - Must be positive
+     * @returns {boolean} Whether the spend was successful
+     */
+  }, {
+    key: "spend",
+    value: function spend(resource, amount) {
+      if (!this._validate(resource)) return false;
+      if (typeof amount !== 'number' || amount <= 0 || !isFinite(amount)) {
+        _Logger["default"].warn('ResourceAPI', "Invalid amount for spend: ".concat(amount));
+        return false;
+      }
+      var current = this.get(resource);
+      if (current < amount) {
+        _Logger["default"].debug('ResourceAPI', "Not enough ".concat(resource, ": have ").concat(current, ", need ").concat(amount));
+        return false;
+      }
+      _StateManager["default"].dispatch({
+        type: 'REMOVE_RESOURCE',
+        payload: {
+          resource: resource,
+          amount: amount
+        }
+      });
+      return true;
+    }
+
+    /**
+     * Set resources to exact value (bypasses cap check — use carefully)
+     * @param {string} resource
+     * @param {number} amount
+     * @returns {boolean}
+     */
+  }, {
+    key: "set",
+    value: function set(resource, amount) {
+      if (!this._validate(resource)) return false;
+      if (typeof amount !== 'number' || !isFinite(amount)) {
+        _Logger["default"].warn('ResourceAPI', "Invalid amount for set: ".concat(amount));
+        return false;
+      }
+      _StateManager["default"].dispatch({
+        type: 'SET_RESOURCE',
+        payload: {
+          resource: resource,
+          amount: Math.max(0, amount)
+        }
+      });
+      return true;
+    }
+
+    /**
+     * Check if player can afford a cost
+     * @param {string} resource
+     * @param {number} amount
+     * @returns {boolean}
+     */
+  }, {
+    key: "canAfford",
+    value: function canAfford(resource, amount) {
+      return this.get(resource) >= amount;
+    }
+
+    /**
+     * Batch spend multiple resources at once
+     * @param {Array<{resource: string, amount: number}>} costs
+     * @returns {boolean} Whether ALL spends succeeded
+     */
+  }, {
+    key: "spendMultiple",
+    value: function spendMultiple(costs) {
+      // First check all can be afforded
+      var _iterator = _createForOfIteratorHelper(costs),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var _step$value = _step.value,
+            resource = _step$value.resource,
+            amount = _step$value.amount;
+          if (!this.canAfford(resource, amount)) {
+            return false;
+          }
+        }
+        // Then execute all
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      var _iterator2 = _createForOfIteratorHelper(costs),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var _step2$value = _step2.value,
+            _resource = _step2$value.resource,
+            _amount = _step2$value.amount;
+          _StateManager["default"].dispatch({
+            type: 'REMOVE_RESOURCE',
+            payload: {
+              resource: _resource,
+              amount: _amount
+            }
+          });
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+      return true;
+    }
+
+    /**
+     * Sync — reads from stateManager (for future cloud sync integration)
+     * Currently a no-op since we always read from stateManager.
+     */
+  }, {
+    key: "sync",
+    value: function sync() {
+      // Future: merge cloud state with local state
+      _EventBus["default"].emit('resource:synced', {
+        resources: this.getAll()
+      });
+    }
+
+    /**
+     * Cleanup subscriptions
+     */
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      this._listeners.forEach(function (unsub) {
+        return unsub();
+      });
+      this._listeners = [];
+    }
+  }]);
+}(); // Singleton
+var resourceApi = new ResourceAPI();
+var _default = exports["default"] = resourceApi;
+
+},{"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62}],2:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports["default"] = void 0;
 /**
  * Global Game Configuration
  * Centralizează toate constantele și setările globale
@@ -120,7 +414,7 @@ Object.freeze(CONFIG.BALANCING);
 Object.freeze(CONFIG.FEATURES);
 var _default = exports["default"] = CONFIG;
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -223,7 +517,7 @@ function shouldShowNotification(notificationType) {
   return true;
 }
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -431,7 +725,7 @@ if (_config["default"].DEBUG_MODE) {
 }
 var _default = exports["default"] = game;
 
-},{"../config.js":1,"../systems/AchievementSystem.js":19,"../systems/AscensionSystem.js":20,"../systems/AutomationSystem.js":21,"../systems/BossSystem.js":22,"../systems/DailyRewardSystem.js":23,"../systems/GuardianSystem.js":24,"../systems/QuestSystem.js":27,"../systems/RealmSystem.js":28,"../systems/ShopSystem.js":29,"../systems/StatisticsSystem.js":30,"../systems/StructureSystem.js":31,"../systems/TutorialSystem.js":32,"../systems/UpgradeQueueSystem.js":33,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./SaveManager.js":5,"./StateManager.js":6,"./TickManager.js":7}],4:[function(require,module,exports){
+},{"../config.js":2,"../systems/AchievementSystem.js":20,"../systems/AscensionSystem.js":21,"../systems/AutomationSystem.js":22,"../systems/BossSystem.js":23,"../systems/DailyRewardSystem.js":24,"../systems/GuardianSystem.js":25,"../systems/QuestSystem.js":28,"../systems/RealmSystem.js":29,"../systems/ShopSystem.js":30,"../systems/StatisticsSystem.js":31,"../systems/StructureSystem.js":32,"../systems/TutorialSystem.js":33,"../systems/UpgradeQueueSystem.js":34,"../systems/UpgradeSystem.js":35,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./SaveManager.js":6,"./StateManager.js":7,"./TickManager.js":8}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -712,7 +1006,7 @@ var ResourceManager = /*#__PURE__*/function () {
 var resourceManager = new ResourceManager();
 var _default = exports["default"] = resourceManager;
 
-},{"../utils/Logger.js":61}],5:[function(require,module,exports){
+},{"../utils/Logger.js":62}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1231,7 +1525,7 @@ var SaveManager = /*#__PURE__*/function () {
 var saveManager = new SaveManager();
 var _default = exports["default"] = saveManager;
 
-},{"../config.js":1,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./StateManager.js":6}],6:[function(require,module,exports){
+},{"../config.js":2,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./StateManager.js":7}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2240,7 +2534,7 @@ var StateManager = /*#__PURE__*/function () {
 var stateManager = new StateManager();
 var _default = exports["default"] = stateManager;
 
-},{"../config.js":1,"../utils/EventBus.js":59,"../utils/Logger.js":61}],7:[function(require,module,exports){
+},{"../config.js":2,"../utils/EventBus.js":60,"../utils/Logger.js":62}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2767,7 +3061,7 @@ var TickManager = /*#__PURE__*/function () {
 var tickManager = new TickManager();
 var _default = exports["default"] = tickManager;
 
-},{"../config.js":1,"../systems/GuardianSystem.js":24,"../systems/RealmSystem.js":28,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./ResourceManager.js":4,"./StateManager.js":6}],8:[function(require,module,exports){
+},{"../config.js":2,"../systems/GuardianSystem.js":25,"../systems/RealmSystem.js":29,"../systems/UpgradeSystem.js":35,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./ResourceManager.js":5,"./StateManager.js":7}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3578,7 +3872,7 @@ var ACHIEVEMENTS = {
 };
 var _default = exports["default"] = ACHIEVEMENTS;
 
-},{"../core/StateManager.js":6,"../systems/StructureSystem.js":31}],9:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../systems/StructureSystem.js":32}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3965,7 +4259,7 @@ var BOSSES = {
 };
 var _default = exports["default"] = BOSSES;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4238,7 +4532,7 @@ var GUARDIAN_POOL = exports.GUARDIAN_POOL = {
 var RARITIES = exports.RARITIES = _config["default"].BALANCING.GUARDIAN_RARITIES;
 var _default = exports["default"] = GUARDIAN_POOL;
 
-},{"../config.js":1}],11:[function(require,module,exports){
+},{"../config.js":2}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4897,7 +5191,7 @@ function getAllMiniGameAchievements() {
   return Object.values(MINI_GAME_ACHIEVEMENTS).flat();
 }
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5378,7 +5672,7 @@ var QUEST_TEMPLATES = {
 };
 var _default = exports["default"] = QUEST_TEMPLATES;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5678,7 +5972,7 @@ function canUnlockRealm(realmId, state) {
 }
 var _default = exports["default"] = REALMS;
 
-},{"../config.js":1}],14:[function(require,module,exports){
+},{"../config.js":2}],15:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6182,7 +6476,7 @@ function isOfferAvailable(offer, playerState) {
 }
 var _default = exports["default"] = SHOP_ITEMS;
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7054,7 +7348,7 @@ var STRUCTURES = {
 };
 var _default = exports["default"] = STRUCTURES;
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7771,7 +8065,7 @@ var UPGRADES = {
 };
 var _default = exports["default"] = UPGRADES;
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 
 var _config = _interopRequireDefault(require("./config.js"));
@@ -8373,7 +8667,7 @@ document.addEventListener('click', function (e) {
 });
 // ===== SFÂRȘIT HAPTIC FEEDBACK =====
 
-},{"./config.js":1,"./core/Game.js":3,"./core/StateManager.js":6,"./systems/MiniGameAchievementSystem.js":25,"./systems/NotificationManager.js":26,"./ui/AchievementsUI.js":35,"./ui/ArenaUI.js":36,"./ui/AutomationUI.js":37,"./ui/BadgeManager.js":38,"./ui/BossesUI.js":39,"./ui/ConfirmModal.js":40,"./ui/DailyRewardUI.js":41,"./ui/GuardiansUI.js":42,"./ui/ModalManager.js":44,"./ui/NotificationManager.js":45,"./ui/PuzzleUI.js":46,"./ui/QuestsUI.js":47,"./ui/ShopUI.js":48,"./ui/StatisticsUI.js":49,"./ui/StructuresUI.js":50,"./ui/TabManager.js":51,"./ui/UpgradesUI.js":52,"./ui/components/ResourceDisplay.js":53,"./utils/EventBus.js":59,"./utils/Formatters.js":60,"./utils/Logger.js":61,"./utils/NotificationHelper.js":62}],18:[function(require,module,exports){
+},{"./config.js":2,"./core/Game.js":4,"./core/StateManager.js":7,"./systems/MiniGameAchievementSystem.js":26,"./systems/NotificationManager.js":27,"./ui/AchievementsUI.js":36,"./ui/ArenaUI.js":37,"./ui/AutomationUI.js":38,"./ui/BadgeManager.js":39,"./ui/BossesUI.js":40,"./ui/ConfirmModal.js":41,"./ui/DailyRewardUI.js":42,"./ui/GuardiansUI.js":43,"./ui/ModalManager.js":45,"./ui/NotificationManager.js":46,"./ui/PuzzleUI.js":47,"./ui/QuestsUI.js":48,"./ui/ShopUI.js":49,"./ui/StatisticsUI.js":50,"./ui/StructuresUI.js":51,"./ui/TabManager.js":52,"./ui/UpgradesUI.js":53,"./ui/components/ResourceDisplay.js":54,"./utils/EventBus.js":60,"./utils/Formatters.js":61,"./utils/Logger.js":62,"./utils/NotificationHelper.js":63}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8545,7 +8839,7 @@ var _default = exports["default"] = {
   }
 };
 
-},{"../utils/EventBus.js":59}],19:[function(require,module,exports){
+},{"../utils/EventBus.js":60}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9055,7 +9349,7 @@ window.claimAchievement = function (achievementKey) {
 };
 var _default = exports["default"] = achievementSystem;
 
-},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../data/achievements.js":8,"../utils/EventBus.js":59,"../utils/Logger.js":61}],20:[function(require,module,exports){
+},{"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../data/achievements.js":9,"../utils/EventBus.js":60,"../utils/Logger.js":62}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9418,7 +9712,7 @@ var AscensionSystem = /*#__PURE__*/function () {
 var ascensionSystem = new AscensionSystem();
 var _default = exports["default"] = ascensionSystem;
 
-},{"../config.js":1,"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeSystem.js":34}],21:[function(require,module,exports){
+},{"../config.js":2,"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./UpgradeSystem.js":35}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9962,7 +10256,7 @@ var AutomationSystem = /*#__PURE__*/function () {
 var automationSystem = new AutomationSystem();
 var _default = exports["default"] = automationSystem;
 
-},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24,"./QuestSystem.js":27,"./StructureSystem.js":31,"./UpgradeQueueSystem.js":33,"./UpgradeSystem.js":34}],22:[function(require,module,exports){
+},{"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./GuardianSystem.js":25,"./QuestSystem.js":28,"./StructureSystem.js":32,"./UpgradeQueueSystem.js":34,"./UpgradeSystem.js":35}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10580,7 +10874,7 @@ var BossSystem = /*#__PURE__*/function () {
 var bossSystem = new BossSystem();
 var _default = exports["default"] = bossSystem;
 
-},{"../core/StateManager.js":6,"../data/bosses.js":9,"../data/guardians.js":10,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24,"./StructureSystem.js":31}],23:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../data/bosses.js":10,"../data/guardians.js":11,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./GuardianSystem.js":25,"./StructureSystem.js":32}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10966,7 +11260,7 @@ var DailyRewardSystem = /*#__PURE__*/function () {
 var dailyRewardSystem = new DailyRewardSystem();
 var _default = exports["default"] = dailyRewardSystem;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24}],24:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./GuardianSystem.js":25}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11783,7 +12077,7 @@ var GuardianSystem = /*#__PURE__*/function () {
 var guardianSystem = new GuardianSystem();
 var _default = exports["default"] = guardianSystem;
 
-},{"../config.js":1,"../core/StateManager.js":6,"../data/guardians.js":10,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeSystem.js":34}],25:[function(require,module,exports){
+},{"../config.js":2,"../core/StateManager.js":7,"../data/guardians.js":11,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./UpgradeSystem.js":35}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12142,7 +12436,7 @@ var MiniGameAchievementSystem = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameAchievementSystem();
 
-},{"../core/StateManager.js":6,"../data/miniGameAchievements.js":11,"../utils/EventBus.js":59,"../utils/Logger.js":61}],26:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../data/miniGameAchievements.js":12,"../utils/EventBus.js":60,"../utils/Logger.js":62}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12339,7 +12633,7 @@ var NotificationManager = /*#__PURE__*/function () {
 var notificationManager = new NotificationManager();
 var _default = exports["default"] = notificationManager;
 
-},{"../utils/EventBus.js":59,"../utils/Logger.js":61}],27:[function(require,module,exports){
+},{"../utils/EventBus.js":60,"../utils/Logger.js":62}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13027,7 +13321,7 @@ var QuestSystem = /*#__PURE__*/function () {
 var questSystem = new QuestSystem();
 var _default = exports["default"] = questSystem;
 
-},{"../config.js":1,"../core/StateManager.js":6,"../data/quests.js":12,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeSystem.js":34}],28:[function(require,module,exports){
+},{"../config.js":2,"../core/StateManager.js":7,"../data/quests.js":13,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./UpgradeSystem.js":35}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13379,7 +13673,7 @@ var RealmSystem = /*#__PURE__*/function () {
 var realmSystem = new RealmSystem();
 var _default = exports["default"] = realmSystem;
 
-},{"../core/StateManager.js":6,"../data/realms.js":13,"../utils/EventBus.js":59,"../utils/Logger.js":61}],29:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../data/realms.js":14,"../utils/EventBus.js":60,"../utils/Logger.js":62}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13985,7 +14279,7 @@ var ShopSystem = /*#__PURE__*/function () {
 var shopSystem = new ShopSystem();
 var _default = exports["default"] = shopSystem;
 
-},{"../core/StateManager.js":6,"../data/guardians.js":10,"../data/shop.js":14,"../ui/games/DailySpinGame.js":56,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24}],30:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../data/guardians.js":11,"../data/shop.js":15,"../ui/games/DailySpinGame.js":57,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./GuardianSystem.js":25}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -14499,7 +14793,7 @@ var StatisticsSystem = /*#__PURE__*/function () {
 var statisticsSystem = new StatisticsSystem();
 var _default = exports["default"] = statisticsSystem;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"../utils/Logger.js":61,"./AchievementSystem.js":19,"./BossSystem.js":22,"./GuardianSystem.js":24,"./StructureSystem.js":31,"./UpgradeSystem.js":34}],31:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Formatters.js":61,"../utils/Logger.js":62,"./AchievementSystem.js":20,"./BossSystem.js":23,"./GuardianSystem.js":25,"./StructureSystem.js":32,"./UpgradeSystem.js":35}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15102,7 +15396,7 @@ var StructureSystem = /*#__PURE__*/function () {
 var structureSystem = new StructureSystem();
 var _default = exports["default"] = structureSystem;
 
-},{"../core/StateManager.js":6,"../data/structures.js":15,"../systems/RealmSystem.js":28,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./GuardianSystem.js":24,"./UpgradeSystem.js":34}],32:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../data/structures.js":16,"../systems/RealmSystem.js":29,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./GuardianSystem.js":25,"./UpgradeSystem.js":35}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -15702,7 +15996,7 @@ var TutorialSystem = /*#__PURE__*/function () {
 var tutorialSystem = new TutorialSystem();
 var _default = exports["default"] = tutorialSystem;
 
-},{"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeSystem.js":34}],33:[function(require,module,exports){
+},{"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./UpgradeSystem.js":35}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16252,7 +16546,7 @@ var UpgradeQueueSystem = /*#__PURE__*/function () {
 var upgradeQueueSystem = new UpgradeQueueSystem();
 var _default = exports["default"] = upgradeQueueSystem;
 
-},{"../config.js":1,"../core/ResourceManager.js":4,"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeSystem.js":34}],34:[function(require,module,exports){
+},{"../config.js":2,"../core/ResourceManager.js":5,"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./UpgradeSystem.js":35}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16879,7 +17173,7 @@ var UpgradeSystem = /*#__PURE__*/function () {
 var upgradeSystem = new UpgradeSystem();
 var _default = exports["default"] = upgradeSystem;
 
-},{"../core/StateManager.js":6,"../data/upgrades.js":16,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./UpgradeQueueSystem.js":33}],35:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../data/upgrades.js":17,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./UpgradeQueueSystem.js":34}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17090,7 +17384,7 @@ window.claimAchievement = function (key) {
 };
 var _default = exports["default"] = AchievementsUI;
 
-},{"../core/StateManager.js":6,"../data/achievements.js":8,"../systems/AchievementSystem.js":19,"../utils/EventBus.js":59,"./MiniGameStatsUI.js":43}],36:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../data/achievements.js":9,"../systems/AchievementSystem.js":20,"../utils/EventBus.js":60,"./MiniGameStatsUI.js":44}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18364,7 +18658,7 @@ _defineProperty(ArenaUI, "LEVELUP_BASE_COST", 10000);
 _defineProperty(ArenaUI, "LEVELUP_COST_MULTIPLIER", 1.5);
 var _default = exports["default"] = ArenaUI;
 
-},{"../core/StateManager.js":6,"../services/api.js":18,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"socket.io-client":88}],37:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../services/api.js":19,"../utils/EventBus.js":60,"../utils/Formatters.js":61,"socket.io-client":89}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18435,7 +18729,7 @@ window.toggleAutomation = function (featureKey) {
 new AutomationUI();
 var _default = exports["default"] = AutomationUI;
 
-},{"../systems/AutomationSystem.js":21,"../utils/EventBus.js":59}],38:[function(require,module,exports){
+},{"../systems/AutomationSystem.js":22,"../utils/EventBus.js":60}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18650,7 +18944,7 @@ var BadgeManager = /*#__PURE__*/function () {
 var badgeManager = new BadgeManager();
 var _default = exports["default"] = badgeManager;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61}],39:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18812,7 +19106,7 @@ window.challengeBoss = function (bossKey) {
 };
 var _default = exports["default"] = BossesUI;
 
-},{"../core/StateManager.js":6,"../systems/BossSystem.js":22,"../utils/EventBus.js":59,"../utils/Formatters.js":60}],40:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../systems/BossSystem.js":23,"../utils/EventBus.js":60,"../utils/Formatters.js":61}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18892,7 +19186,7 @@ var ConfirmModal = /*#__PURE__*/function () {
 var confirmModal = new ConfirmModal();
 var _default = exports["default"] = confirmModal;
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18980,7 +19274,7 @@ var DailyRewardUI = /*#__PURE__*/function () {
 new DailyRewardUI();
 var _default = exports["default"] = DailyRewardUI;
 
-},{"../systems/DailyRewardSystem.js":23,"../utils/EventBus.js":59}],42:[function(require,module,exports){
+},{"../systems/DailyRewardSystem.js":24,"../utils/EventBus.js":60}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19316,7 +19610,7 @@ var GuardiansUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = GuardiansUI;
 
-},{"../core/StateManager.js":6,"../systems/GuardianSystem.js":24,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"./ConfirmModal.js":40}],43:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../systems/GuardianSystem.js":25,"../utils/EventBus.js":60,"../utils/Formatters.js":61,"./ConfirmModal.js":41}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19447,7 +19741,7 @@ var MiniGameStatsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new MiniGameStatsUI();
 
-},{"../data/miniGameAchievements.js":11,"../systems/MiniGameAchievementSystem.js":25,"../utils/Formatters.js":60}],44:[function(require,module,exports){
+},{"../data/miniGameAchievements.js":12,"../systems/MiniGameAchievementSystem.js":26,"../utils/Formatters.js":61}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19566,7 +19860,7 @@ var ModalManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ModalManager;
 
-},{"../utils/EventBus.js":59,"../utils/Logger.js":61}],45:[function(require,module,exports){
+},{"../utils/EventBus.js":60,"../utils/Logger.js":62}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19691,7 +19985,7 @@ var NotificationManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = NotificationManager;
 
-},{"../utils/EventBus.js":59,"../utils/Logger.js":61}],46:[function(require,module,exports){
+},{"../utils/EventBus.js":60,"../utils/Logger.js":62}],47:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20259,7 +20553,7 @@ var PuzzleUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = PuzzleUI;
 
-},{"../core/StateManager.js":6,"../utils/EventBus.js":59,"../utils/Logger.js":61,"./games/DailySpinGame.js":56,"./games/Game2048.js":57,"./games/Match3Game.js":58}],47:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../utils/EventBus.js":60,"../utils/Logger.js":62,"./games/DailySpinGame.js":57,"./games/Game2048.js":58,"./games/Match3Game.js":59}],48:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20421,7 +20715,7 @@ window.claimQuest = function (questId) {
 };
 var _default = exports["default"] = QuestsUI;
 
-},{"../core/StateManager.js":6,"../systems/QuestSystem.js":27,"../utils/EventBus.js":59,"../utils/Formatters.js":60}],48:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../systems/QuestSystem.js":28,"../utils/EventBus.js":60,"../utils/Formatters.js":61}],49:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20553,7 +20847,7 @@ window.watchAd = function (adType) {
 };
 var _default = exports["default"] = ShopUI;
 
-},{"../systems/ShopSystem.js":29,"../utils/EventBus.js":59,"../utils/Formatters.js":60}],49:[function(require,module,exports){
+},{"../systems/ShopSystem.js":30,"../utils/EventBus.js":60,"../utils/Formatters.js":61}],50:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20670,7 +20964,7 @@ var StatisticsUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StatisticsUI;
 
-},{"../systems/StatisticsSystem.js":30,"../utils/EventBus.js":59,"./MiniGameStatsUI.js":43}],50:[function(require,module,exports){
+},{"../systems/StatisticsSystem.js":31,"../utils/EventBus.js":60,"./MiniGameStatsUI.js":44}],51:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21113,7 +21407,7 @@ var StructuresUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructuresUI;
 
-},{"../core/StateManager.js":6,"../systems/RealmSystem.js":28,"../systems/StructureSystem.js":31,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"./components/StructureCard.js":54}],51:[function(require,module,exports){
+},{"../core/StateManager.js":7,"../systems/RealmSystem.js":29,"../systems/StructureSystem.js":32,"../utils/EventBus.js":60,"../utils/Formatters.js":61,"./components/StructureCard.js":55}],52:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21310,7 +21604,7 @@ var TabManager = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = TabManager;
 
-},{"../utils/EventBus.js":59,"../utils/Logger.js":61}],52:[function(require,module,exports){
+},{"../utils/EventBus.js":60,"../utils/Logger.js":62}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21568,13 +21862,14 @@ var UpgradesUI = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = UpgradesUI;
 
-},{"../systems/UpgradeQueueSystem.js":33,"../systems/UpgradeSystem.js":34,"../utils/EventBus.js":59,"../utils/Formatters.js":60,"./components/UpgradeQueueDisplay.js":55}],53:[function(require,module,exports){
+},{"../systems/UpgradeQueueSystem.js":34,"../systems/UpgradeSystem.js":35,"../utils/EventBus.js":60,"../utils/Formatters.js":61,"./components/UpgradeQueueDisplay.js":56}],54:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
+var _ResourceAPI = _interopRequireDefault(require("../../api/ResourceAPI.js"));
 var _StateManager = _interopRequireDefault(require("../../core/StateManager.js"));
 var _EventBus = _interopRequireDefault(require("../../utils/EventBus.js"));
 var _Formatters = _interopRequireDefault(require("../../utils/Formatters.js"));
@@ -21586,6 +21881,9 @@ function _createClass(e, r, t) { return r && _defineProperties(e.prototype, r), 
 function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
 function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); } /**
  * ResourceDisplay - Shows resources at top of screen
+ *
+ * MIGRATED to ResourceAPI — uses ResourceAPI for all resource reads.
+ * Realm visibility still reads from stateManager (realms are not resources).
  */
 var ResourceDisplay = /*#__PURE__*/function () {
   function ResourceDisplay(containerId) {
@@ -21606,7 +21904,6 @@ var ResourceDisplay = /*#__PURE__*/function () {
     key: "subscribe",
     value: function subscribe() {
       var _this = this;
-      // Update on any resource change
       _EventBus["default"].on('state:ADD_RESOURCE', function () {
         return _this.update();
       });
@@ -21632,12 +21929,21 @@ var ResourceDisplay = /*#__PURE__*/function () {
     }
 
     /**
+     * Get realm-unlocked status (reads realms from state, not resources)
+     */
+  }, {
+    key: "_isRealmUnlocked",
+    value: function _isRealmUnlocked(realmId) {
+      var state = _StateManager["default"].getState();
+      return state.realms.unlocked.includes(realmId);
+    }
+
+    /**
      * Update display
      */
   }, {
     key: "update",
     value: function update() {
-      var state = _StateManager["default"].getState();
       var display = document.getElementById('resource-display');
       if (!display) return;
       var resources = [{
@@ -21661,52 +21967,52 @@ var ResourceDisplay = /*#__PURE__*/function () {
         key: 'crystals',
         icon: '💠',
         label: 'Crystals',
-        show: state.resources.crystals > 0 || state.ascension.level > 0,
+        show: _ResourceAPI["default"].get('crystals') > 0,
         noBar: true,
         noRate: true
       }, {
         key: 'volcanicEnergy',
         icon: '🌋',
         label: 'Volcanic',
-        show: state.realms.unlocked.includes('volcano')
+        show: this._isRealmUnlocked('volcano')
       }, {
         key: 'tidalEnergy',
         icon: '🌊',
         label: 'Tidal',
-        show: state.realms.unlocked.includes('ocean')
+        show: this._isRealmUnlocked('ocean')
       }, {
         key: 'pearls',
         icon: '🦪',
         label: 'Pearls',
-        show: state.realms.unlocked.includes('ocean'),
+        show: this._isRealmUnlocked('ocean'),
         noBar: true,
         noRate: true
       }, {
         key: 'solarEssence',
         icon: '☀️',
         label: 'Solar',
-        show: state.realms.unlocked.includes('desert')
+        show: this._isRealmUnlocked('desert')
       }, {
         key: 'cryoEnergy',
         icon: '❄️',
         label: 'Cryo',
-        show: state.realms.unlocked.includes('tundra')
+        show: this._isRealmUnlocked('tundra')
       }, {
         key: 'cosmicEnergy',
         icon: '🌌',
         label: 'Cosmic',
-        show: state.realms.unlocked.includes('cosmos')
+        show: this._isRealmUnlocked('cosmos')
       }];
       var html = '';
       for (var _i = 0, _resources = resources; _i < _resources.length; _i++) {
         var res = _resources[_i];
         if (!res.show) continue;
-        var amount = state.resources[res.key] || 0;
-        var cap = state.caps[res.key];
-        var rate = state.production[res.key];
-        var amountText = cap != null ? "".concat(_Formatters["default"].formatNumber(amount), " / ").concat(Math.floor(cap).toLocaleString()) : _Formatters["default"].formatNumber(amount);
+        var amount = _ResourceAPI["default"].get(res.key);
+        var cap = _ResourceAPI["default"].getCap(res.key);
+        var rate = _ResourceAPI["default"].getRate(res.key);
+        var amountText = cap != null && cap !== Infinity ? "".concat(_Formatters["default"].formatNumber(amount), " / ").concat(Math.floor(cap).toLocaleString()) : _Formatters["default"].formatNumber(amount);
         var rateText = rate != null ? "".concat(_Formatters["default"].formatNumber(rate), "/s") : '';
-        var barPercent = cap ? Math.min(amount / cap * 100, 100) : 0;
+        var barPercent = cap && cap !== Infinity ? Math.min(amount / cap * 100, 100) : 0;
         var barColor = barPercent >= 100 ? '#ef4444' : barPercent >= 80 ? '#f59e0b' : '#10b981';
         html += "\n        <div class=\"resource-item\">\n          <span class=\"resource-icon\">".concat(res.icon, "</span>\n          <div class=\"resource-info\">\n            <div class=\"resource-amount\">").concat(amountText, "</div>\n            ").concat(rateText ? "<div class=\"resource-rate\" style=\"color: ".concat(rate > 0 ? '#10b981' : '#6b7280', "\">").concat(rateText, "</div>") : '', "\n          </div>\n          ").concat(barPercent > 0 && !res.noBar ? "\n            <div class=\"resource-bar\">\n              <div class=\"resource-bar-fill\" style=\"width: ".concat(barPercent, "%; background-color: ").concat(barColor, "\"></div>\n            </div>\n          ") : '', "\n        </div>\n      ");
       }
@@ -21716,7 +22022,7 @@ var ResourceDisplay = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = ResourceDisplay;
 
-},{"../../core/StateManager.js":6,"../../utils/EventBus.js":59,"../../utils/Formatters.js":60}],54:[function(require,module,exports){
+},{"../../api/ResourceAPI.js":1,"../../core/StateManager.js":7,"../../utils/EventBus.js":60,"../../utils/Formatters.js":61}],55:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22006,7 +22312,7 @@ var StructureCard = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = StructureCard;
 
-},{"../../core/StateManager.js":6,"../../systems/StructureSystem.js":31,"../../utils/EventBus.js":59,"../../utils/Formatters.js":60}],55:[function(require,module,exports){
+},{"../../core/StateManager.js":7,"../../systems/StructureSystem.js":32,"../../utils/EventBus.js":60,"../../utils/Formatters.js":61}],56:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22155,7 +22461,7 @@ window.cancelQueuedUpgrade = function (upgradeKey) {
 };
 var _default = exports["default"] = UpgradeQueueDisplay;
 
-},{"../../systems/UpgradeQueueSystem.js":33,"../../systems/UpgradeSystem.js":34,"../../utils/EventBus.js":59,"../../utils/Formatters.js":60}],56:[function(require,module,exports){
+},{"../../systems/UpgradeQueueSystem.js":34,"../../systems/UpgradeSystem.js":35,"../../utils/EventBus.js":60,"../../utils/Formatters.js":61}],57:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22582,7 +22888,7 @@ var DailySpinGame = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new DailySpinGame();
 
-},{"../../core/StateManager.js":6,"../../utils/EventBus.js":59,"../../utils/Logger.js":61}],57:[function(require,module,exports){
+},{"../../core/StateManager.js":7,"../../utils/EventBus.js":60,"../../utils/Logger.js":62}],58:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22922,7 +23228,7 @@ var Game2048 = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = new Game2048();
 
-},{"../../core/StateManager.js":6,"../../utils/EventBus.js":59,"../../utils/Logger.js":61}],58:[function(require,module,exports){
+},{"../../core/StateManager.js":7,"../../utils/EventBus.js":60,"../../utils/Logger.js":62}],59:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -23738,7 +24044,7 @@ var Match3Game = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Match3Game;
 
-},{"../../utils/EventBus.js":59,"../../utils/Logger.js":61}],59:[function(require,module,exports){
+},{"../../utils/EventBus.js":60,"../../utils/Logger.js":62}],60:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -23911,7 +24217,7 @@ var EventBus = /*#__PURE__*/function () {
 var eventBus = new EventBus();
 var _default = exports["default"] = eventBus;
 
-},{"../config.js":1}],60:[function(require,module,exports){
+},{"../config.js":2}],61:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -24099,7 +24405,7 @@ var Formatters = /*#__PURE__*/function () {
 }();
 var _default = exports["default"] = Formatters;
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -24282,7 +24588,7 @@ var Logger = /*#__PURE__*/function () {
 var logger = new Logger();
 var _default = exports["default"] = logger;
 
-},{"../config.js":1}],62:[function(require,module,exports){
+},{"../config.js":2}],63:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -24324,7 +24630,7 @@ var _default = exports["default"] = {
   }
 };
 
-},{"../config/NotificationConfig.js":2,"../systems/NotificationManager.js":26}],63:[function(require,module,exports){
+},{"../config/NotificationConfig.js":3,"../systems/NotificationManager.js":27}],64:[function(require,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -24502,7 +24808,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.hasCORS = void 0;
@@ -24518,7 +24824,7 @@ catch (err) {
 }
 exports.hasCORS = value;
 
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 "use strict";
 // imported from https://github.com/galkn/querystring
 /**
@@ -24558,7 +24864,7 @@ function decode(qs) {
     return qry;
 }
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parse = parse;
@@ -24627,7 +24933,7 @@ function queryKey(uri, query) {
     return data;
 }
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defaultBinaryType = exports.globalThisShim = exports.nextTick = void 0;
@@ -24655,7 +24961,7 @@ exports.globalThisShim = (() => {
 exports.defaultBinaryType = "arraybuffer";
 function createCookieJar() { }
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebTransport = exports.WebSocket = exports.NodeWebSocket = exports.XHR = exports.NodeXHR = exports.Fetch = exports.nextTick = exports.parse = exports.installTimerFunctions = exports.transports = exports.TransportError = exports.Transport = exports.protocol = exports.SocketWithUpgrade = exports.SocketWithoutUpgrade = exports.Socket = void 0;
@@ -24689,7 +24995,7 @@ Object.defineProperty(exports, "WebSocket", { enumerable: true, get: function ()
 var webtransport_js_1 = require("./transports/webtransport.js");
 Object.defineProperty(exports, "WebTransport", { enumerable: true, get: function () { return webtransport_js_1.WT; } });
 
-},{"./contrib/parseuri.js":66,"./globals.node.js":67,"./socket.js":69,"./transport.js":70,"./transports/index.js":71,"./transports/polling-fetch.js":72,"./transports/polling-xhr.js":73,"./transports/polling-xhr.node.js":73,"./transports/websocket.js":75,"./transports/websocket.node.js":75,"./transports/webtransport.js":76,"./util.js":77}],69:[function(require,module,exports){
+},{"./contrib/parseuri.js":67,"./globals.node.js":68,"./socket.js":70,"./transport.js":71,"./transports/index.js":72,"./transports/polling-fetch.js":73,"./transports/polling-xhr.js":74,"./transports/polling-xhr.node.js":74,"./transports/websocket.js":76,"./transports/websocket.node.js":76,"./transports/webtransport.js":77,"./util.js":78}],70:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -25457,7 +25763,7 @@ class Socket extends SocketWithUpgrade {
 }
 exports.Socket = Socket;
 
-},{"./contrib/parseqs.js":65,"./contrib/parseuri.js":66,"./globals.node.js":67,"./transports/index.js":71,"./util.js":77,"@socket.io/component-emitter":63,"debug":78,"engine.io-parser":85}],70:[function(require,module,exports){
+},{"./contrib/parseqs.js":66,"./contrib/parseuri.js":67,"./globals.node.js":68,"./transports/index.js":72,"./util.js":78,"@socket.io/component-emitter":64,"debug":79,"engine.io-parser":86}],71:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -25612,7 +25918,7 @@ class Transport extends component_emitter_1.Emitter {
 }
 exports.Transport = Transport;
 
-},{"./contrib/parseqs.js":65,"./util.js":77,"@socket.io/component-emitter":63,"debug":78,"engine.io-parser":85}],71:[function(require,module,exports){
+},{"./contrib/parseqs.js":66,"./util.js":78,"@socket.io/component-emitter":64,"debug":79,"engine.io-parser":86}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.transports = void 0;
@@ -25625,7 +25931,7 @@ exports.transports = {
     polling: polling_xhr_node_js_1.XHR,
 };
 
-},{"./polling-xhr.node.js":73,"./websocket.node.js":75,"./webtransport.js":76}],72:[function(require,module,exports){
+},{"./polling-xhr.node.js":74,"./websocket.node.js":76,"./webtransport.js":77}],73:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Fetch = void 0;
@@ -25687,7 +25993,7 @@ class Fetch extends polling_js_1.Polling {
 }
 exports.Fetch = Fetch;
 
-},{"./polling.js":74}],73:[function(require,module,exports){
+},{"./polling.js":75}],74:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -25974,7 +26280,7 @@ function newRequest(opts) {
     }
 }
 
-},{"../contrib/has-cors.js":64,"../globals.node.js":67,"../util.js":77,"./polling.js":74,"@socket.io/component-emitter":63,"debug":78}],74:[function(require,module,exports){
+},{"../contrib/has-cors.js":65,"../globals.node.js":68,"../util.js":78,"./polling.js":75,"@socket.io/component-emitter":64,"debug":79}],75:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -26141,7 +26447,7 @@ class Polling extends transport_js_1.Transport {
 }
 exports.Polling = Polling;
 
-},{"../transport.js":70,"../util.js":77,"debug":78,"engine.io-parser":85}],75:[function(require,module,exports){
+},{"../transport.js":71,"../util.js":78,"debug":79,"engine.io-parser":86}],76:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -26279,7 +26585,7 @@ class WS extends BaseWS {
 }
 exports.WS = WS;
 
-},{"../globals.node.js":67,"../transport.js":70,"../util.js":77,"debug":78,"engine.io-parser":85}],76:[function(require,module,exports){
+},{"../globals.node.js":68,"../transport.js":71,"../util.js":78,"debug":79,"engine.io-parser":86}],77:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -26375,7 +26681,7 @@ class WT extends transport_js_1.Transport {
 }
 exports.WT = WT;
 
-},{"../globals.node.js":67,"../transport.js":70,"debug":78,"engine.io-parser":85}],77:[function(require,module,exports){
+},{"../globals.node.js":68,"../transport.js":71,"debug":79,"engine.io-parser":86}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pick = pick;
@@ -26442,7 +26748,7 @@ function randomString() {
         Math.random().toString(36).substring(2, 5));
 }
 
-},{"./globals.node.js":67}],78:[function(require,module,exports){
+},{"./globals.node.js":68}],79:[function(require,module,exports){
 (function (process){(function (){
 /* eslint-env browser */
 
@@ -26718,7 +27024,7 @@ formatters.j = function (v) {
 };
 
 }).call(this)}).call(this,require('_process'))
-},{"./common":79,"_process":86}],79:[function(require,module,exports){
+},{"./common":80,"_process":87}],80:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -27012,7 +27318,7 @@ function setup(env) {
 
 module.exports = setup;
 
-},{"ms":80}],80:[function(require,module,exports){
+},{"ms":81}],81:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -27176,7 +27482,7 @@ function plural(ms, msAbs, n, name) {
   return Math.round(ms / n) + ' ' + name + (isPlural ? 's' : '');
 }
 
-},{}],81:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ERROR_PACKET = exports.PACKET_TYPES_REVERSE = exports.PACKET_TYPES = void 0;
@@ -27197,7 +27503,7 @@ Object.keys(PACKET_TYPES).forEach((key) => {
 const ERROR_PACKET = { type: "error", data: "parser error" };
 exports.ERROR_PACKET = ERROR_PACKET;
 
-},{}],82:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decode = exports.encode = void 0;
@@ -27247,7 +27553,7 @@ const decode = (base64) => {
 };
 exports.decode = decode;
 
-},{}],83:[function(require,module,exports){
+},{}],84:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodePacket = void 0;
@@ -27315,7 +27621,7 @@ const mapBinary = (data, binaryType) => {
     }
 };
 
-},{"./commons.js":81,"./contrib/base64-arraybuffer.js":82}],84:[function(require,module,exports){
+},{"./commons.js":82,"./contrib/base64-arraybuffer.js":83}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.encodePacket = void 0;
@@ -27389,7 +27695,7 @@ function encodePacketToBinary(packet, callback) {
     });
 }
 
-},{"./commons.js":81}],85:[function(require,module,exports){
+},{"./commons.js":82}],86:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodePayload = exports.decodePacket = exports.encodePayload = exports.encodePacket = exports.protocol = void 0;
@@ -27555,7 +27861,7 @@ function createPacketDecoderStream(maxPayload, binaryType) {
 }
 exports.protocol = 4;
 
-},{"./commons.js":81,"./decodePacket.js":83,"./encodePacket.js":84}],86:[function(require,module,exports){
+},{"./commons.js":82,"./decodePacket.js":84,"./encodePacket.js":85}],87:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -27741,7 +28047,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],87:[function(require,module,exports){
+},{}],88:[function(require,module,exports){
 "use strict";
 /**
  * Initialize backoff timer with `opts`.
@@ -27812,7 +28118,7 @@ Backoff.prototype.setJitter = function (jitter) {
     this.jitter = jitter;
 };
 
-},{}],88:[function(require,module,exports){
+},{}],89:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -27890,7 +28196,7 @@ Object.defineProperty(exports, "WebTransport", { enumerable: true, get: function
 
 module.exports = lookup;
 
-},{"./manager.js":89,"./socket.js":91,"./url.js":92,"debug":93,"engine.io-client":68,"socket.io-parser":97}],89:[function(require,module,exports){
+},{"./manager.js":90,"./socket.js":92,"./url.js":93,"debug":94,"engine.io-client":69,"socket.io-parser":98}],90:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -28308,7 +28614,7 @@ class Manager extends component_emitter_1.Emitter {
 }
 exports.Manager = Manager;
 
-},{"./contrib/backo2.js":87,"./on.js":90,"./socket.js":91,"@socket.io/component-emitter":63,"debug":93,"engine.io-client":68,"socket.io-parser":97}],90:[function(require,module,exports){
+},{"./contrib/backo2.js":88,"./on.js":91,"./socket.js":92,"@socket.io/component-emitter":64,"debug":94,"engine.io-client":69,"socket.io-parser":98}],91:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.on = on;
@@ -28319,7 +28625,7 @@ function on(obj, ev, fn) {
     };
 }
 
-},{}],91:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -29230,7 +29536,7 @@ class Socket extends component_emitter_1.Emitter {
 }
 exports.Socket = Socket;
 
-},{"./on.js":90,"@socket.io/component-emitter":63,"debug":93,"socket.io-parser":97}],92:[function(require,module,exports){
+},{"./on.js":91,"@socket.io/component-emitter":64,"debug":94,"socket.io-parser":98}],93:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -29301,13 +29607,13 @@ function url(uri, path = "", loc) {
     return obj;
 }
 
-},{"debug":93,"engine.io-client":68}],93:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"./common":94,"_process":86,"dup":78}],94:[function(require,module,exports){
+},{"debug":94,"engine.io-client":69}],94:[function(require,module,exports){
 arguments[4][79][0].apply(exports,arguments)
-},{"dup":79,"ms":95}],95:[function(require,module,exports){
+},{"./common":95,"_process":87,"dup":79}],95:[function(require,module,exports){
 arguments[4][80][0].apply(exports,arguments)
-},{"dup":80}],96:[function(require,module,exports){
+},{"dup":80,"ms":96}],96:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deconstructPacket = deconstructPacket;
@@ -29399,7 +29705,7 @@ function _reconstructPacket(data, buffers) {
     return data;
 }
 
-},{"./is-binary.js":98}],97:[function(require,module,exports){
+},{"./is-binary.js":99}],98:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -29767,7 +30073,7 @@ function isPacketValid(packet) {
         isDataValid(packet.type, packet.data));
 }
 
-},{"./binary.js":96,"./is-binary.js":98,"@socket.io/component-emitter":63,"debug":99}],98:[function(require,module,exports){
+},{"./binary.js":97,"./is-binary.js":99,"@socket.io/component-emitter":64,"debug":100}],99:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isBinary = isBinary;
@@ -29823,10 +30129,10 @@ function hasBinary(obj, toJSON) {
     return false;
 }
 
-},{}],99:[function(require,module,exports){
-arguments[4][78][0].apply(exports,arguments)
-},{"./common":100,"_process":86,"dup":78}],100:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 arguments[4][79][0].apply(exports,arguments)
-},{"dup":79,"ms":101}],101:[function(require,module,exports){
+},{"./common":101,"_process":87,"dup":79}],101:[function(require,module,exports){
 arguments[4][80][0].apply(exports,arguments)
-},{"dup":80}]},{},[17]);
+},{"dup":80,"ms":102}],102:[function(require,module,exports){
+arguments[4][81][0].apply(exports,arguments)
+},{"dup":81}]},{},[18]);

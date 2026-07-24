@@ -1,7 +1,11 @@
 /**
  * ResourceDisplay - Shows resources at top of screen
+ *
+ * MIGRATED to ResourceAPI — uses ResourceAPI for all resource reads.
+ * Realm visibility still reads from stateManager (realms are not resources).
  */
 
+import resourceApi from '../../api/ResourceAPI.js';
 import stateManager from '../../core/StateManager.js';
 import eventBus from '../../utils/EventBus.js';
 import Formatters from '../../utils/Formatters.js';
@@ -23,7 +27,6 @@ class ResourceDisplay {
    * Subscribe to state changes
    */
   subscribe() {
-    // Update on any resource change
     eventBus.on('state:ADD_RESOURCE', () => this.update());
     eventBus.on('state:REMOVE_RESOURCE', () => this.update());
     eventBus.on('state:SET_RESOURCE', () => this.update());
@@ -42,10 +45,17 @@ class ResourceDisplay {
   }
   
   /**
+   * Get realm-unlocked status (reads realms from state, not resources)
+   */
+  _isRealmUnlocked(realmId) {
+    const state = stateManager.getState();
+    return state.realms.unlocked.includes(realmId);
+  }
+  
+  /**
    * Update display
    */
   update() {
-    const state = stateManager.getState();
     const display = document.getElementById('resource-display');
     if (!display) return;
     
@@ -53,29 +63,29 @@ class ResourceDisplay {
       { key: 'energy', icon: '⚡', label: 'Energy', show: true },
       { key: 'mana', icon: '✨', label: 'Mana', show: true },
       { key: 'gems', icon: '💎', label: 'Gems', show: true, noBar: true, noRate: true },
-      { key: 'crystals', icon: '💠', label: 'Crystals', show: state.resources.crystals > 0 || state.ascension.level > 0, noBar: true, noRate: true },
-      { key: 'volcanicEnergy', icon: '🌋', label: 'Volcanic', show: state.realms.unlocked.includes('volcano') },
-      { key: 'tidalEnergy', icon: '🌊', label: 'Tidal', show: state.realms.unlocked.includes('ocean') },
-      { key: 'pearls', icon: '🦪', label: 'Pearls', show: state.realms.unlocked.includes('ocean'), noBar: true, noRate: true },
-      { key: 'solarEssence', icon: '☀️', label: 'Solar', show: state.realms.unlocked.includes('desert') },
-      { key: 'cryoEnergy', icon: '❄️', label: 'Cryo', show: state.realms.unlocked.includes('tundra') },
-      { key: 'cosmicEnergy', icon: '🌌', label: 'Cosmic', show: state.realms.unlocked.includes('cosmos') }
+      { key: 'crystals', icon: '💠', label: 'Crystals', show: resourceApi.get('crystals') > 0, noBar: true, noRate: true },
+      { key: 'volcanicEnergy', icon: '🌋', label: 'Volcanic', show: this._isRealmUnlocked('volcano') },
+      { key: 'tidalEnergy', icon: '🌊', label: 'Tidal', show: this._isRealmUnlocked('ocean') },
+      { key: 'pearls', icon: '🦪', label: 'Pearls', show: this._isRealmUnlocked('ocean'), noBar: true, noRate: true },
+      { key: 'solarEssence', icon: '☀️', label: 'Solar', show: this._isRealmUnlocked('desert') },
+      { key: 'cryoEnergy', icon: '❄️', label: 'Cryo', show: this._isRealmUnlocked('tundra') },
+      { key: 'cosmicEnergy', icon: '🌌', label: 'Cosmic', show: this._isRealmUnlocked('cosmos') }
     ];
     
     let html = '';
     for (const res of resources) {
       if (!res.show) continue;
       
-      const amount = state.resources[res.key] || 0;
-      const cap = state.caps[res.key];
-      const rate = state.production[res.key];
+      const amount = resourceApi.get(res.key);
+      const cap = resourceApi.getCap(res.key);
+      const rate = resourceApi.getRate(res.key);
       
-      const amountText = cap != null
+      const amountText = cap != null && cap !== Infinity
         ? `${Formatters.formatNumber(amount)} / ${Math.floor(cap).toLocaleString()}`
         : Formatters.formatNumber(amount);
       
       const rateText = rate != null ? `${Formatters.formatNumber(rate)}/s` : '';
-      const barPercent = cap ? Math.min((amount / cap) * 100, 100) : 0;
+      const barPercent = cap && cap !== Infinity ? Math.min((amount / cap) * 100, 100) : 0;
       const barColor = barPercent >= 100 ? '#ef4444' : barPercent >= 80 ? '#f59e0b' : '#10b981';
       
       html += `

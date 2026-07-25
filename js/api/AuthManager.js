@@ -38,7 +38,7 @@ class AuthManager {
 
   _setState(newState, extra = {}) {
     this.state = newState;
-    if (extra.user) this.user = extra.user;
+    if ('user' in extra) this.user = extra.user;
     eventBus.emit('auth:stateChanged', { state: this.state, user: this.user, ...extra });
     logger.info('[AuthManager]', this.state, this.user?.username || '');
   }

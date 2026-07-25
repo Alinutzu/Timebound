@@ -224,10 +224,6 @@ function bindGlobalEvents() {
     eventBus.on('game:saved', () => {
         showNotification('Progress saved', 'success', 2000);
     });
-    
-    eventBus.on('notification:show', (data) => {
-        showNotification(data.message, data.type || 'info', data.duration);
-    });
 }
 
 /**

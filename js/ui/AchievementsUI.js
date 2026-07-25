@@ -259,9 +259,4 @@ class AchievementsUI {
   }
 }
 
-// Global claim function
-window.claimAchievement = (key) => {
-  achievementSystem.claim(key);
-};
-
 export default AchievementsUI;

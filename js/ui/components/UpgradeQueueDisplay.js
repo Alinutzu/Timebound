@@ -170,7 +170,7 @@ class UpgradeQueueDisplay {
   }
   
   startUpdateLoop() {
-    setInterval(() => {
+    this._updateInterval = setInterval(() => {
       const timeEl = document.getElementById('queue-time-remaining');
       if (timeEl) {
         const remainingTime = upgradeQueueSystem.getRemainingTime();
@@ -183,6 +183,13 @@ class UpgradeQueueDisplay {
         progressFill.style.width = `${progress}%`;
       }
     }, 1000);
+  }
+
+  destroy() {
+    if (this._updateInterval) {
+      clearInterval(this._updateInterval);
+      this._updateInterval = null;
+    }
   }
 }
 

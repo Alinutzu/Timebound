@@ -412,4 +412,80 @@ describe('ResourceAPI', () => {
       assert.equal(api.add('123', 10), false);
     });
   });
+
+  // --- GET RATE ---
+
+  describe('getRate()', () => {
+    it('returns production rate for valid resource', () => {
+      mockState.production.energy = 5.5;
+      assert.equal(api.getRate('energy'), 5.5);
+    });
+
+    it('returns 0 for resource with no production', () => {
+      assert.equal(api.getRate('gems'), 0);
+    });
+
+    it('returns 0 for invalid resource', () => {
+      assert.equal(api.getRate('invalidResource'), 0);
+    });
+  });
+
+  // --- SPEND MULTIPLE edge cases ---
+
+  describe('spendMultiple() edge cases', () => {
+    it('returns true for empty array', () => {
+      assert.equal(api.spendMultiple([]), true);
+    });
+
+    it('returns true with single item', () => {
+      sm = createMockStateManager({ energy: 100 });
+      api = new ResourceAPI(sm, eb, mockLogger);
+      assert.equal(api.spendMultiple([{ resource: 'energy', amount: 50 }]), true);
+      assert.equal(api.get('energy'), 50);
+    });
+  });
+
+  // --- GET CAP ---
+
+  describe('getCap()', () => {
+    it('returns cap for valid resource', () => {
+      assert.equal(api.getCap('energy'), 50000);
+    });
+
+    it('returns Infinity for invalid resource', () => {
+      assert.equal(api.getCap('invalidResource'), Infinity);
+    });
+  });
+
+  // --- WARN logging ---
+
+  describe('warning logging', () => {
+    it('warns on invalid resource name', () => {
+      mockLogger._logs = [];
+      api.get('diamonds');
+      const warn = mockLogger._logs.find(l => l.level === 'warn' && l.msg.includes('diamonds'));
+      assert.ok(warn, 'should log warning for invalid resource');
+    });
+
+    it('warns on invalid add amount', () => {
+      mockLogger._logs = [];
+      api.add('energy', -5);
+      const warn = mockLogger._logs.find(l => l.level === 'warn' && l.msg.includes('Invalid amount'));
+      assert.ok(warn, 'should log warning for invalid amount');
+    });
+
+    it('warns on invalid spend amount', () => {
+      mockLogger._logs = [];
+      api.spend('energy', NaN);
+      const warn = mockLogger._logs.find(l => l.level === 'warn' && l.msg.includes('Invalid amount'));
+      assert.ok(warn, 'should log warning for invalid amount');
+    });
+
+    it('warns on invalid set amount', () => {
+      mockLogger._logs = [];
+      api.set('energy', Infinity);
+      const warn = mockLogger._logs.find(l => l.level === 'warn' && l.msg.includes('Invalid amount'));
+      assert.ok(warn, 'should log warning for invalid amount');
+    });
+  });
 });

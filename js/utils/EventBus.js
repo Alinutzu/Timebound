@@ -24,15 +24,6 @@ class EventBus {
    * @returns {function} Unsubscribe function
    */
   on(event, callback, context = null) {
-  // --- START FIX PERMANENT ---
-  // BLOCĂM ORICE ALT LISTENER PENTRU 'notification:show' DUPĂ CE PRIMUL S-A ÎNREGISTRAT
-  if (event === 'notification:show' && this.events.has('notification:show')) {
-    console.warn("🛡️ BLOCAT! Am prevenit înregistrarea listener-ului duplicat/problematic pentru 'notification:show'.");
-    // Pur și simplu nu înregistrăm acest al doilea listener și returnăm o funcție goală.
-    return () => {};
-  }
-  // --- SFÂRȘIT FIX PERMANENT ---
-
   if (!this.events.has(event)) {
     this.events.set(event, []);
   }

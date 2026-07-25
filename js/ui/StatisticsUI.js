@@ -26,9 +26,16 @@ class StatisticsUI {
   
   subscribe() {
     // Update stats periodically
-    setInterval(() => {
+    this._updateInterval = setInterval(() => {
       this.render();
     }, 5000);
+  }
+
+  destroy() {
+    if (this._updateInterval) {
+      clearInterval(this._updateInterval);
+      this._updateInterval = null;
+    }
   }
   
   // ✅ MODIFICAT - render() cu mini-game stats

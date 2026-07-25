@@ -36,7 +36,6 @@ class ArenaUI {
 
     eventBus.on('auth:stateChanged', ({ state }) => {
       if (state === 'UNAUTHENTICATED') {
-        persistenceManager.setCloudEnabled(false);
         this.disconnectSocket();
         if (this.cooldownTimer) {
           clearInterval(this.cooldownTimer);

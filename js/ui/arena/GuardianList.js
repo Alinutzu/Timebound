@@ -67,7 +67,7 @@ export async function loadGuardians(arena) {
   }
 }
 
-export function renderGuardians(arena) {
+function renderGuardians(arena) {
   const list = document.getElementById('arena-guardians-list');
   if (arena.guardians.length === 0) {
     list.innerHTML = `<p class="arena-empty">No guardians yet. Summon one!</p>`;

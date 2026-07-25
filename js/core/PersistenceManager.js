@@ -44,7 +44,7 @@ class PersistenceManager {
       const state = stateManager.getState();
       const payload = JSON.stringify(state);
       if (payload.length > 900000) {
-        const trimmed = { resources: state.resources, stats: state.stats, structures: state.structures, upgrades: state.upgrades, guardians: state.guardians };
+        const trimmed = { resources: state.resources, statistics: state.statistics, structures: state.structures, upgrades: state.upgrades, guardians: state.guardians };
         await api.saveCloud(trimmed);
       } else {
         await api.saveCloud(state);

@@ -1,6 +1,3 @@
-import api from '../../services/api.js';
-import Formatters from '../../utils/Formatters.js';
-
 export function renderBattleResult(result) {
   const won = result.result === 'win';
   const ratingChange = result.attackerChange || result.ratingChange || 0;

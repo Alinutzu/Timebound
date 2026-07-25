@@ -1,5 +1,4 @@
 import api from '../../services/api.js';
-import Formatters from '../../utils/Formatters.js';
 
 function escapeHtml(str) {
   const div = document.createElement('div');

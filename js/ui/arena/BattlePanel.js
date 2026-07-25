@@ -1,4 +1,5 @@
 import api from '../../services/api.js';
+import { renderOpponents } from './OpponentList.js';
 
 export function renderBattlePanel() {
   return `
@@ -46,7 +47,6 @@ export function bindBattleEvents(arena) {
     try {
       arena.showNotification('Searching for opponent...', 'info');
       const opponents = await api.getOpponents();
-      const { renderOpponents } = await import('./OpponentList.js');
       renderOpponents(opponents, selected, arena.guardians, arena);
     } catch (err) {
       arena.showNotification(err.message, 'warning');

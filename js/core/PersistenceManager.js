@@ -96,7 +96,10 @@ class PersistenceManager {
       const { default: api } = await import('../services/api.js');
       const data = await api.loadCloud();
       if (data.state) {
-        stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: data.state } });
+        const saveData = { version: CONFIG.VERSION, state: data.state };
+        if (!saveManager.validateSave(saveData)) return false;
+        const migrated = saveManager.migrate(saveData);
+        stateManager.dispatch({ type: 'LOAD_STATE', payload: { state: migrated.state } });
         eventBus.emit('game:cloud-loaded');
         return true;
       }
